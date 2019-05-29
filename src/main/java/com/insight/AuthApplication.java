@@ -11,7 +11,7 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
  */
 @SpringBootApplication
 @EnableEurekaClient
-public class Application {
+public class AuthApplication {
 
     /**
      * 应用入口方法
@@ -19,7 +19,7 @@ public class Application {
      * @param args 启动参数
      */
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(AuthApplication.class, args);
     }
 
 }
