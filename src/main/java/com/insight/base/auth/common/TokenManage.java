@@ -1,24 +1,11 @@
 package com.insight.base.auth.common;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.insight.base.auth.common.dto.AuthInfo;
-import com.insight.base.auth.common.dto.TokenPackage;
-import com.insight.base.auth.common.dto.UserInfo;
 import com.insight.base.auth.common.enums.TokenType;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.util.Json;
 import com.insight.util.Redis;
 import com.insight.util.Util;
-import com.insight.util.common.ApplicationContextHolder;
-import com.insight.util.encrypt.Encryptor;
-import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.User;
-
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @author 宣炳刚
@@ -29,9 +16,14 @@ public class TokenManage {
     private AuthMapper mapper;
 
     /**
-     * RSA私钥
+     * 用户数据
      */
-    private static final String PRIVATE_KEY = "";
+    private final User user;
+
+    /**
+     * 用户ID
+     */
+    private final String userId;
 
     /**
      * 当前令牌对应的关键数据集
@@ -39,15 +31,13 @@ public class TokenManage {
     private Token token;
 
     /**
-     * 用户数据
-     */
-    private User user;
-
-    /**
      * 构造函数
+     *
+     * @param userId 用户ID
      */
-    public TokenManage() {
-
+    public TokenManage(String userId) {
+        this.user = null;
+        this.userId = userId;
     }
 
     /**
@@ -56,17 +46,8 @@ public class TokenManage {
      * @param user User实体数据
      */
     public TokenManage(User user) {
-        mapper = ApplicationContextHolder.getContext().getBean(AuthMapper.class);
         this.user = user;
-
-        String key = "User:" + user.getId();
-        Redis.set(key, "User", Json.toJson(user));
-        Redis.set(key, "IsInvalid", user.getInvalid().toString());
-        Redis.set(key, "FailureCount", "0");
-
-        String pw = user.getPassword();
-        String password = pw.length() > 32 ? Encryptor.rsaDecrypt(pw, PRIVATE_KEY) : pw;
-        Redis.set(key, "Password", password);
+        this.userId = user.getId();
     }
 
     /**
@@ -78,144 +59,6 @@ public class TokenManage {
         String key = "Token:" + tokenId;
         String json = Redis.get(key);
         token = Json.toBean(json, Token.class);
-    }
-
-    /**
-     * 生成令牌数据包
-     *
-     * @param userAgent 用户信息
-     * @param code      Code
-     * @param appId     应用ID
-     * @return 令牌数据包
-     */
-    public TokenPackage creatorKey(String userAgent, String code, String appId) {
-        return creatorKey(userAgent, code, appId, null, null);
-    }
-
-    /**
-     * 生成令牌数据包
-     *
-     * @param userAgent 用户信息
-     * @param code      Code
-     * @param appId     应用ID
-     * @param tenantId  租户ID
-     * @param deptId    登录部门ID
-     * @return 令牌数据包
-     */
-    public TokenPackage creatorKey(String userAgent, String code, String appId, String tenantId, String deptId) {
-        TokenPackage tokenPackage = initPackage(code, userAgent);
-        token = new Token(appId, tenantId, deptId);
-        if (tenantId != null) {
-            List<AuthInfo> funs = mapper.getAuthInfos(appId, user.getId(), tenantId, deptId);
-            List<String> list = funs.stream().filter(i -> i.getPermit() > 0).map(i -> {
-                String urls = i.getInterfaces();
-                String codes = i.getAuthCodes();
-                return codes + (codes != null && urls != null ? "," : "") + urls;
-            }).collect(Collectors.toList());
-            token.setPermitFuncs(list);
-        }
-
-        String key = "Apps:" + user.getId();
-        long life = getLife() * 12;
-        Redis.set("Token:" + code, Json.toJson(token), life, TimeUnit.MILLISECONDS);
-        Redis.set(key, appId, code);
-
-        String val = (String) Redis.get(key, "Codes");
-        String codes = (val == null || val.isEmpty()) ? "" : val + ",";
-        Redis.set(key, "Codes", codes + code);
-
-        return tokenPackage;
-    }
-
-    /**
-     * 刷新Secret过期时间
-     *
-     * @param tokenId   令牌ID
-     * @param userAgent 用户信息
-     * @return 令牌数据包
-     */
-    public TokenPackage refreshToken(String tokenId, String userAgent) {
-        token.refresh();
-        long life = getLife() * 12;
-        TokenPackage tokenPackage = initPackage(tokenId, userAgent);
-        Redis.set("Token:" + tokenId, Json.toJson(token), life, TimeUnit.MILLISECONDS);
-
-        return tokenPackage;
-    }
-
-    /**
-     * 初始化令牌数据包
-     *
-     * @param code      Code
-     * @param userAgent 用户信息
-     * @return 令牌数据包
-     */
-    private TokenPackage initPackage(String code, String userAgent) {
-        AccessToken accessToken = new AccessToken();
-        accessToken.setId(code);
-        accessToken.setUserId(user.getId());
-        accessToken.setSecret(token.getSecretKey());
-
-        AccessToken refreshToken = new AccessToken();
-        refreshToken.setId(code);
-        refreshToken.setUserId(user.getId());
-        refreshToken.setSecret(token.getRefreshKey());
-
-        TokenPackage tokenPackage = new TokenPackage();
-        tokenPackage.setAccessToken(Json.toBase64(accessToken));
-        tokenPackage.setRefreshToken(Json.toBase64(refreshToken));
-        tokenPackage.setExpire(getLife());
-        tokenPackage.setFailure(getLife() * 12);
-
-        String key = tokenPackage.getAccessToken() + userAgent;
-        token.setHash(Util.md5(key));
-
-        UserInfo info = Json.clone(user, UserInfo.class);
-        String imgUrl = user.getHeadImg();
-        if (imgUrl == null || imgUrl.isEmpty()) {
-            String defaultHead = (String) Redis.get("BaseConfig", "DefaultHead");
-            info.setHeadImg(defaultHead);
-        } else if (!imgUrl.contains("http://") && !imgUrl.contains("https://")) {
-            String host = (String) Redis.get("BaseConfig", "FileHost");
-            info.setHeadImg(host + imgUrl);
-        }
-
-        info.setTenantId(token.getTenantId());
-        tokenPackage.setUserInfo(info);
-
-        return tokenPackage;
-    }
-
-    /**
-     * 使用户离线
-     *
-     * @param tokenId 令牌ID
-     */
-    public void deleteToken(String tokenId) {
-        String key = "Token:" + tokenId;
-        if (!Redis.hasKey(key)) {
-            return;
-        }
-
-        Redis.deleteKey(key);
-    }
-
-    /**
-     * 清除用户令牌
-     */
-    public void cleanTokens() {
-        String key = "Apps:" + user.getId();
-        if (!Redis.hasKey(key)) {
-            return;
-        }
-
-        String val = Redis.get(key, "Codes").toString();
-        String[] codes = val.split(",");
-        for (String code : codes) {
-            deleteToken(code);
-        }
-
-        Redis.set(key, "Codes", "");
     }
 
     /**
@@ -282,55 +125,6 @@ public class TokenManage {
     }
 
     /**
-     * 用户是否失效状态
-     *
-     * @return 用户是否失效状态
-     */
-    public Boolean userIsInvalid() {
-        String key = "User:" + user.getId();
-        String value = (String) Redis.get(key, "LastFailureTime");
-        if (value == null || value.isEmpty()) {
-            return false;
-        }
-
-        LocalDateTime lastFailureTime = LocalDateTime.parse(value);
-        LocalDateTime resetTime = lastFailureTime.plusMinutes(10);
-        LocalDateTime now = LocalDateTime.now();
-
-        Integer failureCount = (Integer) Redis.get(key, "FailureCount");
-        if (failureCount > 0 && now.isAfter(resetTime)) {
-            failureCount = 0;
-        }
-
-        return failureCount > 5 || (boolean) Redis.get(key, "IsInvalid");
-    }
-
-    /**
-     * 累计失败次数(有效时)
-     */
-    @JsonIgnore
-    public void addFailureCount() {
-        if (userIsInvalid()) {
-            return;
-        }
-
-        String key = "User:" + user.getId();
-        int failureCount = (int) Redis.get(key, "FailureCount");
-        failureCount++;
-        Redis.set(key, "FailureCount", failureCount);
-        Redis.set(key, "LastFailureTime", new Date());
-    }
-
-    /**
-     * 获取RSA私钥
-     *
-     * @return RSA私钥
-     */
-    public String getPrivateKey() {
-        return PRIVATE_KEY;
-    }
-
-    /**
      * 获取令牌哈希值
      *
      * @return 令牌哈希值
@@ -389,15 +183,11 @@ public class TokenManage {
     }
 
     public String getUserId() {
-        return user.getId();
+        return userId;
     }
 
     public void setToken(Token token) {
         this.token = token;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 }
 

@@ -24,10 +24,11 @@ public interface AuthService {
     /**
      * 获取Token数据
      *
-     * @param login 用户登录数据
+     * @param login     用户登录数据
+     * @param userAgent 用户信息
      * @return Reply
      */
-    Reply getToken(LoginDTO login);
+    Reply getToken(LoginDTO login, String userAgent);
 
     /**
      * 通过微信授权码获取访问令牌

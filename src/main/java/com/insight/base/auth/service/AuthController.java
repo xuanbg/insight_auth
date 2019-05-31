@@ -21,6 +21,7 @@ public class AuthController extends BaseController {
 
     /**
      * 构造方法
+     *
      * @param service 自动注入的AuthService
      */
     @Autowired
@@ -51,12 +52,17 @@ public class AuthController extends BaseController {
     /**
      * 获取Token
      *
-     * @param userAgent   用户信息
-     * @param login 用户登录数据
+     * @param userAgent 用户信息
+     * @param login     用户登录数据
      * @return Reply
      */
     @GetMapping("/v1.1/tokens")
-    public Reply getToken(@RequestHeader("User-Agent") String userAgent, @RequestParam LoginDTO login) {
-        return service.getToken(login);
+    public Reply getToken(@RequestHeader("User-Agent") String userAgent, LoginDTO login) {
+        String appId = login.getAppId();
+        if (appId == null || appId.isEmpty()){
+            return ReplyHelper.invalidParam("appId不能为空");
+        }
+
+        return service.getToken(login, userAgent);
     }
 }

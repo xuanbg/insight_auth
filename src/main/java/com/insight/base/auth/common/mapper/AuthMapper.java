@@ -10,7 +10,6 @@ import com.insight.util.pojo.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -24,13 +23,22 @@ public interface AuthMapper extends Mapper {
     /**
      * 根据登录账号查询用户数据
      *
-     * @param account 登录账号(账号、手机号、E-mail)
+     * @param key 关键词(ID/账号/手机号/E-mail/微信unionId)
      * @return 用户实体
      */
-    @Results({@Result(property = "builtIn", column = "is_builtin"),
+    @Results({@Result(property = "builtin", column = "is_builtin"),
             @Result(property = "invalid", column = "is_invalid")})
-    @Select("SELECT * FROM ibu_user WHERE account=#{account} OR mobile=#{account} OR email=#{account} OR union_id=#{account} LIMIT 1;")
-    User getUser(String account);
+    @Select("select * from ibu_user WHERE id =#{key} or account=#{key} or mobile=#{key} or email=#{key} or union_id=#{key} limit 1;")
+    User getUser(String key);
+
+    /**
+     * 根据ID获取租户数量
+     *
+     * @param id 租户ID
+     * @return 符合条件的租户数量
+     */
+    @Select("select count(*) from ibt_tenant where id =#{id}")
+    Integer getTenantCount(String id);
 
     /**
      * 查询指定ID的应用信息
@@ -38,6 +46,8 @@ public interface AuthMapper extends Mapper {
      * @param appId 应用ID
      * @return 应用信息
      */
+    @Results({@Result(property = "signinOne", column = "is_signin_one"),
+            @Result(property = "autoRefresh", column = "is_auto_refresh")})
     @Select("SELECT * FROM ibs_application WHERE id=#{appId};")
     Application getApp(String appId);
 
@@ -58,7 +68,7 @@ public interface AuthMapper extends Mapper {
      * @param deptId   登录部门ID
      * @return Function对象集合
      */
-    @Select("SELECT f.id,f.auth_code,IFNULL(f.interfaces,'') AS interfaces FROM ibs_function f JOIN ibr_role_func_permit a ON a.function_id=f.id " +
+    @Select("SELECT f.id,f.auth_code,ifnull(f.interfaces,'') AS interfaces FROM ibs_function f JOIN ibr_role_func_permit a ON a.function_id=f.id " +
             "JOIN (SELECT DISTINCT role_id FROM ibv_user_roles WHERE user_id=#{userId} AND tenant_id=#{tenantId} " +
             "AND (dept_id=#{deptId} OR dept_id IS NULL)) r ON r.role_id=a.role_id GROUP BY f.id HAVING min(a.permit)> 0;")
     List<Function> getAllFunctions(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("deptId") String deptId);
@@ -137,7 +147,7 @@ public interface AuthMapper extends Mapper {
      * @return 用户实体
      */
     @Results({@Result(property = "builtin", column = "is_builtin"),
-            @Result(property = "invalid", column = "is_invalid"), @Result(property = "setting", column = "setting", javaType = Map.class, typeHandler = JsonTypeHandler.class)})
+            @Result(property = "invalid", column = "is_invalid")})
     @Select("SELECT u.id,u.user_type,u.`code`,u.`name`,u.account,u.mobile,o.id AS open_id,u.email,u.head_img,u.setting,u.remark,u.is_builtin,u.is_invalid,u.created_time " +
             "FROM ucb_user u LEFT JOIN (SELECT id,user_id,max(created_time) FROM ucb_user_openid " +
             "WHERE app_id=#{appId} GROUP BY user_id) o ON o.user_id=u.id WHERE u.id=#{userId};")

@@ -1,15 +1,21 @@
 package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.Core;
-import com.insight.base.auth.common.TokenManage;
 import com.insight.base.auth.common.dto.LoginDTO;
+import com.insight.base.auth.common.dto.TokenPackage;
 import com.insight.base.auth.common.dto.WeChatUserInfo;
+import com.insight.util.Json;
 import com.insight.util.Redis;
 import com.insight.util.ReplyHelper;
 import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.Reply;
+import com.insight.util.pojo.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 /**
  * @author 宣炳刚
@@ -18,6 +24,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AuthServiceImpl implements AuthService {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Core core;
 
     @Autowired
@@ -35,34 +42,96 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getCode(String account, int type) {
         String userId = core.getUserId(account);
-
         if (userId == null) {
             return ReplyHelper.notExist("账号或密码错误！");
         }
 
-        TokenManage tokenManage = core.getUserInfo(userId);
-        if (tokenManage == null) {
+        String key = "User:" + userId;
+        if (!Redis.hasKey(key)) {
             Redis.deleteKey(account);
             return ReplyHelper.fail("发生了一点小意外,请提交一次");
         }
 
         // 生成Code
-        Object code = core.generateCode(tokenManage, account, type);
-        if ("短信发送失败".equals(code)) {
-            return ReplyHelper.fail(code.toString());
+        Object code;
+        if (type == 0) {
+            String password = (String) Redis.get(key, "Password");
+            if (password == null || password.isEmpty()) {
+                return null;
+            }
+
+            code = core.getGeneralCode(userId, account, password);
+        } else {
+            String json = (String) Redis.get(key, "User");
+            if (json == null || json.isEmpty()) {
+                return null;
+            }
+
+            User user = Json.toBean(json, User.class);
+            code = core.getSmsCode(userId, user.getMobile());
+            if ("短信发送失败".equals(code)) {
+                return ReplyHelper.fail(code.toString());
+            }
         }
+
         return ReplyHelper.success(code);
     }
 
     /**
      * 获取Token数据
      *
-     * @param login 用户登录数据
+     * @param login     用户登录数据
+     * @param userAgent 用户信息
      * @return Reply
      */
     @Override
-    public Reply getToken(LoginDTO login) {
-        return null;
+    public Reply getToken(LoginDTO login, String userAgent) {
+        String tenantId = login.getTenantId();
+        if (tenantId != null && !tenantId.isEmpty()) {
+            if (!core.tenantIsExisted(tenantId)) {
+                return ReplyHelper.invalidParam("无效的租户ID");
+            }
+        }
+
+        String code = core.getCode(login.getSignature());
+        if (code == null) {
+            String account = login.getAccount();
+            String userId = core.getUserId(account);
+            String key = "User:" + userId;
+            if (!Redis.hasKey(key)) {
+                Redis.deleteKey(account);
+                return ReplyHelper.fail("发生了一点小意外,请提交一次");
+            }
+
+            if (core.userIsInvalid(userId)) {
+                int failureCount = (int) Redis.get(key, "FailureCount");
+                if (failureCount > 10) {
+                    return ReplyHelper.fail("错误次数过多，请重设密码");
+                }
+
+                failureCount++;
+                Redis.set(key, "FailureCount", failureCount);
+                Redis.set(key, "LastFailureTime", new Date());
+                logger.warn("账号[" + account + "]正在尝试使用错误的签名请求令牌!");
+
+                return ReplyHelper.invalidParam("账号或密码错误！");
+            }
+        }
+
+        String userId = core.getId(code);
+        String key = "User:" + userId;
+        if (userId == null || userId.isEmpty()) {
+            return ReplyHelper.fail("缓存异常");
+        }
+
+        boolean isInvalid = Boolean.valueOf((String) Redis.get(key, "IsInvalid"));
+        if (isInvalid) {
+            return ReplyHelper.fail("用户被禁止登录");
+        }
+
+        // 创建令牌数据并返回
+        TokenPackage tokens = core.creatorKey(code, userAgent, login, userId);
+        return ReplyHelper.success(tokens);
     }
 
     /**

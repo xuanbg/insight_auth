@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.insight.base.auth.common.enums.TokenType;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.util.Generator;
+import com.insight.util.Redis;
 import com.insight.util.common.ApplicationContextHolder;
 import com.insight.util.pojo.Application;
 import com.insight.util.pojo.TokenInfo;
-import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.Date;
 
@@ -26,65 +26,57 @@ class Token extends TokenInfo {
      * @param deptId   登录部门ID
      */
     Token(String appId, String tenantId, String deptId) {
+        AuthMapper mapper = ApplicationContextHolder.getContext().getBean(AuthMapper.class);
         super.setAppId(appId);
         super.setTenantId(tenantId);
         super.setDeptId(deptId);
 
-        AuthMapper mapper = ApplicationContextHolder.getContext().getBean(AuthMapper.class);
-        StringRedisTemplate redis = ApplicationContextHolder.getContext().getBean(StringRedisTemplate.class);
+        Application app = null;
+        String key = "App:" + appId;
+        Object tokenLife = Redis.get(key, "TokenLife");
+        if (tokenLife == null) {
+            app = mapper.getApp(appId);
 
-        if (appId == null || appId.isEmpty()) {
-            super.setLife(Long.valueOf("7200000"));
-            super.setSignInOne(false);
-            super.setAutoRefresh(false);
+            if (app == null) {
+                super.setLife(Long.valueOf("7200000"));
+            } else {
+                super.setLife(app.getTokenLife());
+                Redis.set(key, "TokenLife", super.getLife().toString());
+            }
         } else {
-            Application app = null;
-            String key = "App:" + appId;
-            Object tokenLife = redis.opsForHash().get(key, "TokenLife");
-            if (tokenLife == null) {
+            super.setLife(Long.valueOf(tokenLife.toString()));
+        }
+
+        Object signInType = Redis.get(key, "SignInType");
+        if (signInType == null) {
+            if (app == null) {
                 app = mapper.getApp(appId);
-
-                if (app == null) {
-                    super.setLife(Long.valueOf("7200000"));
-                } else {
-                    super.setLife(app.getTokenLife());
-                    redis.opsForHash().put(key, "TokenLife", super.getLife().toString());
-                }
-            } else {
-                super.setLife(Long.valueOf(tokenLife.toString()));
             }
 
-            Object signInType = redis.opsForHash().get(key, "SignInType");
-            if (signInType == null) {
-                if (app == null) {
-                    app = mapper.getApp(appId);
-                }
-
-                if (app == null) {
-                    super.setSignInOne(false);
-                } else {
-                    super.setSignInOne(app.getSigninOne());
-                    redis.opsForHash().put(key, "SignInType", super.getSignInOne().toString());
-                }
+            if (app == null) {
+                super.setSignInOne(false);
             } else {
-                super.setSignInOne(Boolean.valueOf(signInType.toString()));
+                super.setSignInOne(app.getSigninOne());
+                Redis.set(key, "SignInType", super.getSignInOne().toString());
+            }
+        } else {
+            super.setSignInOne(Boolean.valueOf(signInType.toString()));
+        }
+
+        Object refreshType = Redis.get(key, "RefreshType");
+        if (refreshType == null) {
+            if (app == null) {
+                app = mapper.getApp(appId);
             }
 
-            Object refreshType = redis.opsForHash().get(key, "RefreshType");
-            if (refreshType == null) {
-                if (app == null) {
-                    app = mapper.getApp(appId);
-                }
-
-                if (app == null) {
-                    super.setAutoRefresh(false);
-                } else {
-                    super.setAutoRefresh(app.getAutoRefresh());
-                    redis.opsForHash().put(key, "RefreshType", super.getAutoRefresh().toString());
-                }
+            if (app == null) {
+                super.setAutoRefresh(false);
             } else {
-                super.setAutoRefresh(Boolean.valueOf(refreshType.toString()));
+                super.setAutoRefresh(app.getAutoRefresh());
+                Redis.set(key, "RefreshType", super.getAutoRefresh().toString());
             }
+        } else {
+            super.setAutoRefresh(Boolean.valueOf(refreshType.toString()));
         }
 
         setSecretKey(Generator.uuid());
