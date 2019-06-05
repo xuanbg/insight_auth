@@ -5,7 +5,6 @@ import com.insight.util.ReplyHelper;
 import com.insight.util.Util;
 import com.insight.util.pojo.Reply;
 import com.insight.util.service.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -24,7 +23,6 @@ public class AuthController extends BaseController {
      *
      * @param service 自动注入的AuthService
      */
-    @Autowired
     public AuthController(AuthService service) {
         this.service = service;
     }
@@ -39,11 +37,11 @@ public class AuthController extends BaseController {
     @GetMapping("/v1.1/tokens/codes")
     public Reply getCode(@RequestParam String account, @RequestParam(defaultValue = "0") int type) {
 
-        // 限流,每用户每分钟可访问一次
+        // 限流,每用户每日限定获取Code次数200次
         String key = Util.md5("getCode" + account + type);
-        Integer surplus = super.getSurplus(key, 5);
-        if (surplus > 0) {
-            return ReplyHelper.tooOften();
+        boolean limited = super.isLimited(key, 86400, 200);
+        if (limited) {
+            return ReplyHelper.fail("每日获取Code次数上限为200次，请合理利用");
         }
 
         return service.getCode(account, type);

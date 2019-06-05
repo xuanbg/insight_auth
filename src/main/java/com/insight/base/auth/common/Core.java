@@ -182,7 +182,7 @@ public class Core {
         String key = "User:" + userId;
         Redis.set(key, appId, code);
 
-        String val = (String) Redis.get(key, "Codes");
+        String val = Redis.get(key, "Codes");
         String codes = (val == null || val.isEmpty()) ? "" : val + ",";
         Redis.set(key, "Codes", codes + code);
 
@@ -245,14 +245,14 @@ public class Core {
 
         // 生成用户信息
         String key = "User:" + userId;
-        String json = (String) Redis.get(key, "User");
+        String json = Redis.get(key, "User");
         UserInfo info = Json.toBean(json, UserInfo.class);
         String imgUrl = info.getHeadImg();
         if (imgUrl == null || imgUrl.isEmpty()) {
-            String defaultHead = (String) Redis.get("BaseConfig", "DefaultHead");
+            String defaultHead = Redis.get("Config:DefaultHead");
             info.setHeadImg(defaultHead);
         } else if (!imgUrl.contains("http://") && !imgUrl.contains("https://")) {
-            String host = (String) Redis.get("BaseConfig", "FileHost");
+            String host = Redis.get("Config:FileHost");
             info.setHeadImg(host + imgUrl);
         }
 
@@ -303,7 +303,7 @@ public class Core {
             return;
         }
 
-        String val = Redis.get(key, "Codes").toString();
+        String val = Redis.get(key, "Codes");
         String[] codes = val.split(",");
         for (String code : codes) {
             deleteToken(code);
@@ -466,16 +466,6 @@ public class Core {
     }
 
     /**
-     * 检查租户信息
-     *
-     * @param tenantId 租户ID
-     * @return 租户是否存在
-     */
-    public Boolean tenantIsExisted(String tenantId) {
-        return mapper.getTenantCount(tenantId) > 0;
-    }
-
-    /**
      * 用户是否存在
      *
      * @param user User数据
@@ -503,7 +493,7 @@ public class Core {
      */
     public Boolean userIsInvalid(String userId) {
         String key = "User:" + userId;
-        String value = (String) Redis.get(key, "LastFailureTime");
+        String value = Redis.get(key, "LastFailureTime");
         if (value == null || value.isEmpty()) {
             return false;
         }
@@ -512,12 +502,12 @@ public class Core {
         LocalDateTime resetTime = lastFailureTime.plusMinutes(10);
         LocalDateTime now = LocalDateTime.now();
 
-        Integer failureCount = (Integer) Redis.get(key, "FailureCount");
+        int failureCount = Integer.parseInt(Redis.get(key, "FailureCount"));
         if (failureCount > 0 && now.isAfter(resetTime)) {
             failureCount = 0;
         }
 
-        return failureCount > 5 || (boolean) Redis.get(key, "IsInvalid");
+        return failureCount > 5 || Boolean.valueOf(Redis.get(key, "IsInvalid"));
     }
 
     /**

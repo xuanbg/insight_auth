@@ -12,7 +12,6 @@ import com.insight.util.pojo.Reply;
 import com.insight.util.pojo.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -27,7 +26,11 @@ public class AuthServiceImpl implements AuthService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Core core;
 
-    @Autowired
+    /**
+     * 构造函数
+     *
+     * @param core Core
+     */
     public AuthServiceImpl(Core core) {
         this.core = core;
     }
@@ -55,14 +58,14 @@ public class AuthServiceImpl implements AuthService {
         // 生成Code
         Object code;
         if (type == 0) {
-            String password = (String) Redis.get(key, "Password");
+            String password = Redis.get(key, "Password");
             if (password == null || password.isEmpty()) {
                 return null;
             }
 
             code = core.getGeneralCode(userId, account, password);
         } else {
-            String json = (String) Redis.get(key, "User");
+            String json = Redis.get(key, "User");
             if (json == null || json.isEmpty()) {
                 return null;
             }
@@ -86,13 +89,8 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getToken(LoginDTO login, String userAgent) {
-        String tenantId = login.getTenantId();
-        if (tenantId != null && !tenantId.isEmpty()) {
-            if (!core.tenantIsExisted(tenantId)) {
-                return ReplyHelper.invalidParam("无效的租户ID");
-            }
-        }
 
+        // 验证签名
         String code = core.getCode(login.getSignature());
         if (code == null) {
             String account = login.getAccount();
@@ -104,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             if (core.userIsInvalid(userId)) {
-                int failureCount = (int) Redis.get(key, "FailureCount");
+                int failureCount = Integer.parseInt(Redis.get(key, "FailureCount"));
                 if (failureCount > 10) {
                     return ReplyHelper.fail("错误次数过多，请重设密码");
                 }
@@ -118,13 +116,14 @@ public class AuthServiceImpl implements AuthService {
             }
         }
 
+        // 验证用户
         String userId = core.getId(code);
         String key = "User:" + userId;
         if (userId == null || userId.isEmpty()) {
             return ReplyHelper.fail("缓存异常");
         }
 
-        boolean isInvalid = Boolean.valueOf((String) Redis.get(key, "IsInvalid"));
+        boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
         if (isInvalid) {
             return ReplyHelper.fail("用户被禁止登录");
         }

@@ -32,15 +32,6 @@ public interface AuthMapper extends Mapper {
     User getUser(String key);
 
     /**
-     * 根据ID获取租户数量
-     *
-     * @param id 租户ID
-     * @return 符合条件的租户数量
-     */
-    @Select("select count(*) from ibt_tenant where id =#{id}")
-    Integer getTenantCount(String id);
-
-    /**
      * 查询指定ID的应用信息
      *
      * @param appId 应用ID
@@ -193,7 +184,7 @@ public interface AuthMapper extends Mapper {
      * @param deptId   登录部门ID
      * @return 授权信息集合
      */
-    @Select("SELECT f.id,f.nav_id,f.alias,f.interfaces,min(a.permit) permit " +
+    @Select("SELECT f.id,f.nav_id,f.auth_code,f.interfaces,min(a.permit) permit " +
             "FROM ucs_function f JOIN ucs_navigator n ON n.id=f.nav_id AND n.app_id=#{appId} " +
             "JOIN ucr_role_func_permit a ON a.function_id=f.id JOIN ucv_user_roles r ON r.role_id=a.role_id " +
             "AND r.tenant_id=#{tenantId} AND r.user_id=#{userId} AND (r.dept_id IS NULL || r.dept_id=#{deptId}) " +
