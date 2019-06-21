@@ -1,8 +1,10 @@
 package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.dto.LoginDTO;
+import com.insight.util.Json;
 import com.insight.util.ReplyHelper;
 import com.insight.util.Util;
+import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.Reply;
 import com.insight.util.service.BaseController;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/base")
+@RequestMapping("/base/auth")
 public class AuthController extends BaseController {
     private final AuthService service;
 
@@ -36,10 +38,9 @@ public class AuthController extends BaseController {
      */
     @GetMapping("/v1.1/tokens/codes")
     public Reply getCode(@RequestParam String account, @RequestParam(defaultValue = "0") int type) {
-
-        // 限流,每用户每日限定获取Code次数200次
+        // 3秒内限请求1次,每用户每日限获取Code次数200次
         String key = Util.md5("getCode" + account + type);
-        boolean limited = super.isLimited(key, 86400, 200);
+        boolean limited = super.isLimited(key, 3, 86400, 200);
         if (limited) {
             return ReplyHelper.fail("每日获取Code次数上限为200次，请合理利用");
         }
@@ -48,19 +49,79 @@ public class AuthController extends BaseController {
     }
 
     /**
-     * 获取Token
+     * 获取访问令牌
      *
-     * @param userAgent 用户信息
-     * @param login     用户登录数据
+     * @param fingerprint 用户特征串
+     * @param login       用户登录数据
      * @return Reply
      */
     @GetMapping("/v1.1/tokens")
-    public Reply getToken(@RequestHeader("User-Agent") String userAgent, LoginDTO login) {
+    public Reply getToken(@RequestHeader("fingerprint") String fingerprint, LoginDTO login) {
+        login.setFingerprint(fingerprint);
         String appId = login.getAppId();
-        if (appId == null || appId.isEmpty()){
+        if (appId == null || appId.isEmpty()) {
             return ReplyHelper.invalidParam("appId不能为空");
         }
 
-        return service.getToken(login, userAgent);
+        return service.getToken(login);
+    }
+
+    /**
+     * 通过微信授权码获取访问令牌
+     *
+     * @param fingerprint 用户特征串
+     * @param login       用户登录数据
+     * @return Reply
+     */
+    @GetMapping("/v1.1/tokens/wechat")
+    public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, LoginDTO login) {
+        login.setFingerprint(fingerprint);
+        String appId = login.getAppId();
+        if (appId == null || appId.isEmpty()) {
+            return ReplyHelper.invalidParam("appId不能为空");
+        }
+
+        return service.getTokenWithWeChat(login);
+    }
+
+    /**
+     * 刷新Token，延长过期时间至2小时后
+     *
+     * @param fingerprint 用户特征串
+     * @param token       刷新令牌字符串
+     * @return Reply
+     */
+    @PutMapping("/v1.1/tokens")
+    public Reply refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
+        // 3秒内限请求1次,每用户每日限获取Code次数60次
+        String key = Util.md5("refreshToken" + fingerprint);
+        boolean limited = super.isLimited(key, 3, 86400, 60);
+        if (limited) {
+            return ReplyHelper.fail("每日刷新Token次数上限为60次，请合理利用");
+        }
+
+        AccessToken refreshToken = Json.toAccessToken(token);
+        if (refreshToken == null) {
+            return ReplyHelper.invalidToken();
+        }
+
+        return service.refreshToken(fingerprint, refreshToken);
+    }
+
+    /**
+     * 用户账号离线
+     *
+     * @param fingerprint 用户特征串
+     * @param token       访问令牌字符串
+     * @return Reply
+     */
+    @DeleteMapping("/v1.1/tokens")
+    public Reply deleteToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization") String token) {
+        AccessToken accessToken = Json.toAccessToken(token);
+        if (accessToken == null) {
+            return ReplyHelper.invalidToken();
+        }
+
+        return service.deleteToken(fingerprint, accessToken);
     }
 }

@@ -54,6 +54,11 @@ public class LoginDTO {
      */
     private String deviceModel;
 
+    /**
+     * 用户特征串
+     */
+    private String fingerprint;
+
     @Override
     public String toString(){
         return Json.toJson(this);
@@ -129,5 +134,13 @@ public class LoginDTO {
 
     public void setDeviceModel(String deviceModel) {
         this.deviceModel = deviceModel;
+    }
+
+    public String getFingerprint() {
+        return fingerprint;
+    }
+
+    public void setFingerprint(String fingerprint) {
+        this.fingerprint = fingerprint;
     }
 }

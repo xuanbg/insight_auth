@@ -22,13 +22,12 @@ public interface AuthService {
     Reply getCode(String account, int type);
 
     /**
-     * 获取Token数据
+     * 获取访问令牌
      *
-     * @param login     用户登录数据
-     * @param userAgent 用户信息
+     * @param login 用户登录数据
      * @return Reply
      */
-    Reply getToken(LoginDTO login, String userAgent);
+    Reply getToken(LoginDTO login);
 
     /**
      * 通过微信授权码获取访问令牌
@@ -64,19 +63,20 @@ public interface AuthService {
     /**
      * 刷新访问令牌过期时间
      *
-     * @param token 刷新令牌字符串
+     * @param fingerprint 用户特征串
+     * @param token       刷新令牌
      * @return Reply
      */
-    Reply refreshToken(AccessToken token);
+    Reply refreshToken(String fingerprint, AccessToken token);
 
     /**
      * 用户账号离线
      *
-     * @param tokenId  令牌ID
-     * @param deviceId 设备ID
+     * @param fingerprint 用户特征串
+     * @param token       访问令牌
      * @return Reply
      */
-    Reply deleteToken(String tokenId, String deviceId);
+    Reply deleteToken(String fingerprint, AccessToken token);
 
     /**
      * 验证支付密码

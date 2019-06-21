@@ -2,9 +2,9 @@ package com.insight.base.auth.common.filter;
 
 import com.insight.util.Generator;
 import com.insight.util.Json;
-import com.insight.util.Util;
 import com.insight.util.pojo.BodyReaderRequestWrapper;
 import com.insight.util.pojo.Log;
+import org.apache.logging.log4j.ThreadContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -54,18 +54,15 @@ public class LogFilter implements Filter {
      */
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-
         MDC.put("requestId", Generator.uuid());
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         Log log = new Log();
         log.setTime(new Date());
         log.setLevel("DEBUG");
 
-        // 读取客户端IP地址、请求方法和调用的接口URL
-        String ip = Util.getIp(request);
+        // 请求方法和调用的接口URL
         String method = request.getMethod();
         String path = request.getRequestURI();
-        log.setSource(ip);
         log.setMethod(method);
         log.setUrl(path);
 
@@ -75,6 +72,10 @@ public class LogFilter implements Filter {
         while (headerList.hasMoreElements()) {
             String headerName = headerList.nextElement();
             String header = request.getHeader(headerName);
+            if ("requestid".equalsIgnoreCase(headerName)){
+                ThreadContext.put("requestid", header);
+            }
+
             headers.put(headerName, header);
         }
         log.setHeaders(headers);
@@ -112,7 +113,6 @@ public class LogFilter implements Filter {
         }
 
         logger.info("请求参数：{}", Json.toJson(log));
-
         filterChain.doFilter(requestWrapper, servletResponse);
     }
 

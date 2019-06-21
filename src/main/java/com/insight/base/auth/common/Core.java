@@ -44,8 +44,14 @@ public class Core {
      */
     private static final String PRIVATE_KEY = "";
 
+    /**
+     * Code生命周期(30秒)
+     */
     private static final int GENERAL_CODE_LEFT = 30;
 
+    /**
+     * 登录短信验证码有效时间(300秒)
+     */
     private static final int SMS_CODE_LEFT = 300;
 
     /**
@@ -157,16 +163,16 @@ public class Core {
     /**
      * 生成令牌数据包
      *
-     * @param userAgent 用户信息
-     * @param code      Code
-     * @param login     登录信息
-     * @param userId    用户ID
+     * @param code   Code
+     * @param login  登录信息
+     * @param userId 用户ID
      * @return 令牌数据包
      */
-    public TokenPackage creatorKey(String code, String userAgent, LoginDTO login, String userId) {
+    public TokenPackage creatorToken(String code, LoginDTO login, String userId) {
         String appId = login.getAppId();
         String tenantId = login.getTenantId();
         String deptId = login.getDeptId();
+        String fingerprint = login.getFingerprint();
 
         Token token = new Token(appId, tenantId, deptId);
         if (tenantId != null) {
@@ -179,47 +185,37 @@ public class Core {
             token.setPermitFuncs(list);
         }
 
-        String key = "User:" + userId;
-        Redis.set(key, appId, code);
-
-        String val = Redis.get(key, "Codes");
-        String codes = (val == null || val.isEmpty()) ? "" : val + ",";
-        Redis.set(key, "Codes", codes + code);
-
-        return initPackage(token, code, userAgent, userId);
+        return initPackage(token, code, fingerprint, userId, appId);
     }
 
     /**
      * 刷新Secret过期时间
      *
-     * @param tokenId   令牌ID
-     * @param userAgent 用户信息
-     * @param userId    用户ID
+     * @param token       令牌
+     * @param fingerprint 用户特征串
+     * @param userId      用户ID
      * @return 令牌数据包
      */
-    public TokenPackage refreshToken(String tokenId, String userAgent, String userId) {
-        Token token = getToken(tokenId);
-        if (token == null) {
-            return null;
-        }
-
+    public TokenPackage refreshToken(Token token, String fingerprint, String userId) {
         token.refresh();
         long life = token.getLife() * 12;
-        Redis.set("Token:" + tokenId, Json.toJson(token), life, TimeUnit.MILLISECONDS);
+        String appId = token.getAppId();
+        String code = Generator.uuid();
 
-        return initPackage(token, Generator.uuid(), userAgent, userId);
+        return initPackage(token, code, fingerprint, userId, appId);
     }
 
     /**
      * 初始化令牌数据包
      *
-     * @param token     令牌数据
-     * @param code      Code
-     * @param userAgent 用户信息
-     * @param userId    用户ID
+     * @param token       令牌数据
+     * @param code        Code
+     * @param fingerprint 用户特征串
+     * @param userId      用户ID
+     * @param appId       应用ID
      * @return 令牌数据包
      */
-    private TokenPackage initPackage(Token token, String code, String userAgent, String userId) {
+    private TokenPackage initPackage(Token token, String code, String fingerprint, String userId, String appId) {
         // 生成令牌数据
         AccessToken accessToken = new AccessToken();
         accessToken.setId(code);
@@ -239,12 +235,14 @@ public class Core {
         tokenPackage.setFailure(life);
 
         // 缓存令牌数据
-        String hashKey = tokenPackage.getAccessToken() + userAgent;
+        String hashKey = tokenPackage.getAccessToken() + fingerprint;
         token.setHash(Util.md5(hashKey));
         Redis.set("Token:" + code, Json.toJson(token), life, TimeUnit.MILLISECONDS);
 
-        // 生成用户信息
+        // 更新用户缓存
         String key = "User:" + userId;
+        Redis.set(key, appId, code);
+
         String json = Redis.get(key, "User");
         UserInfo info = Json.toBean(json, UserInfo.class);
         String imgUrl = info.getHeadImg();
@@ -268,7 +266,7 @@ public class Core {
      * @param tokenId 令牌ID
      * @return 缓存中的令牌
      */
-    private Token getToken(String tokenId) {
+    public Token getToken(String tokenId) {
         String key = "Token:" + tokenId;
         String json = Redis.get(key);
         if (json == null || json.isEmpty()) {
@@ -290,26 +288,6 @@ public class Core {
         }
 
         Redis.deleteKey(key);
-    }
-
-    /**
-     * 清除用户令牌
-     *
-     * @param userId 用户ID
-     */
-    public void cleanTokens(String userId) {
-        String key = "Apps:" + userId;
-        if (!Redis.hasKey(key)) {
-            return;
-        }
-
-        String val = Redis.get(key, "Codes");
-        String[] codes = val.split(",");
-        for (String code : codes) {
-            deleteToken(code);
-        }
-
-        Redis.set(key, "Codes", "");
     }
 
     /**
@@ -438,34 +416,6 @@ public class Core {
     }
 
     /**
-     * 查询指定ID的应用的令牌生命周期小时数
-     *
-     * @param appId 应用ID
-     * @return 应用的令牌生命周期小时数
-     */
-    public Long getTokenLife(String appId) {
-        if (appId == null || appId.isEmpty()) {
-            return Long.valueOf("86400000");
-        }
-
-        // 从缓存读取应用的令牌生命周期
-        Object val = Redis.get(appId, "TokenLife");
-        if (val != null) {
-            return Long.valueOf(val.toString());
-        }
-
-        // 从数据库读取应用的令牌生命周期
-        Long hours = mapper.getTokenLife(appId);
-        if (hours == null) {
-            hours = Long.valueOf("86400000");
-        }
-
-        Redis.set(appId, "TokenLife", hours.toString());
-
-        return hours;
-    }
-
-    /**
      * 用户是否存在
      *
      * @param user User数据
@@ -523,6 +473,20 @@ public class Core {
     }
 
     /**
+     * 记录用户绑定的微信OpenID
+     *
+     * @param userId 用户ID
+     * @param openId 微信OpenID
+     * @param appId  微信AppID
+     */
+    public void bindOpenId(String userId, String openId, String appId) {
+        Integer count = mapper.addUserOpenId(openId, userId, appId);
+        if (count <= 0) {
+            logger.error("绑定openId写入数据到数据库失败!");
+        }
+    }
+
+    /**
      * 是否绑定了指定的应用
      *
      * @param tenantId 租户ID
@@ -532,5 +496,4 @@ public class Core {
     public Boolean containsApp(String tenantId, String appId) {
         return mapper.containsApp(tenantId, appId) > 0;
     }
-
 }

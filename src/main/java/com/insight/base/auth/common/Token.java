@@ -16,7 +16,14 @@ import java.util.Date;
  * @date 2018/1/4
  * @remark 令牌关键数据集
  */
-class Token extends TokenInfo {
+public class Token extends TokenInfo {
+
+    /**
+     * 构造方法
+     */
+    public Token() {
+
+    }
 
     /**
      * 构造方法
@@ -88,14 +95,25 @@ class Token extends TokenInfo {
     /**
      * 验证密钥
      *
-     * @param key  密钥
-     * @param type 验证类型(1:验证AccessToken、2:验证RefreshToken)
+     * @param key     密钥
+     * @param type    验证类型(1:验证AccessToken、2:验证RefreshToken)
+     * @param tokenId 令牌ID
+     * @param userId  用户ID
      * @return 是否通过验证
      */
     @JsonIgnore
-    Boolean verify(String key, TokenType type) {
+    public Boolean verify(String key, TokenType type, String tokenId, String userId) {
         if (key == null || key.isEmpty()) {
             return false;
+        }
+
+        // 单点登录时验证令牌ID
+        if (super.getSignInOne()) {
+            String appId = super.getAppId();
+            String id = Redis.get("User:" + userId, appId);
+            if (!tokenId.equalsIgnoreCase(id)) {
+                return false;
+            }
         }
 
         Boolean passed = key.equals(type == TokenType.AccessToken ? super.getSecretKey() : super.getRefreshKey());
@@ -112,7 +130,7 @@ class Token extends TokenInfo {
      * 刷新令牌关键数据
      **/
     @JsonIgnore
-    void refresh() {
+    public void refresh() {
         setExpiryTime(new Date(super.getLife() + System.currentTimeMillis()));
         setFailureTime(new Date(super.getLife() * 12 + System.currentTimeMillis()));
         super.setSecretKey(Generator.uuid());

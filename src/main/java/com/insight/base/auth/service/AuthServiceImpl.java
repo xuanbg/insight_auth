@@ -1,15 +1,18 @@
 package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.Core;
+import com.insight.base.auth.common.Token;
 import com.insight.base.auth.common.dto.LoginDTO;
 import com.insight.base.auth.common.dto.TokenPackage;
 import com.insight.base.auth.common.dto.WeChatUserInfo;
+import com.insight.base.auth.common.enums.TokenType;
 import com.insight.util.Json;
 import com.insight.util.Redis;
 import com.insight.util.ReplyHelper;
 import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.Reply;
 import com.insight.util.pojo.User;
+import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -81,15 +84,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 获取Token数据
+     * 获取访问令牌
      *
-     * @param login     用户登录数据
-     * @param userAgent 用户信息
+     * @param login 用户登录数据
      * @return Reply
      */
     @Override
-    public Reply getToken(LoginDTO login, String userAgent) {
-
+    public Reply getToken(LoginDTO login) {
         // 验证签名
         String code = core.getCode(login.getSignature());
         if (code == null) {
@@ -118,18 +119,18 @@ public class AuthServiceImpl implements AuthService {
 
         // 验证用户
         String userId = core.getId(code);
-        String key = "User:" + userId;
         if (userId == null || userId.isEmpty()) {
             return ReplyHelper.fail("缓存异常");
         }
 
+        String key = "User:" + userId;
         boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
         if (isInvalid) {
             return ReplyHelper.fail("用户被禁止登录");
         }
 
-        // 创建令牌数据并返回
-        TokenPackage tokens = core.creatorKey(code, userAgent, login, userId);
+        TokenPackage tokens = core.creatorToken(code, login, userId);
+
         return ReplyHelper.success(tokens);
     }
 
@@ -141,7 +142,37 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getTokenWithWeChat(LoginDTO login) {
-        return null;
+        String code = login.getCode();
+        String weChatAppId = login.getWeChatAppId();
+
+        WeChatUser weChatUser = core.getWeChatInfo(code, weChatAppId);
+        if (weChatUser == null) {
+            return ReplyHelper.invalidParam("微信授权失败");
+        }
+
+        String unionId = weChatUser.getUnionid();
+        if (unionId == null || unionId.isEmpty()) {
+            return ReplyHelper.fail("未取得微信用户的UnionID");
+        }
+
+        // 使用微信UnionID读取缓存,如用户不存在,则返回微信用户信息
+        String userId = core.getUserId(unionId);
+        if (userId == null || userId.isEmpty()) {
+            String key = "Wechat:" + unionId;
+            Redis.set(key, Json.toJson(weChatUser));
+            return ReplyHelper.success(weChatUser, false);
+        }
+
+        String key = "User:" + userId;
+        boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
+        if (isInvalid) {
+            return ReplyHelper.fail("用户被禁止登录");
+        }
+
+        core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
+        TokenPackage tokens = core.creatorToken(code, login, userId);
+
+        return ReplyHelper.success(tokens);
     }
 
     /**
@@ -179,24 +210,57 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 刷新访问令牌过期时间
      *
-     * @param token 刷新令牌字符串
+     * @param fingerprint 用户特征串
+     * @param accessToken 刷新令牌
      * @return Reply
      */
     @Override
-    public Reply refreshToken(AccessToken token) {
-        return null;
+    public Reply refreshToken(String fingerprint, AccessToken accessToken) {
+        String tokenId = accessToken.getId();
+        String userId = accessToken.getUserId();
+        String secret = accessToken.getSecret();
+
+        // 验证令牌
+        Token token = core.getToken(tokenId);
+        if (token == null || !token.verify(secret, TokenType.RefreshToken, tokenId, userId)) {
+            return ReplyHelper.invalidToken();
+        }
+
+        // 验证用户
+        String key = "User:" + userId;
+        boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
+        if (isInvalid) {
+            return ReplyHelper.fail("用户被禁止登录");
+        }
+
+        core.deleteToken(tokenId);
+        TokenPackage tokens = core.refreshToken(token, fingerprint, userId);
+
+        return ReplyHelper.success(tokens);
     }
 
     /**
      * 用户账号离线
      *
-     * @param tokenId  令牌ID
-     * @param deviceId 设备ID
+     * @param fingerprint 用户特征串
+     * @param accessToken 访问令牌
      * @return Reply
      */
     @Override
-    public Reply deleteToken(String tokenId, String deviceId) {
-        return null;
+    public Reply deleteToken(String fingerprint, AccessToken accessToken) {
+        String tokenId = accessToken.getId();
+        String userId = accessToken.getUserId();
+        String secret = accessToken.getSecret();
+
+        // 验证令牌
+        Token token = core.getToken(tokenId);
+        if (token == null || !token.verify(secret, TokenType.AccessToken, tokenId, userId)) {
+            return ReplyHelper.invalidToken();
+        }
+
+        core.deleteToken(tokenId);
+
+        return ReplyHelper.success();
     }
 
     /**

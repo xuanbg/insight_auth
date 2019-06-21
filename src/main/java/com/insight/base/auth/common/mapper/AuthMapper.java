@@ -43,13 +43,15 @@ public interface AuthMapper extends Mapper {
     Application getApp(String appId);
 
     /**
-     * 查询指定ID的应用的令牌生命周期小时数
+     * 记录用户绑定的微信OpenID
      *
-     * @param appId 应用ID
-     * @return 应用的令牌生命周期小时数
+     * @param id     微信OpenID
+     * @param userId 用户ID
+     * @param appId  微信AppID
+     * @return 受影响的行数
      */
-    @Select("SELECT token_life FROM ibs_application WHERE id=#{appId};")
-    Long getTokenLife(String appId);
+    @Insert("REPLACE ucb_user_openid (id,user_id,app_id) VALUES (#{id},#{userId},#{appId});")
+    Integer addUserOpenId(@Param("id") String id, @Param("userId") String userId, @Param("appId") String appId);
 
     /**
      * 获取用户全部可用功能集合
