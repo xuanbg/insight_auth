@@ -49,7 +49,7 @@ public class AuthController extends BaseController {
     }
 
     /**
-     * 获取访问令牌
+     * 获取Token
      *
      * @param fingerprint 用户特征串
      * @param login       用户登录数据
@@ -57,6 +57,13 @@ public class AuthController extends BaseController {
      */
     @GetMapping("/v1.1/tokens")
     public Reply getToken(@RequestHeader("fingerprint") String fingerprint, LoginDTO login) {
+        // 3秒内限请求1次,每用户每日限获取Token次数200次
+        String key = Util.md5("getToken" + fingerprint);
+        boolean limited = super.isLimited(key, 3, 86400, 200);
+        if (limited) {
+            return ReplyHelper.fail("每日获取Code次数上限为200次，请合理利用");
+        }
+
         login.setFingerprint(fingerprint);
         String appId = login.getAppId();
         if (appId == null || appId.isEmpty()) {
@@ -67,7 +74,7 @@ public class AuthController extends BaseController {
     }
 
     /**
-     * 通过微信授权码获取访问令牌
+     * 通过微信授权码获取Token
      *
      * @param fingerprint 用户特征串
      * @param login       用户登录数据
@@ -85,6 +92,43 @@ public class AuthController extends BaseController {
     }
 
     /**
+     * 通过微信UnionId获取Token
+     *
+     * @param fingerprint 用户特征串
+     * @param login       用户登录数据
+     * @return Reply
+     */
+    @PostMapping("/v1.1/tokens/wechat")
+    public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDTO login) {
+        if (login == null) {
+            return ReplyHelper.fail("微信用户信息不能为空");
+        }
+
+        login.setFingerprint(fingerprint);
+
+        return service.getTokenWithUserInfo(login);
+    }
+
+    /**
+     * 验证Token
+     *
+     * @param fingerprint 用户特征串
+     * @param token       刷新令牌字符串
+     * @return Reply
+     */
+    @GetMapping("/v1.1/tokens/verify")
+    public Reply verifyToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
+        AccessToken accessToken = Json.toAccessToken(token);
+        if (accessToken == null) {
+            return ReplyHelper.invalidToken();
+        }
+
+        String hash = Util.md5(token + fingerprint);
+
+        return service.verifyToken(hash, accessToken);
+    }
+
+    /**
      * 刷新Token，延长过期时间至2小时后
      *
      * @param fingerprint 用户特征串
@@ -93,7 +137,7 @@ public class AuthController extends BaseController {
      */
     @PutMapping("/v1.1/tokens")
     public Reply refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
-        // 3秒内限请求1次,每用户每日限获取Code次数60次
+        // 3秒内限请求1次,每用户每日刷新Token次数60次
         String key = Util.md5("refreshToken" + fingerprint);
         boolean limited = super.isLimited(key, 3, 86400, 60);
         if (limited) {
@@ -122,6 +166,8 @@ public class AuthController extends BaseController {
             return ReplyHelper.invalidToken();
         }
 
-        return service.deleteToken(fingerprint, accessToken);
+        String hash = Util.md5(token + fingerprint);
+
+        return service.deleteToken(hash, accessToken);
     }
 }

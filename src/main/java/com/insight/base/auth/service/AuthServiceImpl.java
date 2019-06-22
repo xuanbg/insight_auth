@@ -4,8 +4,8 @@ import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.Token;
 import com.insight.base.auth.common.dto.LoginDTO;
 import com.insight.base.auth.common.dto.TokenPackage;
-import com.insight.base.auth.common.dto.WeChatUserInfo;
 import com.insight.base.auth.common.enums.TokenType;
+import com.insight.util.Generator;
 import com.insight.util.Json;
 import com.insight.util.Redis;
 import com.insight.util.ReplyHelper;
@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 宣炳刚
@@ -84,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 获取访问令牌
+     * 获取Token
      *
      * @param login 用户登录数据
      * @return Reply
@@ -135,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 通过微信授权码获取访问令牌
+     * 通过微信授权码获取Token
      *
      * @param login 用户登录数据
      * @return Reply
@@ -155,11 +156,12 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.fail("未取得微信用户的UnionID");
         }
 
-        // 使用微信UnionID读取缓存,如用户不存在,则返回微信用户信息
+        // 使用微信UnionID读取缓存,如用户不存在,则缓存微信用户信息(30分钟)后返回微信用户信息
         String userId = core.getUserId(unionId);
         if (userId == null || userId.isEmpty()) {
             String key = "Wechat:" + unionId;
-            Redis.set(key, Json.toJson(weChatUser));
+            Redis.set(key, Json.toJson(weChatUser), 30, TimeUnit.MINUTES);
+
             return ReplyHelper.success(weChatUser, false);
         }
 
@@ -170,41 +172,101 @@ public class AuthServiceImpl implements AuthService {
         }
 
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
-        TokenPackage tokens = core.creatorToken(code, login, userId);
+        TokenPackage tokens = core.creatorToken(Generator.uuid(), login, userId);
 
         return ReplyHelper.success(tokens);
     }
 
     /**
-     * 通过微信用户信息获取访问令牌
+     * 通过微信UnionId获取Token
      *
-     * @param info 用户信息对象实体
+     * @param login 用户登录数据
      * @return Reply
      */
     @Override
-    public Reply getTokenWithUserInfo(WeChatUserInfo info) {
-        return null;
+    public Reply getTokenWithUserInfo(LoginDTO login) {
+        // 验证账号绑定的手机号
+        String mobile = login.getAccount();
+        if (!core.verifySmsCode(0, mobile, login.getCode(), false)) {
+            return ReplyHelper.invalidParam("短信验证码错误");
+        }
+
+        // 从缓存读取微信用户信息
+        String unionId = login.getUnionId();
+        String key = "Wechat:" + unionId;
+        String json = Redis.get(key);
+        WeChatUser weChatUser = Json.toBean(json, WeChatUser.class);
+        if (weChatUser == null) {
+            return ReplyHelper.invalidParam("微信授权已过期，请重新登录");
+        }
+
+        String userId = core.getUserId(mobile);
+        if (userId == null || userId.isEmpty()) {
+            // TODO 根据微信用户信息创建用户
+
+            core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
+            TokenPackage tokens = core.creatorToken(Generator.uuid(), login, userId);
+
+            return ReplyHelper.success(tokens);
+        }
+
+        User user = core.getUser(userId);
+        if (!unionId.equals(user.getUnionId())){
+            if (login.getReplace()) {
+                user.setUnionId(unionId);
+                key = "User:" + userId;
+                Redis.set(key, "User", Json.toJson(user));
+            } else {
+                return ReplyHelper.invalidParam("手机号 " + mobile + " 的用户已绑定其他微信号，请使用正确的微信号登录");
+            }
+        }
+
+        key = "User:" + userId;
+        boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
+        if (isInvalid) {
+            return ReplyHelper.fail("用户被禁止登录");
+        }
+
+        core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
+        TokenPackage tokens = core.creatorToken(Generator.uuid(), login, userId);
+
+        return ReplyHelper.success(tokens);
     }
 
     /**
-     * 获取用户导航栏
+     * 验证访问令牌
      *
+     * @param hash        令牌哈希值
+     * @param accessToken 刷新令牌
      * @return Reply
      */
     @Override
-    public Reply getNavigators() {
-        return null;
-    }
+    public Reply verifyToken(String hash, AccessToken accessToken) {
+        String tokenId = accessToken.getId();
+        String userId = accessToken.getUserId();
 
-    /**
-     * 获取业务模块的功能(及对用户的授权情况)
-     *
-     * @param navigatorId 导航ID
-     * @return Reply
-     */
-    @Override
-    public Reply getModuleFunctions(String navigatorId) {
-        return null;
+        // 验证令牌
+        Token token = core.getToken(tokenId);
+        if (token == null || !token.verify(hash, TokenType.AccessToken, tokenId, userId)) {
+            return ReplyHelper.invalidToken();
+        }
+
+        // 验证用户
+        String key = "User:" + userId;
+        boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
+        if (isInvalid) {
+            return ReplyHelper.fail("用户被禁止登录");
+        }
+
+        long life = token.getLife();
+        Date expiry = new Date(life / 2 + System.currentTimeMillis());
+        if (token.getAutoRefresh() && expiry.after(token.getExpiryTime())) {
+            token.setExpiryTime(new Date(life + System.currentTimeMillis()));
+            token.setFailureTime(new Date(life * 12 + System.currentTimeMillis()));
+            Redis.set("Token:" + tokenId, Json.toJson(token), life, TimeUnit.MILLISECONDS);
+        }
+
+        return ReplyHelper.success();
     }
 
     /**
@@ -233,8 +295,7 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.fail("用户被禁止登录");
         }
 
-        core.deleteToken(tokenId);
-        TokenPackage tokens = core.refreshToken(token, fingerprint, userId);
+        TokenPackage tokens = core.refreshToken(token, tokenId, fingerprint, userId);
 
         return ReplyHelper.success(tokens);
     }
@@ -242,19 +303,18 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 用户账号离线
      *
-     * @param fingerprint 用户特征串
+     * @param hash        令牌哈希值
      * @param accessToken 访问令牌
      * @return Reply
      */
     @Override
-    public Reply deleteToken(String fingerprint, AccessToken accessToken) {
+    public Reply deleteToken(String hash, AccessToken accessToken) {
         String tokenId = accessToken.getId();
         String userId = accessToken.getUserId();
-        String secret = accessToken.getSecret();
 
         // 验证令牌
         Token token = core.getToken(tokenId);
-        if (token == null || !token.verify(secret, TokenType.AccessToken, tokenId, userId)) {
+        if (token == null || !token.verify(hash, TokenType.AccessToken, tokenId, userId)) {
             return ReplyHelper.invalidToken();
         }
 
@@ -271,6 +331,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply verifyPayPassword(String payPassword) {
+
         return null;
     }
 
@@ -299,6 +360,27 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply verifySmsCode(int type, String mobile, String code, Boolean isCheck) {
+        return null;
+    }
+
+    /**
+     * 获取用户导航栏
+     *
+     * @return Reply
+     */
+    @Override
+    public Reply getNavigators() {
+        return null;
+    }
+
+    /**
+     * 获取业务模块的功能(及对用户的授权情况)
+     *
+     * @param navigatorId 导航ID
+     * @return Reply
+     */
+    @Override
+    public Reply getModuleFunctions(String navigatorId) {
         return null;
     }
 }

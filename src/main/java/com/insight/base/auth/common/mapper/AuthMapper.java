@@ -136,15 +136,12 @@ public interface AuthMapper extends Mapper {
      * 根据ID查询用户数据
      *
      * @param userId 用户ID
-     * @param appId  微信AppID
      * @return 用户实体
      */
     @Results({@Result(property = "builtin", column = "is_builtin"),
             @Result(property = "invalid", column = "is_invalid")})
-    @Select("SELECT u.id,u.user_type,u.`code`,u.`name`,u.account,u.mobile,o.id AS open_id,u.email,u.head_img,u.setting,u.remark,u.is_builtin,u.is_invalid,u.created_time " +
-            "FROM ucb_user u LEFT JOIN (SELECT id,user_id,max(created_time) FROM ucb_user_openid " +
-            "WHERE app_id=#{appId} GROUP BY user_id) o ON o.user_id=u.id WHERE u.id=#{userId};")
-    User getUserWithAppId(@Param("userId") String userId, @Param("appId") String appId);
+    @Select("SELECT * FROM ucb_user WHERE id=#{userId};")
+    User getUserWithId(String userId);
 
     /**
      * 查询指定租户是否绑定了指定的应用

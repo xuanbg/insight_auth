@@ -1,7 +1,6 @@
 package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.dto.LoginDTO;
-import com.insight.base.auth.common.dto.WeChatUserInfo;
 import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.Reply;
 
@@ -22,7 +21,7 @@ public interface AuthService {
     Reply getCode(String account, int type);
 
     /**
-     * 获取访问令牌
+     * 获取Token
      *
      * @param login 用户登录数据
      * @return Reply
@@ -30,7 +29,7 @@ public interface AuthService {
     Reply getToken(LoginDTO login);
 
     /**
-     * 通过微信授权码获取访问令牌
+     * 通过微信授权码获取Token
      *
      * @param login 用户登录数据
      * @return Reply
@@ -38,27 +37,21 @@ public interface AuthService {
     Reply getTokenWithWeChat(LoginDTO login);
 
     /**
-     * 通过微信用户信息获取访问令牌
+     * 通过微信UnionId获取Token
      *
-     * @param info 用户信息对象实体
+     * @param login 用户登录数据
      * @return Reply
      */
-    Reply getTokenWithUserInfo(WeChatUserInfo info);
+    Reply getTokenWithUserInfo(LoginDTO login);
 
     /**
-     * 获取用户导航栏
+     * 验证访问令牌
      *
+     * @param hash  令牌哈希值
+     * @param token 访问令牌
      * @return Reply
      */
-    Reply getNavigators();
-
-    /**
-     * 获取业务模块的功能(及对用户的授权情况)
-     *
-     * @param navigatorId 导航ID
-     * @return Reply
-     */
-    Reply getModuleFunctions(String navigatorId);
+    Reply verifyToken(String hash, AccessToken token);
 
     /**
      * 刷新访问令牌过期时间
@@ -72,11 +65,11 @@ public interface AuthService {
     /**
      * 用户账号离线
      *
-     * @param fingerprint 用户特征串
-     * @param token       访问令牌
+     * @param hash  令牌哈希值
+     * @param token 访问令牌
      * @return Reply
      */
-    Reply deleteToken(String fingerprint, AccessToken token);
+    Reply deleteToken(String hash, AccessToken token);
 
     /**
      * 验证支付密码
@@ -107,4 +100,19 @@ public interface AuthService {
      * @return Reply
      */
     Reply verifySmsCode(int type, String mobile, String code, Boolean isCheck);
+
+    /**
+     * 获取用户导航栏
+     *
+     * @return Reply
+     */
+    Reply getNavigators();
+
+    /**
+     * 获取业务模块的功能(及对用户的授权情况)
+     *
+     * @param navigatorId 导航ID
+     * @return Reply
+     */
+    Reply getModuleFunctions(String navigatorId);
 }

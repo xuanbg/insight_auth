@@ -147,12 +147,12 @@ public class Core {
      * @return Code
      */
     public String getSmsCode(String userId, String mobile) {
-        String smsCode = generateSmsCode(4, mobile, SMS_CODE_LEFT / 60, 4);
+        String smsCode = generateSmsCode(mobile);
         String key = Util.md5(mobile + Util.md5(smsCode));
         Map<String, Object> map = new HashMap<>(16);
         map.put("code", smsCode);
 
-        Reply reply = sendMessageSyn("SMS00005", mobile, map);
+        Reply reply = sendMessageSyn(mobile, map);
         if (reply == null || !reply.getSuccess()) {
             return "短信发送失败";
         }
@@ -185,6 +185,9 @@ public class Core {
             token.setPermitFuncs(list);
         }
 
+        String key = "User:" + userId;
+        Redis.set(key, appId, code);
+
         return initPackage(token, code, fingerprint, userId, appId);
     }
 
@@ -192,17 +195,16 @@ public class Core {
      * 刷新Secret过期时间
      *
      * @param token       令牌
+     * @param tokenId     令牌ID
      * @param fingerprint 用户特征串
      * @param userId      用户ID
      * @return 令牌数据包
      */
-    public TokenPackage refreshToken(Token token, String fingerprint, String userId) {
-        token.refresh();
-        long life = token.getLife() * 12;
+    public TokenPackage refreshToken(Token token, String tokenId, String fingerprint, String userId) {
         String appId = token.getAppId();
-        String code = Generator.uuid();
+        token.refresh();
 
-        return initPackage(token, code, fingerprint, userId, appId);
+        return initPackage(token, tokenId, fingerprint, userId, appId);
     }
 
     /**
@@ -241,8 +243,6 @@ public class Core {
 
         // 更新用户缓存
         String key = "User:" + userId;
-        Redis.set(key, appId, code);
-
         String json = Redis.get(key, "User");
         UserInfo info = Json.toBean(json, UserInfo.class);
         String imgUrl = info.getHeadImg();
@@ -299,7 +299,6 @@ public class Core {
      * @return Code
      */
     private String generateCode(String userId, String key, int seconds) {
-
         String code = Generator.uuid();
         String signature = Util.md5(key + code);
 
@@ -315,34 +314,26 @@ public class Core {
     /**
      * 生成短信验证码
      *
-     * @param type    验证码类型(0:验证手机号;1:注册用户账号;2:重置密码;3:修改支付密码;4:登录验证码)
-     * @param mobile  手机号
-     * @param minutes 验证码有效时长(分钟)
-     * @param length  验证码长度
+     * @param mobile 手机号
      * @return 短信验证码
      */
-    public String generateSmsCode(int type, String mobile, int minutes, int length) {
-        String code = Generator.randomStr(length);
-        logger.info("为手机号【" + mobile + "】生成了类型为" + type + "的验证码:" + code + ",有效时间:" + minutes + "分钟.");
-        String key = "SMSCode:" + Util.md5(type + mobile + code);
-        if (type == 4) {
-            return code;
-        }
+    private String generateSmsCode(String mobile) {
+        String code = Generator.randomStr(4);
+        logger.info("为手机号【" + mobile + "】生成了类型为" + 4 + "的验证码:" + code + ",有效时间:" + 5 + "分钟.");
+        String key = "SMSCode:" + Util.md5(4 + mobile + code);
 
-        Redis.set(key, code, minutes, TimeUnit.MINUTES);
         return code;
     }
 
     /**
      * 同步发送短信
      *
-     * @param templateId 短信模板ID
-     * @param mobile     手机号
-     * @param map        模板参数Map
+     * @param mobile 手机号
+     * @param map    模板参数Map
      */
-    public Reply sendMessageSyn(String templateId, String mobile, Map<String, Object> map) {
+    private Reply sendMessageSyn(String mobile, Map<String, Object> map) {
         Sms sms = new Sms();
-        sms.setCode(templateId);
+        sms.setCode("SMS00005");
         sms.setParams(map);
         sms.setReceivers(Collections.singletonList(mobile));
 
@@ -429,11 +420,10 @@ public class Core {
      * 获取用户信息
      *
      * @param userId 用户ID
-     * @param appId  微信AppID
      * @return 用户对象实体
      */
-    public User getUser(String userId, String appId) {
-        return mapper.getUserWithAppId(userId, appId);
+    public User getUser(String userId) {
+        return mapper.getUserWithId(userId);
     }
 
     /**
@@ -464,12 +454,13 @@ public class Core {
      * 根据授权码获取用户的微信OpenID
      *
      * @param code 授权码
-     * @return 微信OpenID
+     * @return 微信用户信息
      */
     public WeChatUser getWeChatInfo(String code, String weChatAppId) {
-        Object secret = Redis.get(weChatAppId, "secret");
+        String key = "WeChatApp:" + weChatAppId;
+        String secret = Redis.get(key, "secret");
 
-        return weChatHelper.getUserInfo(code, weChatAppId, secret.toString());
+        return weChatHelper.getUserInfo(code, weChatAppId, secret);
     }
 
     /**

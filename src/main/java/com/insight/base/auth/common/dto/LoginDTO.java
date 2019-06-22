@@ -35,7 +35,7 @@ public class LoginDTO {
     private String signature;
 
     /**
-     * 微信授权码(微信登录用)
+     * 验证码/微信授权码(微信登录用)
      */
     private String code;
 
@@ -43,6 +43,16 @@ public class LoginDTO {
      * 微信appId(微信登录用)
      */
     private String weChatAppId;
+
+    /**
+     * 微信用户唯一ID(微信登录用)
+     */
+    private String unionId;
+
+    /**
+     * 是否替换用户的UnionId(微信登录用)
+     */
+    private Boolean isReplace;
 
     /**
      * 设备ID
@@ -118,6 +128,22 @@ public class LoginDTO {
 
     public void setWeChatAppId(String weChatAppId) {
         this.weChatAppId = weChatAppId;
+    }
+
+    public String getUnionId() {
+        return unionId;
+    }
+
+    public void setUnionId(String unionId) {
+        this.unionId = unionId;
+    }
+
+    public Boolean getReplace() {
+        return isReplace;
+    }
+
+    public void setReplace(Boolean replace) {
+        isReplace = replace;
     }
 
     public String getDeviceId() {

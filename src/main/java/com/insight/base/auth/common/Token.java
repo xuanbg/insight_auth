@@ -111,26 +111,21 @@ public class Token extends TokenInfo {
         if (super.getSignInOne()) {
             String appId = super.getAppId();
             String id = Redis.get("User:" + userId, appId);
-            if (!tokenId.equalsIgnoreCase(id)) {
+            if (!tokenId.equals(id)) {
                 return false;
             }
         }
 
-        Boolean passed = key.equals(type == TokenType.AccessToken ? super.getSecretKey() : super.getRefreshKey());
-        Date expiry = new Date(super.getLife() / 2 + System.currentTimeMillis());
-        if (passed && type == TokenType.AccessToken && super.getAutoRefresh() && expiry.after(super.getExpiryTime())) {
-            setExpiryTime(new Date(super.getLife() + System.currentTimeMillis()));
-            setFailureTime(new Date(super.getLife() * 12 + System.currentTimeMillis()));
-        }
+        String secret = type == TokenType.AccessToken ? super.getHash() : super.getRefreshKey();
 
-        return passed;
+        return key.equals(secret);
     }
 
     /**
      * 刷新令牌关键数据
      **/
     @JsonIgnore
-    public void refresh() {
+    void refresh() {
         setExpiryTime(new Date(super.getLife() + System.currentTimeMillis()));
         setFailureTime(new Date(super.getLife() * 12 + System.currentTimeMillis()));
         super.setSecretKey(Generator.uuid());
