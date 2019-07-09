@@ -36,7 +36,7 @@ public class AuthController extends BaseController {
      * @param type    登录类型(0:密码登录、1:验证码登录)
      * @return Reply
      */
-    @GetMapping("/v1.1/tokens/codes")
+    @GetMapping("/v1.0/tokens/codes")
     public Reply getCode(@RequestParam String account, @RequestParam(defaultValue = "0") int type) {
         // 3秒内限请求1次,每用户每日限获取Code次数200次
         String key = Util.md5("getCode" + account + type);
@@ -55,7 +55,7 @@ public class AuthController extends BaseController {
      * @param login       用户登录数据
      * @return Reply
      */
-    @GetMapping("/v1.1/tokens")
+    @GetMapping("/v1.0/tokens")
     public Reply getToken(@RequestHeader("fingerprint") String fingerprint, LoginDTO login) {
         // 3秒内限请求1次,每用户每日限获取Token次数200次
         String key = Util.md5("getToken" + fingerprint);
@@ -80,7 +80,7 @@ public class AuthController extends BaseController {
      * @param login       用户登录数据
      * @return Reply
      */
-    @GetMapping("/v1.1/tokens/wechat")
+    @GetMapping("/v1.0/tokens/withWechatCode")
     public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, LoginDTO login) {
         login.setFingerprint(fingerprint);
         String appId = login.getAppId();
@@ -98,13 +98,13 @@ public class AuthController extends BaseController {
      * @param login       用户登录数据
      * @return Reply
      */
-    @PostMapping("/v1.1/tokens/wechat")
-    public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDTO login) {
-        if (login == null) {
-            return ReplyHelper.fail("微信用户信息不能为空");
-        }
-
+    @GetMapping("/v1.0/tokens/withWechatUnionId")
+    public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, LoginDTO login) {
         login.setFingerprint(fingerprint);
+        String appId = login.getAppId();
+        if (appId == null || appId.isEmpty()) {
+            return ReplyHelper.invalidParam("appId不能为空");
+        }
 
         return service.getTokenWithUserInfo(login);
     }
@@ -116,7 +116,7 @@ public class AuthController extends BaseController {
      * @param token       刷新令牌字符串
      * @return Reply
      */
-    @GetMapping("/v1.1/tokens/verify")
+    @GetMapping("/v1.0/tokens/verify")
     public Reply verifyToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
         AccessToken accessToken = Json.toAccessToken(token);
         if (accessToken == null) {
@@ -135,7 +135,7 @@ public class AuthController extends BaseController {
      * @param token       刷新令牌字符串
      * @return Reply
      */
-    @PutMapping("/v1.1/tokens")
+    @PutMapping("/v1.0/tokens")
     public Reply refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
         // 3秒内限请求1次,每用户每日刷新Token次数60次
         String key = Util.md5("refreshToken" + fingerprint);
@@ -159,7 +159,7 @@ public class AuthController extends BaseController {
      * @param token       访问令牌字符串
      * @return Reply
      */
-    @DeleteMapping("/v1.1/tokens")
+    @DeleteMapping("/v1.0/tokens")
     public Reply deleteToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization") String token) {
         AccessToken accessToken = Json.toAccessToken(token);
         if (accessToken == null) {

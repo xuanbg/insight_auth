@@ -5,10 +5,7 @@ import com.insight.base.auth.common.Token;
 import com.insight.base.auth.common.dto.LoginDTO;
 import com.insight.base.auth.common.dto.TokenPackage;
 import com.insight.base.auth.common.enums.TokenType;
-import com.insight.util.Generator;
-import com.insight.util.Json;
-import com.insight.util.Redis;
-import com.insight.util.ReplyHelper;
+import com.insight.util.*;
 import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.Reply;
 import com.insight.util.pojo.User;
@@ -159,7 +156,7 @@ public class AuthServiceImpl implements AuthService {
         // 使用微信UnionID读取缓存,如用户不存在,则缓存微信用户信息(30分钟)后返回微信用户信息
         String userId = core.getUserId(unionId);
         if (userId == null || userId.isEmpty()) {
-            String key = "Wechat:" + unionId;
+            String key = "Wechat:" + Util.md5(unionId + weChatAppId);
             Redis.set(key, Json.toJson(weChatUser), 30, TimeUnit.MINUTES);
 
             return ReplyHelper.success(weChatUser, false);
@@ -211,7 +208,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = core.getUser(userId);
-        if (!unionId.equals(user.getUnionId())){
+        if (!unionId.equals(user.getUnionId())) {
             if (login.getReplace()) {
                 user.setUnionId(unionId);
                 key = "User:" + userId;
