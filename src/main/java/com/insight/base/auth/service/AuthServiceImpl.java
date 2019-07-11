@@ -321,6 +321,27 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
+     * 获取用户导航栏
+     *
+     * @return Reply
+     */
+    @Override
+    public Reply getNavigators() {
+        return null;
+    }
+
+    /**
+     * 获取业务模块的功能(及对用户的授权情况)
+     *
+     * @param navigatorId 导航ID
+     * @return Reply
+     */
+    @Override
+    public Reply getModuleFunctions(String navigatorId) {
+        return null;
+    }
+
+    /**
      * 验证支付密码
      *
      * @param payPassword 支付密码(MD5)
@@ -357,27 +378,6 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply verifySmsCode(int type, String mobile, String code, Boolean isCheck) {
-        return null;
-    }
-
-    /**
-     * 获取用户导航栏
-     *
-     * @return Reply
-     */
-    @Override
-    public Reply getNavigators() {
-        return null;
-    }
-
-    /**
-     * 获取业务模块的功能(及对用户的授权情况)
-     *
-     * @param navigatorId 导航ID
-     * @return Reply
-     */
-    @Override
-    public Reply getModuleFunctions(String navigatorId) {
         return null;
     }
 }

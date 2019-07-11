@@ -72,6 +72,21 @@ public interface AuthService {
     Reply deleteToken(String hash, AccessToken token);
 
     /**
+     * 获取用户导航栏
+     *
+     * @return Reply
+     */
+    Reply getNavigators();
+
+    /**
+     * 获取业务模块的功能(及对用户的授权情况)
+     *
+     * @param navigatorId 导航ID
+     * @return Reply
+     */
+    Reply getModuleFunctions(String navigatorId);
+    
+    /**
      * 验证支付密码
      *
      * @param payPassword 支付密码(MD5)
@@ -100,19 +115,4 @@ public interface AuthService {
      * @return Reply
      */
     Reply verifySmsCode(int type, String mobile, String code, Boolean isCheck);
-
-    /**
-     * 获取用户导航栏
-     *
-     * @return Reply
-     */
-    Reply getNavigators();
-
-    /**
-     * 获取业务模块的功能(及对用户的授权情况)
-     *
-     * @param navigatorId 导航ID
-     * @return Reply
-     */
-    Reply getModuleFunctions(String navigatorId);
 }
