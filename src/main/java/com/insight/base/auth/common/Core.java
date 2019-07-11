@@ -1,9 +1,6 @@
 package com.insight.base.auth.common;
 
-import com.insight.base.auth.common.dto.AuthInfo;
-import com.insight.base.auth.common.dto.LoginDTO;
-import com.insight.base.auth.common.dto.TokenPackage;
-import com.insight.base.auth.common.dto.UserInfo;
+import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.util.Generator;
 import com.insight.util.Json;
@@ -11,6 +8,7 @@ import com.insight.util.Redis;
 import com.insight.util.Util;
 import com.insight.util.encrypt.Encryptor;
 import com.insight.util.pojo.AccessToken;
+import com.insight.util.pojo.LoginInfo;
 import com.insight.util.pojo.Reply;
 import com.insight.util.pojo.User;
 import com.insight.utils.message.pojo.Sms;
@@ -407,16 +405,6 @@ public class Core {
     }
 
     /**
-     * 用户是否存在
-     *
-     * @param user User数据
-     * @return 用户是否存在
-     */
-    public Boolean userIsExisted(User user) {
-        return mapper.getExistedUserCount(user.getAccount(), user.getMobile(), user.getEmail(), user.getUnionId()) > 0;
-    }
-
-    /**
      * 获取用户信息
      *
      * @param userId 用户ID
@@ -486,5 +474,26 @@ public class Core {
      */
     public Boolean containsApp(String tenantId, String appId) {
         return mapper.containsApp(tenantId, appId) > 0;
+    }
+
+    /**
+     * 获取登录用户的导航数据
+     *
+     * @param info 用户登录信息
+     * @return 导航数据
+     */
+    public List<NavDTO> getNavigators(LoginInfo info) {
+        return mapper.getNavigators(info.getTenantId(), info.getAppId(), info.getUserId(), info.getDeptId());
+    }
+
+    /**
+     * 获取登录用户的模块功能数据
+     *
+     * @param info     用户登录信息
+     * @param moduleId 模块ID
+     * @return 模块功能数据
+     */
+    public List<FuncDTO> getModuleFunctions(LoginInfo info, String moduleId) {
+        return mapper.getModuleFunctions(info.getTenantId(), info.getDeptId(), info.getUserId(), moduleId);
     }
 }

@@ -40,7 +40,7 @@ public class AuthController extends BaseController {
     public Reply getCode(@RequestParam String account, @RequestParam(defaultValue = "0") int type) {
         // 3秒内限请求1次,每用户每日限获取Code次数200次
         String key = Util.md5("getCode" + account + type);
-        boolean limited = super.isLimited(key, 3, 86400, 200);
+        boolean limited = isLimited(key, 3, 86400, 200);
         if (limited) {
             return ReplyHelper.fail("每日获取Code次数上限为200次，请合理利用");
         }
@@ -59,7 +59,7 @@ public class AuthController extends BaseController {
     public Reply getToken(@RequestHeader("fingerprint") String fingerprint, LoginDTO login) {
         // 3秒内限请求1次,每用户每日限获取Token次数200次
         String key = Util.md5("getToken" + fingerprint);
-        boolean limited = super.isLimited(key, 3, 86400, 200);
+        boolean limited = isLimited(key, 3, 86400, 200);
         if (limited) {
             return ReplyHelper.fail("每日获取Code次数上限为200次，请合理利用");
         }
@@ -118,14 +118,9 @@ public class AuthController extends BaseController {
      */
     @GetMapping("/v1.0/tokens/verify")
     public Reply verifyToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
-        AccessToken accessToken = Json.toAccessToken(token);
-        if (accessToken == null) {
-            return ReplyHelper.invalidToken();
-        }
+        verify(token, fingerprint);
 
-        String hash = Util.md5(token + fingerprint);
-
-        return service.verifyToken(hash, accessToken);
+        return reply;
     }
 
     /**
@@ -139,7 +134,7 @@ public class AuthController extends BaseController {
     public Reply refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
         // 3秒内限请求1次,每用户每日刷新Token次数60次
         String key = Util.md5("refreshToken" + fingerprint);
-        boolean limited = super.isLimited(key, 3, 86400, 60);
+        boolean limited = isLimited(key, 3, 86400, 60);
         if (limited) {
             return ReplyHelper.fail("每日刷新Token次数上限为60次，请合理利用");
         }
@@ -161,13 +156,43 @@ public class AuthController extends BaseController {
      */
     @DeleteMapping("/v1.0/tokens")
     public Reply deleteToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization") String token) {
-        AccessToken accessToken = Json.toAccessToken(token);
-        if (accessToken == null) {
-            return ReplyHelper.invalidToken();
+        if (!verify(token, fingerprint)) {
+            return reply;
         }
 
-        String hash = Util.md5(token + fingerprint);
+        return service.deleteToken(tokenId);
+    }
 
-        return service.deleteToken(hash, accessToken);
+    /**
+     * 获取用户导航栏
+     *
+     * @param fingerprint 用户特征串
+     * @param token       访问令牌字符串
+     * @return Reply
+     */
+    @GetMapping("/v1.1/navigators")
+    public Reply getNavigators(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization") String token) {
+        if (!verify(token, fingerprint)) {
+            return reply;
+        }
+
+        return service.getNavigators(loginInfo);
+    }
+
+    /**
+     * 获取业务模块的功能(及对用户的授权情况)
+     *
+     * @param fingerprint 用户特征串
+     * @param token       访问令牌字符串
+     * @param moduleId    功能模块ID
+     * @return Reply
+     */
+    @GetMapping("/v1.1/navigators/{id}/functions")
+    public Reply getModuleFunctions(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization") String token, @PathVariable("id") String moduleId) {
+        if (!verify(token, fingerprint)) {
+            return reply;
+        }
+
+        return service.getModuleFunctions(loginInfo, moduleId);
     }
 }

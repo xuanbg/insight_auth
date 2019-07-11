@@ -1,10 +1,4 @@
-# Insight Auth 服务接口说明 v1.0.0
-
-编写说明：
-
-1. 文档版本号请与服务版本号保持一致；
-2. 概述和主要功能部分由产品或架构编写；
-3. 接口部分(三级目录)按模块(二级目录)进行归类，由开发人员按模板要求的格式编写。
+# Insight Auth 服务使用手册
 
 ## 目录
 
@@ -44,15 +38,12 @@ Auth 服务是一个依赖于用户数据的、基于Token的用户身份认证�
 
 ### 通讯方式
 
-接口支持 **HTTP/HTTPS** 协议的 **GET/POST/PUT/DELETE** 方法，支持 **URL Params** 、 **Path Variable** 或 **BODY** 传递接口参数。如使用 **BODY** 传参，则需使用 **Json** 格式的请求参数。接口 **/URL** 区分大小写，请求以及返回都使用 **UTF-8** 字符集进行编码，接口返回的数据封装为统一的 **Json** 格式。除了获取Token等公开接口外，都需要在请求头的 **Authorization** 字段承载 **AccessToken** 数据。
-
-文档中所列举的类型皆为 **Java** 语言的数据类型，其它编程语言的的数据类型请自行对应。格式详见：[**Reply**](#Reply) 数据类型。
-
-建议在HTTP请求头中设置以下参数：
+**Insight** 所有的服务都支持 **HTTP/HTTPS** 协议的访问请求，以 **URL Params** 、 **Path Variable** 或 **BODY** 传递参数。如使用 **BODY** 传参，则需使用 **JSON** 格式的请求参数。接口 **URL** 区分大小写，请求以及返回都使用 **UTF-8** 字符集进行编码，接口返回的数据封装为统一的 **JSON** 格式，详见：[**Reply**](#Reply) 数据类型。除获取Token等公开接口外，都需要在请求头的 **Authorization** 字段承载 **AccessToken** 数据。HTTP请求头参数设置如下：
 
 |参数名|参数值|
 | ------------ | ------------ |
 |Accept|application/json|
+|Authorization|AccessToken(Base64编码的字符串)|
 |Content-Type|application/json|
 
 ## Token接口
@@ -62,9 +53,9 @@ Auth 服务是一个依赖于用户数据的、基于Token的用户身份认证�
 用户可通过此接口获取一个有效时间30秒的32位随机字符串用于生成用户签名。此接口被调用时如用户数据未缓存，则缓存用户数据。同时会在缓存中保存两条过期时间为30秒的String记录。此接口的限流策略为：同一设备的调用间隔需3秒以上，每天调用上限200次。
 
 1. Key:Sign,Value:Code。Sign的算法为 **MD5(MD5(account + password) + Code)**，调用获取Token接口时使用签名验证用户的账号/密码，或手机号/验证码是否正确。如使用手机号/验证码方式登录，则Sign的算法为 **MD5(MD5(mobile + MD5(smsCode)) + Code)**。
-2. Key:Code,Value:UserId。调用获取Token接口时可凭签名得到Code，再通过Code得到用户ID。
+2. Key: Code, Value: UserId。调用获取Token接口时可凭签名得到Code，再通过Code得到用户ID。
 
->注：**password** 为明文密码的MD5值，数据库中以 **RSA** 算法加密该 **MD5** 值后存储。
+>注：**password** 为明文密码的 **MD5** 值，数据库中以 **RSA** 算法加密该 **MD5** 值后存储。
 
 请求方法：**GET**
 
@@ -542,9 +533,9 @@ public void testHttpCall() throws IOException {
 
 ### 获取模块导航
 
-接口功能描述(提供什么功能、影响什么数据、调用什么服务)
+调用该接口可获取指定应用的模块导航数据。
 
-请求方法：**method**
+请求方法：**GET**
 
 接口URL：**/base/auth**
 
@@ -791,6 +782,8 @@ public void testHttpCall() throws IOException {
 [回目录](#目录)
 
 ## DTO类型说明
+
+文档中所列举的类型皆为 **Java** 语言的数据类型，其它编程语言的的数据类型请自行对应。
 
 ### Reply
 

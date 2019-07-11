@@ -7,6 +7,7 @@ import com.insight.base.auth.common.dto.TokenPackage;
 import com.insight.base.auth.common.enums.TokenType;
 import com.insight.util.*;
 import com.insight.util.pojo.AccessToken;
+import com.insight.util.pojo.LoginInfo;
 import com.insight.util.pojo.Reply;
 import com.insight.util.pojo.User;
 import com.insight.utils.wechat.WeChatUser;
@@ -300,21 +301,11 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 用户账号离线
      *
-     * @param hash        令牌哈希值
-     * @param accessToken 访问令牌
+     * @param tokenId 令牌ID
      * @return Reply
      */
     @Override
-    public Reply deleteToken(String hash, AccessToken accessToken) {
-        String tokenId = accessToken.getId();
-        String userId = accessToken.getUserId();
-
-        // 验证令牌
-        Token token = core.getToken(tokenId);
-        if (token == null || !token.verify(hash, TokenType.AccessToken, tokenId, userId)) {
-            return ReplyHelper.invalidToken();
-        }
-
+    public Reply deleteToken(String tokenId) {
         core.deleteToken(tokenId);
 
         return ReplyHelper.success();
@@ -323,22 +314,28 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 获取用户导航栏
      *
+     * @param info 用户登录信息
      * @return Reply
      */
     @Override
-    public Reply getNavigators() {
-        return null;
+    public Reply getNavigators(LoginInfo info) {
+        if (!core.containsApp(info.getTenantId(), info.getAppId())) {
+            return ReplyHelper.invalidParam();
+        }
+
+        return ReplyHelper.success(core.getNavigators(info));
     }
 
     /**
      * 获取业务模块的功能(及对用户的授权情况)
      *
-     * @param navigatorId 导航ID
+     * @param info     用户登录信息
+     * @param moduleId 功能模块ID
      * @return Reply
      */
     @Override
-    public Reply getModuleFunctions(String navigatorId) {
-        return null;
+    public Reply getModuleFunctions(LoginInfo info, String moduleId) {
+        return ReplyHelper.success(core.getModuleFunctions(info, moduleId));
     }
 
     /**

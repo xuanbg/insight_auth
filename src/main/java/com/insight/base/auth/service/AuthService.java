@@ -2,6 +2,7 @@ package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.dto.LoginDTO;
 import com.insight.util.pojo.AccessToken;
+import com.insight.util.pojo.LoginInfo;
 import com.insight.util.pojo.Reply;
 
 /**
@@ -65,27 +66,28 @@ public interface AuthService {
     /**
      * 用户账号离线
      *
-     * @param hash  令牌哈希值
-     * @param token 访问令牌
+     * @param tokenId 令牌ID
      * @return Reply
      */
-    Reply deleteToken(String hash, AccessToken token);
+    Reply deleteToken(String tokenId);
 
     /**
      * 获取用户导航栏
      *
+     * @param info 用户登录信息
      * @return Reply
      */
-    Reply getNavigators();
+    Reply getNavigators(LoginInfo info);
 
     /**
      * 获取业务模块的功能(及对用户的授权情况)
      *
-     * @param navigatorId 导航ID
+     * @param info     用户登录信息
+     * @param moduleId 功能模块ID
      * @return Reply
      */
-    Reply getModuleFunctions(String navigatorId);
-    
+    Reply getModuleFunctions(LoginInfo info, String moduleId);
+
     /**
      * 验证支付密码
      *
