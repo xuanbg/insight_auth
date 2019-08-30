@@ -466,6 +466,9 @@ INSERT ibt_tenant_app (`id`, `tenant_id`, `app_id`) VALUES
 (replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', '9dd99dd9e6df467a8207d05ea5581125'),
 (replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', 'e46c0d4f85f24f759ad4d86b9505b1d4');
 
+-- ----------------------------
+-- 初始化应用:功能导航
+-- ----------------------------
 INSERT ibs_navigator(`id`, `parent_id`, `app_id`, `type`, `index`, `name`, `module_info`, `creator`, `creator_id`) VALUES
 ('8c95d6e097f340d6a8d93a3b5631ba39', null, '9dd99dd9e6df467a8207d05ea5581125', 1, 1, '运营中心', json_object("icon", null), '系统管理员', '00000000000000000000000000000000'),
 ('711aad8daf654bcdb3a126d70191c15c', '8c95d6e097f340d6a8d93a3b5631ba39', '9dd99dd9e6df467a8207d05ea5581125', 2, 1, '租户管理', json_object("module", 'Tenants', "file", 'Base.dll', "default", true, "icon", null), '系统管理员', '00000000000000000000000000000000'),
@@ -476,6 +479,9 @@ INSERT ibs_navigator(`id`, `parent_id`, `app_id`, `type`, `index`, `name`, `modu
 ('b13a3593c4ec4d2fb9432045846f7ff9', '4b3ac9336dd8496597e603fc7e8f5140', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 3, '用户组', json_object("module", 'Groups', "file", 'Base.dll', "default", false, "icon", null), '系统管理员', '00000000000000000000000000000000'),
 ('0e74cbb3f9d44bddbd3be3cc702d2a82', '4b3ac9336dd8496597e603fc7e8f5140', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 4, '角色权限', json_object("module", 'Roles', "file", 'Base.dll', "default", false, "icon", null), '系统管理员', '00000000000000000000000000000000');
 
+-- ----------------------------
+-- 初始化应用:系统功能
+-- ----------------------------
 INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_code`, `icon_info`, `creator`, `creator_id`) VALUES
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 0, 1, '刷新', 'getTenants', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 0, 2, '新增租户', 'newTenant', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
@@ -574,7 +580,7 @@ MODIFY COLUMN `id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT
 -- ----------------------------
 -- 初始化接口配置
 -- ---------------------------- 
-INSERT `ibi_interface`(`id`, `type`, `name`, `method`, `url`, `auth_code`, `limit_type`, `limit_gap`, `limit_cycle`, `limit_max`, `message`) VALUES 
+INSERT `ibi_interface`(`id`, `type`, `name`, `method`, `url`, `auth_code`, `is_limit`, `limit_gap`, `limit_cycle`, `limit_max`, `message`) VALUES 
 (replace(uuid(), '-', ''), 0, '获取Code', 'GET', '/base/auth/v1.0/tokens/codes', NULL, 1, 1, 86400, 360, '获取Code接口每24小时调用次数为360次,请合理使用'),
 (replace(uuid(), '-', ''), 0, '获取Token', 'POST', '/base/auth/v1.0/tokens', NULL, 1, 1, 86400, 360, '获取Token接口每24小时调用次数为360次,请合理使用'),
 (replace(uuid(), '-', ''), 0, '通过微信授权码获取Token', 'POST', '/base/auth/v1.0/tokens/withWechatCode', NULL, 1, 1, 86400, 360, '获取Token接口每24小时调用次数为360次,请合理使用'),
