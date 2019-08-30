@@ -3,10 +3,9 @@ package com.insight.base.auth.service;
 import com.insight.base.auth.common.dto.LoginDTO;
 import com.insight.util.Json;
 import com.insight.util.ReplyHelper;
-import com.insight.util.Util;
 import com.insight.util.pojo.AccessToken;
+import com.insight.util.pojo.LoginInfo;
 import com.insight.util.pojo.Reply;
-import com.insight.util.service.BaseController;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 @RestController
 @RequestMapping("/base/auth")
-public class AuthController extends BaseController {
+public class AuthController {
     private final AuthService service;
 
     /**
@@ -30,6 +29,16 @@ public class AuthController extends BaseController {
     }
 
     /**
+     * 初始化接口配置
+     *
+     * @return Reply
+     */
+    @GetMapping("/v1.0/configs")
+    public Reply initConfig(){
+        return service.initConfig();
+    }
+
+    /**
      * 获取Code
      *
      * @param account 用户登录账号
@@ -38,13 +47,6 @@ public class AuthController extends BaseController {
      */
     @GetMapping("/v1.0/tokens/codes")
     public Reply getCode(@RequestParam String account, @RequestParam(defaultValue = "0") int type) {
-        // 3秒内限请求1次,每用户每日限获取Code次数200次
-        String key = Util.md5("getCode" + account + type);
-        boolean limited = isLimited(key, 3, 86400, 200);
-        if (limited) {
-            return ReplyHelper.fail("每日获取Code次数上限为200次，请合理利用");
-        }
-
         return service.getCode(account, type);
     }
 
@@ -55,15 +57,8 @@ public class AuthController extends BaseController {
      * @param login       用户登录数据
      * @return Reply
      */
-    @GetMapping("/v1.0/tokens")
-    public Reply getToken(@RequestHeader("fingerprint") String fingerprint, LoginDTO login) {
-        // 3秒内限请求1次,每用户每日限获取Token次数200次
-        String key = Util.md5("getToken" + fingerprint);
-        boolean limited = isLimited(key, 3, 86400, 200);
-        if (limited) {
-            return ReplyHelper.fail("每日获取Code次数上限为200次，请合理利用");
-        }
-
+    @PostMapping("/v1.0/tokens")
+    public Reply getToken(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDTO login) {
         login.setFingerprint(fingerprint);
         String appId = login.getAppId();
         if (appId == null || appId.isEmpty()) {
@@ -80,8 +75,8 @@ public class AuthController extends BaseController {
      * @param login       用户登录数据
      * @return Reply
      */
-    @GetMapping("/v1.0/tokens/withWechatCode")
-    public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, LoginDTO login) {
+    @PostMapping("/v1.0/tokens/withWechatCode")
+    public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDTO login) {
         login.setFingerprint(fingerprint);
         String appId = login.getAppId();
         if (appId == null || appId.isEmpty()) {
@@ -98,8 +93,8 @@ public class AuthController extends BaseController {
      * @param login       用户登录数据
      * @return Reply
      */
-    @GetMapping("/v1.0/tokens/withWechatUnionId")
-    public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, LoginDTO login) {
+    @PostMapping("/v1.0/tokens/withWechatUnionId")
+    public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDTO login) {
         login.setFingerprint(fingerprint);
         String appId = login.getAppId();
         if (appId == null || appId.isEmpty()) {
@@ -112,15 +107,11 @@ public class AuthController extends BaseController {
     /**
      * 验证Token
      *
-     * @param fingerprint 用户特征串
-     * @param token       刷新令牌字符串
      * @return Reply
      */
-    @GetMapping("/v1.0/tokens/verify")
-    public Reply verifyToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
-        verify(token, fingerprint);
-
-        return reply;
+    @GetMapping("/v1.0/tokens/status")
+    public Reply verifyToken() {
+        return ReplyHelper.success();
     }
 
     /**
@@ -132,13 +123,6 @@ public class AuthController extends BaseController {
      */
     @PutMapping("/v1.0/tokens")
     public Reply refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
-        // 3秒内限请求1次,每用户每日刷新Token次数60次
-        String key = Util.md5("refreshToken" + fingerprint);
-        boolean limited = isLimited(key, 3, 86400, 60);
-        if (limited) {
-            return ReplyHelper.fail("每日刷新Token次数上限为60次，请合理利用");
-        }
-
         AccessToken refreshToken = Json.toAccessToken(token);
         if (refreshToken == null) {
             return ReplyHelper.invalidToken();
@@ -150,49 +134,40 @@ public class AuthController extends BaseController {
     /**
      * 用户账号离线
      *
-     * @param fingerprint 用户特征串
      * @param token       访问令牌字符串
      * @return Reply
      */
     @DeleteMapping("/v1.0/tokens")
-    public Reply deleteToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization") String token) {
-        if (!verify(token, fingerprint)) {
-            return reply;
-        }
+    public Reply deleteToken(@RequestHeader(value = "Authorization") String token) {
+        AccessToken accessToken = Json.toAccessToken(token);
 
-        return service.deleteToken(tokenId);
+        return service.deleteToken(accessToken.getId());
     }
 
     /**
      * 获取用户导航栏
      *
-     * @param fingerprint 用户特征串
-     * @param token       访问令牌字符串
+     * @param loginInfo 用户信息
      * @return Reply
      */
-    @GetMapping("/v1.1/navigators")
-    public Reply getNavigators(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization") String token) {
-        if (!verify(token, fingerprint)) {
-            return reply;
-        }
+    @GetMapping("/v1.0/navigators")
+    public Reply getNavigators(@RequestHeader("loginInfo") String loginInfo) {
+        LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
 
-        return service.getNavigators(loginInfo);
+        return service.getNavigators(info);
     }
 
     /**
      * 获取业务模块的功能(及对用户的授权情况)
      *
-     * @param fingerprint 用户特征串
-     * @param token       访问令牌字符串
-     * @param moduleId    功能模块ID
+     * @param loginInfo 用户信息
+     * @param moduleId  功能模块ID
      * @return Reply
      */
-    @GetMapping("/v1.1/navigators/{id}/functions")
-    public Reply getModuleFunctions(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization") String token, @PathVariable("id") String moduleId) {
-        if (!verify(token, fingerprint)) {
-            return reply;
-        }
+    @GetMapping("/v1.0/navigators/{id}/functions")
+    public Reply getModuleFunctions(@RequestHeader("loginInfo") String loginInfo, @PathVariable("id") String moduleId) {
+        LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
 
-        return service.getModuleFunctions(loginInfo, moduleId);
+        return service.getModuleFunctions(info, moduleId);
     }
 }

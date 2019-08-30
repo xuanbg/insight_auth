@@ -1,6 +1,6 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.util.Json;
+import com.insight.base.auth.common.entity.IconInfo;
 
 import java.io.Serializable;
 
@@ -28,11 +28,6 @@ public class FuncDTO implements Serializable {
     private Integer type;
 
     /**
-     * 功能名称
-     */
-    private String code;
-
-    /**
      * 索引,排序用
      */
     private Integer index;
@@ -43,34 +38,19 @@ public class FuncDTO implements Serializable {
     private String name;
 
     /**
-     * 功能图标(URL)
+     * 授权码
      */
-    private String icon;
+    private String authCode;
 
     /**
-     * 功能URL
+     * 功能图标信息
      */
-    private String url;
+    private IconInfo iconInfo;
 
     /**
      * 是否授权(true:已授权,false:已拒绝,null:未授权)
      */
     private Boolean permit;
-
-    /**
-     * 是否开始分组
-     */
-    private Boolean beginGroup;
-
-    /**
-     * 是否隐藏文字
-     */
-    private Boolean hideText;
-
-    @Override
-    public String toString() {
-        return Json.toJson(this);
-    }
 
     public String getId() {
         return id;
@@ -96,14 +76,6 @@ public class FuncDTO implements Serializable {
         this.type = type;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
     public Integer getIndex() {
         return index;
     }
@@ -120,20 +92,20 @@ public class FuncDTO implements Serializable {
         this.name = name;
     }
 
-    public String getIcon() {
-        return icon;
+    public String getAuthCode() {
+        return authCode;
     }
 
-    public void setIcon(String icon) {
-        this.icon = icon;
+    public void setAuthCode(String authCode) {
+        this.authCode = authCode;
     }
 
-    public String getUrl() {
-        return url;
+    public IconInfo getIconInfo() {
+        return iconInfo;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setIconInfo(IconInfo iconInfo) {
+        this.iconInfo = iconInfo;
     }
 
     public Boolean getPermit() {
@@ -142,22 +114,6 @@ public class FuncDTO implements Serializable {
 
     public void setPermit(Boolean permit) {
         this.permit = permit;
-    }
-
-    public Boolean getBeginGroup() {
-        return beginGroup;
-    }
-
-    public void setBeginGroup(Boolean beginGroup) {
-        this.beginGroup = beginGroup;
-    }
-
-    public Boolean getHideText() {
-        return hideText;
-    }
-
-    public void setHideText(Boolean hideText) {
-        this.hideText = hideText;
     }
 }
 

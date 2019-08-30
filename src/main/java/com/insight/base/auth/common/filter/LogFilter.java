@@ -72,7 +72,7 @@ public class LogFilter implements Filter {
         while (headerList.hasMoreElements()) {
             String headerName = headerList.nextElement();
             String header = request.getHeader(headerName);
-            if ("requestid".equalsIgnoreCase(headerName)){
+            if ("requestid".equalsIgnoreCase(headerName)) {
                 ThreadContext.put("requestid", header);
             }
 

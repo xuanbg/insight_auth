@@ -3,6 +3,8 @@ package com.insight.base.auth.common.mapper;
 import com.insight.base.auth.common.dto.AuthInfo;
 import com.insight.base.auth.common.dto.FuncDTO;
 import com.insight.base.auth.common.dto.NavDTO;
+import com.insight.base.auth.common.entity.IconInfo;
+import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.entity.ModuleInfo;
 import com.insight.util.common.JsonTypeHandler;
 import com.insight.util.pojo.Application;
@@ -18,6 +20,13 @@ import java.util.List;
  */
 @Mapper
 public interface AuthMapper extends Mapper {
+
+    /**
+     * 获取接口配置
+     * @return 接口配置表
+     */
+    @Select("select * from ibi_interface;")
+    List<InterfaceConfig> getConfigs();
 
     /**
      * 根据登录账号查询用户数据
@@ -61,7 +70,7 @@ public interface AuthMapper extends Mapper {
      * @param deptId   登录部门ID
      * @return Navigation对象集合
      */
-    @Results({@Result(property = "module_info", column = "module_info", javaType = ModuleInfo.class, typeHandler = JsonTypeHandler.class)})
+    @Results({@Result(property = "moduleInfo", column = "module_info", javaType = ModuleInfo.class, typeHandler = JsonTypeHandler.class)})
     @Select("SELECT * FROM (SELECT DISTINCT g.id,g.parent_id,g.`type`,g.`index`,g.`name`,g.module_info FROM ibs_navigator g " +
             "JOIN ibs_navigator m ON m.parent_id=g.id JOIN ibs_function f ON f.nav_id=m.id " +
             "JOIN (SELECT DISTINCT a.function_id FROM ibr_role_func_permit a JOIN ibv_user_roles r ON r.role_id=a.role_id " +
@@ -82,11 +91,12 @@ public interface AuthMapper extends Mapper {
      * @param moduleId 模块ID
      * @return Function对象集合
      */
-    @Select("SELECT f.id,f.nav_id,f.`type`,f.code,f.`index`,f.`name`,f.icon,f.url,a.permit,f.begin_group,f.hide_text FROM ucs_function f " +
-            "LEFT JOIN (SELECT a.function_id,min(a.permit) AS permit FROM ucr_role_func_permit a JOIN ucv_user_roles r " +
+    @Results({@Result(property = "iconInfo", column = "icon_info", javaType = IconInfo.class, typeHandler = JsonTypeHandler.class)})
+    @Select("SELECT f.id,f.nav_id,f.`type`,f.`index`,f.`name`,f.auth_code,f.icon_info,a.permit FROM ibs_function f " +
+            "LEFT JOIN (SELECT a.function_id,min(a.permit) AS permit FROM ibr_role_func_permit a JOIN ibv_user_roles r " +
             "ON r.role_id=a.role_id AND r.user_id=#{userId} AND r.tenant_id=#{tenantId} AND (r.dept_id=#{deptId} OR r.dept_id IS NULL) " +
             "GROUP BY a.function_id) a ON a.function_id=f.id WHERE f.nav_id = #{moduleId}" +
-            "AND f.is_invisible=0 ORDER BY f.`index`;")
+            "ORDER BY f.`index`;")
     List<FuncDTO> getModuleFunctions(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("deptId") String deptId, @Param("moduleId") String moduleId);
 
     /**
@@ -107,7 +117,7 @@ public interface AuthMapper extends Mapper {
      * @param appId    应用ID
      * @return 数量
      */
-    @Select("SELECT COUNT(*) FROM ucb_tenant_app WHERE tenant_id=#{tenantId} AND app_id=#{appId};")
+    @Select("SELECT COUNT(*) FROM ibt_tenant_app WHERE tenant_id=#{tenantId} AND app_id=#{appId};")
     Integer containsApp(@Param("tenantId") String tenantId, @Param("appId") String appId);
 
     /**
@@ -119,11 +129,11 @@ public interface AuthMapper extends Mapper {
      * @param deptId   登录部门ID
      * @return 授权信息集合
      */
-    @Select("SELECT f.id,f.nav_id,f.auth_code,f.interfaces,min(a.permit) permit " +
-            "FROM ucs_function f JOIN ucs_navigator n ON n.id=f.nav_id AND n.app_id=#{appId} " +
-            "JOIN ucr_role_func_permit a ON a.function_id=f.id JOIN ucv_user_roles r ON r.role_id=a.role_id " +
+    @Select("SELECT f.id,f.nav_id,f.auth_code,min(a.permit) permit " +
+            "FROM ibs_function f JOIN ibs_navigator n ON n.id=f.nav_id AND n.app_id=#{appId} " +
+            "JOIN ibr_role_func_permit a ON a.function_id=f.id JOIN ibv_user_roles r ON r.role_id=a.role_id " +
             "AND r.tenant_id=#{tenantId} AND r.user_id=#{userId} AND (r.dept_id IS NULL || r.dept_id=#{deptId}) " +
-            "WHERE f.alias IS NOT NULL OR f.interfaces IS NOT NULL " +
-            "GROUP BY f.id,f.nav_id,f.alias,f.interfaces")
+            "WHERE f.auth_code IS NOT NULL " +
+            "GROUP BY f.id,f.nav_id,f.auth_code")
     List<AuthInfo> getAuthInfos(@Param("appId") String appId, @Param("userId") String userId, @Param("tenantId") String tenantId, @Param("deptId") String deptId);
 }

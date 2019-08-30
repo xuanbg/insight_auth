@@ -4,6 +4,7 @@ import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.Token;
 import com.insight.base.auth.common.dto.LoginDTO;
 import com.insight.base.auth.common.dto.TokenPackage;
+import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.enums.TokenType;
 import com.insight.util.*;
 import com.insight.util.pojo.AccessToken;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,6 +37,24 @@ public class AuthServiceImpl implements AuthService {
      */
     public AuthServiceImpl(Core core) {
         this.core = core;
+    }
+
+    /**
+     * 初始化接口配置
+     *
+     * @return Reply
+     */
+    @Override
+    public Reply initConfig() {
+        List<InterfaceConfig> configs = core.getConfigs();
+        if (configs == null || configs.isEmpty()){
+            return ReplyHelper.fail("读取数据失败");
+        }
+
+        String json = Json.toJson(configs);
+        Redis.set("Config:Interface", json);
+
+        return ReplyHelper.success();
     }
 
     /**
@@ -123,7 +143,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String key = "User:" + userId;
-        boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
+        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "IsInvalid"));
         if (isInvalid) {
             return ReplyHelper.fail("用户被禁止登录");
         }
@@ -164,7 +184,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String key = "User:" + userId;
-        boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
+        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "IsInvalid"));
         if (isInvalid) {
             return ReplyHelper.fail("用户被禁止登录");
         }
@@ -220,7 +240,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         key = "User:" + userId;
-        boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
+        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "IsInvalid"));
         if (isInvalid) {
             return ReplyHelper.fail("用户被禁止登录");
         }
@@ -229,42 +249,6 @@ public class AuthServiceImpl implements AuthService {
         TokenPackage tokens = core.creatorToken(Generator.uuid(), login, userId);
 
         return ReplyHelper.success(tokens);
-    }
-
-    /**
-     * 验证访问令牌
-     *
-     * @param hash        令牌哈希值
-     * @param accessToken 刷新令牌
-     * @return Reply
-     */
-    @Override
-    public Reply verifyToken(String hash, AccessToken accessToken) {
-        String tokenId = accessToken.getId();
-        String userId = accessToken.getUserId();
-
-        // 验证令牌
-        Token token = core.getToken(tokenId);
-        if (token == null || !token.verify(hash, TokenType.AccessToken, tokenId, userId)) {
-            return ReplyHelper.invalidToken();
-        }
-
-        // 验证用户
-        String key = "User:" + userId;
-        boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
-        if (isInvalid) {
-            return ReplyHelper.fail("用户被禁止登录");
-        }
-
-        long life = token.getLife();
-        Date expiry = new Date(life / 2 + System.currentTimeMillis());
-        if (token.getAutoRefresh() && expiry.after(token.getExpiryTime())) {
-            token.setExpiryTime(new Date(life + System.currentTimeMillis()));
-            token.setFailureTime(new Date(life * 12 + System.currentTimeMillis()));
-            Redis.set("Token:" + tokenId, Json.toJson(token), life, TimeUnit.MILLISECONDS);
-        }
-
-        return ReplyHelper.success();
     }
 
     /**
@@ -288,7 +272,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 验证用户
         String key = "User:" + userId;
-        boolean isInvalid = Boolean.valueOf(Redis.get(key, "IsInvalid"));
+        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "IsInvalid"));
         if (isInvalid) {
             return ReplyHelper.fail("用户被禁止登录");
         }
@@ -336,45 +320,5 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getModuleFunctions(LoginInfo info, String moduleId) {
         return ReplyHelper.success(core.getModuleFunctions(info, moduleId));
-    }
-
-    /**
-     * 验证支付密码
-     *
-     * @param payPassword 支付密码(MD5)
-     * @return Reply
-     */
-    @Override
-    public Reply verifyPayPassword(String payPassword) {
-
-        return null;
-    }
-
-    /**
-     * 生成短信验证码
-     *
-     * @param type    验证码类型(0:验证手机号;1:注册用户账号;2:重置密码;3:修改支付密码;4:登录验证码;5:修改手机号)
-     * @param key     手机号或手机号+验证答案的Hash值
-     * @param minutes 验证码有效时长(分钟)
-     * @param length  验证码长度
-     * @return Reply
-     */
-    @Override
-    public Reply getSmsCode(int type, String key, int minutes, int length) {
-        return null;
-    }
-
-    /**
-     * 验证短信验证码
-     *
-     * @param type    验证码类型(0:验证手机号;1:注册用户账号;2:重置密码;3:修改支付密码;4:登录验证码;5:修改手机号)
-     * @param mobile  手机号
-     * @param code    验证码
-     * @param isCheck 是否检验模式(true:检验模式,验证后验证码不失效;false:验证模式,验证后验证码失效)
-     * @return Reply
-     */
-    @Override
-    public Reply verifySmsCode(int type, String mobile, String code, Boolean isCheck) {
-        return null;
     }
 }

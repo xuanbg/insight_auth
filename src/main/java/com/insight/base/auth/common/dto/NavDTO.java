@@ -1,5 +1,6 @@
 package com.insight.base.auth.common.dto;
 
+import com.insight.base.auth.common.entity.ModuleInfo;
 import com.insight.util.Json;
 
 import java.io.Serializable;
@@ -41,12 +42,7 @@ public class NavDTO implements Serializable {
     /**
      * 导航图标(URL)
      */
-    private String icon;
-
-    /**
-     * 导航路由URL(模块组该值为空)
-     */
-    private String url;
+    private ModuleInfo moduleInfo;
 
     /**
      * 功能集合
@@ -98,20 +94,12 @@ public class NavDTO implements Serializable {
         this.name = name;
     }
 
-    public String getIcon() {
-        return icon;
+    public ModuleInfo getModuleInfo() {
+        return moduleInfo;
     }
 
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
+    public void setModuleInfo(ModuleInfo moduleInfo) {
+        this.moduleInfo = moduleInfo;
     }
 
     public List<FuncDTO> getFunctions() {

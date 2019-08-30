@@ -23,12 +23,7 @@ public class AuthInfo implements Serializable {
     /**
      * 功能代码(多个以逗号分隔)
      */
-    private String authCodes;
-
-    /**
-     * 接口URL(多个以逗号分隔)
-     */
-    private String interfaces;
+    private String authCode;
 
     /**
      * 授权(0:拒绝;1:允许)
@@ -51,20 +46,12 @@ public class AuthInfo implements Serializable {
         this.navId = navId;
     }
 
-    public String getAuthCodes() {
-        return authCodes;
+    public String getAuthCode() {
+        return authCode;
     }
 
-    public void setAuthCodes(String authCodes) {
-        this.authCodes = authCodes;
-    }
-
-    public String getInterfaces() {
-        return interfaces;
-    }
-
-    public void setInterfaces(String interfaces) {
-        this.interfaces = interfaces;
+    public void setAuthCode(String authCode) {
+        this.authCode = authCode;
     }
 
     public Integer getPermit() {

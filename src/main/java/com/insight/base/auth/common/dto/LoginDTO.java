@@ -70,7 +70,7 @@ public class LoginDTO {
     private String fingerprint;
 
     @Override
-    public String toString(){
+    public String toString() {
         return Json.toJson(this);
     }
 
