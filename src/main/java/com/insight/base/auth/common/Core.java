@@ -176,10 +176,7 @@ public class Core {
         Token token = new Token(appId, tenantId, deptId);
         if (tenantId != null) {
             List<AuthInfo> funs = mapper.getAuthInfos(appId, userId, tenantId, deptId);
-            List<String> list = funs.stream().filter(i -> i.getPermit() > 0).map(i -> {
-                String codes = i.getAuthCode();
-                return codes;
-            }).collect(Collectors.toList());
+            List<String> list = funs.stream().filter(i -> i.getPermit() > 0).map(AuthInfo::getAuthCode).collect(Collectors.toList());
             token.setPermitFuncs(list);
         }
 
