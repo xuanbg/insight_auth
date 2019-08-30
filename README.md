@@ -14,12 +14,6 @@
 - [应用权限接口](#应用权限接口)
   - [获取模块导航](#获取模块导航)
   - [获取模块功能](#获取模块功能)
-- [验证码接口](#验证码接口)
-  - [获取短信验证码](#获取短信验证码)
-  - [校验短信验证码](#校验短信验证码)
-- [支付密码接口](#支付密码接口)
-  - [设置支付密码](#设置支付密码)
-  - [校验支付密码](#校验支付密码)
 - [DTO类型说明](#DTO类型说明)
 
 ## 概述
@@ -111,7 +105,7 @@ public void testHttpCall() throws IOException {
 
 用户可调用此接口获取访问令牌、刷新令牌、令牌过期时间、令牌失效时间和用户信息。signature的计算方法是 **MD5(MD5(account\|mobile\|email + MD5(password\|smsCode)) + Code)** 。此接口的限流策略为：同一设备的调用间隔需3秒以上，每天调用上限200次。
 
-请求方法：**GET**
+请求方法：**POST**
 
 接口URL：**/base/auth/v1.0/tokens**
 
@@ -138,20 +132,12 @@ public void testHttpCall() throws IOException {
 
 请求参数示例：
 
-```java
-@Test
-public void testHttpCall() throws IOException {
-    // given
-    HttpGet request = new HttpGet("http://127.0.0.1:6200/base/auth/v1.0/tokens?account=admin&signature=6821a080527d775101b624d632899fee&appId=9dd99dd9e6df467a8207d05ea5581125");
-    request.add("Accept", "application/json");
-
-    // when
-    HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-    // then
-    HttpEntity entity = response.getEntity();
-    String jsonString = EntityUtils.toString(entity);
-    loger.info(jsonString);
+```json
+{
+  "account": "admin",
+  "signature": "9c110b1fcd11a35e495aabbd7215eb3c",
+  "appId": "9dd99dd9e6df467a8207d05ea5581125",
+  "tenantId": "2564cd559cd340f0b81409723fd8632a"
 }
 ```
 
@@ -191,7 +177,7 @@ public void testHttpCall() throws IOException {
 
 此接口支持通过微信授权获取访问令牌、刷新令牌、令牌过期时间、令牌失效时间和用户信息。如该微信号未绑定用户，则缓存该微信号的 [微信用户信息](#WeChatUser) 30分钟并返回该数据。前端应用可使用微信用户信息中的UnionId调用 [微信UnionId获取Token](#微信UnionId获取Token) 接口，将该UnionId绑定到指定手机号的用户，并获取Token。
 
-请求方法：**GET**
+请求方法：**POST**
 
 接口URL：**/base/auth/v1.0/tokens/withWechatCode**
 
@@ -218,20 +204,11 @@ public void testHttpCall() throws IOException {
 
 请求参数示例：
 
-```java
-@Test
-public void testHttpCall() throws IOException {
-    // given
-    HttpGet request = new HttpGet("http://127.0.0.1:6200/base/auth/v1.0/tokens/withWechatCode?code=6IjQwNGEyNTdiYzM1YTQ1NDBhZWQw&weChatAppId=6821a080527d775101b624d632899fee&appId=9dd99dd9e6df467a8207d05ea5581125");
-    request.add("Accept", "application/json");
-
-    // when
-    HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-    // then
-    HttpEntity entity = response.getEntity();
-    String jsonString = EntityUtils.toString(entity);
-    loger.info(jsonString);
+```json
+{
+  "code": "6IjQwNGEyNTdiYzM1YTQ1NDBhZWQw",
+  "weChatAppId": "6821a080527d775101b624d632899fee",
+  "appId": "9dd99dd9e6df467a8207d05ea5581125"
 }
 ```
 
@@ -298,7 +275,7 @@ public void testHttpCall() throws IOException {
 3. 如允许更新绑定微信号则绑定新的 UnionId 后返回Token；
 4. 如不允许更新绑定微信号则返回用户已绑定其他微信号的错误；
 
-请求方法：**GET**
+请求方法：**POST**
 
 接口URL：**/base/auth/v1.0/tokens/withWechatUnionId**
 
@@ -326,20 +303,11 @@ public void testHttpCall() throws IOException {
 
 请求参数示例：
 
-```java
-@Test
-public void testHttpCall() throws IOException {
-    // given
-    HttpGet request = new HttpGet("http://127.0.0.1:6200/base/auth/v1.0/tokens/withWechatUnionId?unionId=6IjQwNGEyNTdiYzM1YTQ1NDBhZWQw&weChatAppId=6821a080527d775101b624d632899fee&appId=9dd99dd9e6df467a8207d05ea5581125");
-    request.add("Accept", "application/json");
-
-    // when
-    HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-    // then
-    HttpEntity entity = response.getEntity();
-    String jsonString = EntityUtils.toString(entity);
-    loger.info(jsonString);
+```json
+{
+  "unionId": "6IjQwNGEyNTdiYzM1YTQ1NDBhZWQw",
+  "weChatAppId": "6821a080527d775101b624d632899fee",
+  "appId": "9dd99dd9e6df467a8207d05ea5581125"
 }
 ```
 
@@ -381,7 +349,7 @@ public void testHttpCall() throws IOException {
 
 请求方法：**GET**
 
-接口URL：**/base/auth/v1.0/tokens/verify**
+接口URL：**/base/auth/v1.0/tokens/status**
 
 请求参数示例：
 
@@ -435,26 +403,6 @@ public void testHttpCall() throws IOException {
 |Integer|failure|令牌失效时间(毫秒)|
 |[UserInfo](#UserInfo)|userInfo|用户信息|
 
-请求参数示例：
-
-```java
-@Test
-public void testHttpCall() throws IOException {
-    // given
-    HttpPut request = new HttpPut("http://127.0.0.1:6200/base/auth/v1.0/tokens");
-    request.add("Accept", "application/json");
-    request.add("Authorization","eyJpZCI6ImQxNzUwMjA5NzRlYjQ1MzJiY2U3MmY0NWRiZTkzMWYyIiwidXNlcklkIjoiMDAwMDAwMDAwMDAMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiY2FhZjc2NDRjMmFlNGY2Tg1ZGFmYWM5ZDIwOGUyYjIifQ==");
-
-    // when
-    HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-    // then
-    HttpEntity entity = response.getEntity();
-    String jsonString = EntityUtils.toString(entity);
-    loger.info(jsonString);
-}
-```
-
 返回结果示例：
 
 ```json
@@ -495,26 +443,6 @@ public void testHttpCall() throws IOException {
 
 接口URL：**/base/auth/v1.0/tokens**
 
-请求参数示例：
-
-```java
-@Test
-public void testHttpCall() throws IOException {
-    // given
-    HttpDelete request = new HttpDelete("http://127.0.0.1:6200/base/auth/v1.0/tokens");
-    request.add("Accept", "application/json");
-    request.add("Authorization","eyJpZCI6ImZjYzFjZjVmZmE3ODQ4NTI4MTNjZjk4MTJiODkyMzliIiwidXNlcklkIjoiMDAwMDAwMDAwMDAMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiY2U1MGFlNDM5YTM0NDhhGEwY2E2N2M3NjRkMWE1N2UifQ==");
-
-    // when
-    HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-    // then
-    HttpEntity entity = response.getEntity();
-    String jsonString = EntityUtils.toString(entity);
-    loger.info(jsonString);
-}
-```
-
 返回结果示例：
 
 ```json
@@ -537,36 +465,75 @@ public void testHttpCall() throws IOException {
 
 请求方法：**GET**
 
-接口URL：**/base/auth**
-
-请求参数如下：
-
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
-|||||
+接口URL：**/base/auth/v1.0/navigators**
 
 接口返回数据类型：
 
 |类型|属性|属性说明|
 | ------------ | ------------ | ------------ |
-||||
-
-请求参数示例：
-
-```json
-{
-}
-```
+|String|id|导航ID|
+|String|parentId|父级导航ID|
+|Integer|type|导航级别|
+|Integer|index|索引,排序用|
+|String|name|导航名称|
+|[ModuleInfo](#ModuleInfo)|moduleInfo|模块信息|
+|List\<[FuncDTO](#FuncDTO)>|functions|功能集合|
 
 返回结果示例：
 
 ```json
 {
-    "success":true,
-    "code":200,
-    "message":"请求成功",
-    "data":{},
-    "option":null
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": [
+    {
+      "id": "8c95d6e097f340d6a8d93a3b5631ba39",
+      "parentId": null,
+      "type": 1,
+      "index": 1,
+      "name": "运营中心",
+      "moduleInfo": {
+        "icon": null,
+        "iconUrl": null,
+        "module": null,
+        "file": null,
+        "default": null
+      },
+      "functions": null
+    },
+    {
+      "id": "711aad8daf654bcdb3a126d70191c15c",
+      "parentId": "8c95d6e097f340d6a8d93a3b5631ba39",
+      "type": 2,
+      "index": 1,
+      "name": "租户管理",
+      "moduleInfo": {
+        "icon": null,
+        "iconUrl": null,
+        "module": "Tenants",
+        "file": "Base.dll",
+        "default": true
+      },
+      "functions": null
+    },
+    {
+      "id": "a65a562582bb489ea729bb0838bbeff8",
+      "parentId": "8c95d6e097f340d6a8d93a3b5631ba39",
+      "type": 2,
+      "index": 2,
+      "name": "应用管理",
+      "moduleInfo": {
+        "icon": null,
+        "iconUrl": null,
+        "module": "Apps",
+        "file": "Base.dll",
+        "default": false
+      },
+      "functions": null
+    }
+  ],
+  "option": null
 }
 ```
 
@@ -578,204 +545,127 @@ public void testHttpCall() throws IOException {
 
 请求方法：**method**
 
-接口URL：**/base/auth**
+接口URL：**/base/auth/v1.0/navigators/{id}/functions**
 
 请求参数如下：
 
 |类型|属性|是否必需|属性说明|
 | ------------ | ------------ | ------------ | ------------ |
-|||||
+|String|id|是|模块ID(二级导航ID)|
 
 接口返回数据类型：
 
 |类型|属性|属性说明|
 | ------------ | ------------ | ------------ |
-||||
-
-请求参数示例：
-
-```json
-{
-}
-```
-
-返回结果示例：
-
-```json
-{
-    "success":true,
-    "code":200,
-    "message":"请求成功",
-    "data":{},
-    "option":null
-}
-```
-
-[回目录](#目录)
-
-## 验证码接口
-
-### 获取短信验证码
-
-接口功能描述(提供什么功能、影响什么数据、调用什么服务)
-
-请求方法：**method**
-
-接口URL：**/base/auth**
-
-请求参数如下：
-
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
-|||||
-
-接口返回数据类型：
-
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
-||||
-
-请求参数示例：
-
-```json
-{
-}
-```
+|String|id|功能ID|
+|String|navId|导航ID|
+|Integer|type|节点类型|
+|Integer|index|索引,排序用|
+|String|name|功能名称|
+|String|authCode|授权码|
+|[IconInfo](#IconInfo)|iconInfo|功能图标信息|
+|Boolean|permit|是否授权(true:已授权,false:已拒绝,null:未授权)|
 
 返回结果示例：
 
 ```json
 {
-    "success":true,
-    "code":200,
-    "message":"请求成功",
-    "data":{},
-    "option":null
-}
-```
-
-[回目录](#目录)
-
-### 校验短信验证码
-
-接口功能描述(提供什么功能、影响什么数据、调用什么服务)
-
-请求方法：**method**
-
-接口URL：**/base/auth**
-
-请求参数如下：
-
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
-|||||
-
-接口返回数据类型：
-
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
-||||
-
-请求参数示例：
-
-```json
-{
-}
-```
-
-返回结果示例：
-
-```json
-{
-    "success":true,
-    "code":200,
-    "message":"请求成功",
-    "data":{},
-    "option":null
-}
-```
-
-[回目录](#目录)
-
-## 支付密码接口
-
-### 设置支付密码
-
-接口功能描述(提供什么功能、影响什么数据、调用什么服务)
-
-请求方法：**method**
-
-接口URL：**/base/auth**
-
-请求参数如下：
-
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
-|||||
-
-接口返回数据类型：
-
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
-||||
-
-请求参数示例：
-
-```json
-{
-}
-```
-
-返回结果示例：
-
-```json
-{
-    "success":true,
-    "code":200,
-    "message":"请求成功",
-    "data":{},
-    "option":null
-}
-```
-
-[回目录](#目录)
-
-### 校验支付密码
-
-接口功能描述(提供什么功能、影响什么数据、调用什么服务)
-
-请求方法：**method**
-
-接口URL：**/base/auth**
-
-请求参数如下：
-
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
-|||||
-
-接口返回数据类型：
-
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
-||||
-
-请求参数示例：
-
-```json
-{
-}
-```
-
-返回结果示例：
-
-```json
-{
-    "success":true,
-    "code":200,
-    "message":"请求成功",
-    "data":{},
-    "option":null
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": [
+    {
+      "id": "bfb02029cb0411e9bbd40242ac110008",
+      "navId": "711aad8daf654bcdb3a126d70191c15c",
+      "type": 0,
+      "index": 1,
+      "name": "刷新",
+      "authCode": "getTenants",
+      "iconInfo": {
+        "icon": null,
+        "iconUrl": null,
+        "beginGroup": true,
+        "hideText": true
+      },
+      "permit": null
+    },
+    {
+      "id": "bfb02084cb0411e9bbd40242ac110008",
+      "navId": "711aad8daf654bcdb3a126d70191c15c",
+      "type": 0,
+      "index": 2,
+      "name": "新增租户",
+      "authCode": "newTenant",
+      "iconInfo": {
+        "icon": null,
+        "iconUrl": null,
+        "beginGroup": true,
+        "hideText": false
+      },
+      "permit": null
+    },
+    {
+      "id": "bfb020cfcb0411e9bbd40242ac110008",
+      "navId": "711aad8daf654bcdb3a126d70191c15c",
+      "type": 1,
+      "index": 3,
+      "name": "编辑",
+      "authCode": "editTenant",
+      "iconInfo": {
+        "icon": null,
+        "iconUrl": null,
+        "beginGroup": false,
+        "hideText": false
+      },
+      "permit": null
+    },
+    {
+      "id": "bfb021b2cb0411e9bbd40242ac110008",
+      "navId": "711aad8daf654bcdb3a126d70191c15c",
+      "type": 1,
+      "index": 4,
+      "name": "删除",
+      "authCode": "deleteTenant",
+      "iconInfo": {
+        "icon": null,
+        "iconUrl": null,
+        "beginGroup": false,
+        "hideText": false
+      },
+      "permit": null
+    },
+    {
+      "id": "bfb021fecb0411e9bbd40242ac110008",
+      "navId": "711aad8daf654bcdb3a126d70191c15c",
+      "type": 1,
+      "index": 5,
+      "name": "绑定应用",
+      "authCode": "bindApp",
+      "iconInfo": {
+        "icon": null,
+        "iconUrl": null,
+        "beginGroup": true,
+        "hideText": false
+      },
+      "permit": null
+    },
+    {
+      "id": "bfb02282cb0411e9bbd40242ac110008",
+      "navId": "711aad8daf654bcdb3a126d70191c15c",
+      "type": 1,
+      "index": 6,
+      "name": "续租",
+      "authCode": "extend",
+      "iconInfo": {
+        "icon": null,
+        "iconUrl": null,
+        "beginGroup": false,
+        "hideText": false
+      },
+      "permit": null
+    }
+  ],
+  "option": null
 }
 ```
 
@@ -829,5 +719,43 @@ public void testHttpCall() throws IOException {
 |String|headimgurl|微信头像URL|
 |List\<String>|privilege|微信用户特权|
 |String|language|用户语言|
+
+[回目录](#目录)
+
+### ModuleInfo
+
+|类型|属性|属性说明|
+| ------------ | ------------ | ------------ |
+|String|icon|图标|
+|String|iconUrl|图标路径|
+|String|module|模块名称|
+|String|file|模块文件|
+|Boolean|isDefault|是否启动模块|
+
+[回目录](#目录)
+
+### FuncDTO
+
+|类型|属性|属性说明|
+| ------------ | ------------ | ------------ |
+|String|id|功能ID|
+|String|navId|导航ID|
+|Integer|type|节点类型|
+|Integer|index|索引,排序用|
+|String|name|功能名称|
+|String|authCode|授权码|
+|[IconInfo](#IconInfo)|iconInfo|功能图标信息|
+|Boolean|permit|是否授权(true:已授权,false:已拒绝,null:未授权)|
+
+[回目录](#目录)
+
+### IconInfo
+
+|类型|属性|属性说明|
+| ------------ | ------------ | ------------ |
+|String|icon|图标|
+|String|iconUrl|图标路径|
+|Boolean|isBeginGroup|是否开始分组|
+|Boolean|isHideText|是否隐藏文字|
 
 [回目录](#目录)

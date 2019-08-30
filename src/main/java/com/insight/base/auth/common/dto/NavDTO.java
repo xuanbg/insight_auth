@@ -40,7 +40,7 @@ public class NavDTO implements Serializable {
     private String name;
 
     /**
-     * 导航图标(URL)
+     * 模块信息
      */
     private ModuleInfo moduleInfo;
 
