@@ -11,7 +11,7 @@ import java.util.List;
  * @date 2018/4/20
  * @remark 导航数据类
  */
-public class NavDTO implements Serializable {
+public class NavDto implements Serializable {
     private static final long serialVersionUID = -1L;
 
     /**
@@ -47,7 +47,7 @@ public class NavDTO implements Serializable {
     /**
      * 功能集合
      */
-    private List<FuncDTO> functions;
+    private List<FuncDto> functions;
 
     @Override
     public String toString() {
@@ -102,11 +102,11 @@ public class NavDTO implements Serializable {
         this.moduleInfo = moduleInfo;
     }
 
-    public List<FuncDTO> getFunctions() {
+    public List<FuncDto> getFunctions() {
         return functions;
     }
 
-    public void setFunctions(List<FuncDTO> functions) {
+    public void setFunctions(List<FuncDto> functions) {
         this.functions = functions;
     }
 }

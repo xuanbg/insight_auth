@@ -1,6 +1,7 @@
 package com.insight.base.auth.common.dto;
 
 import com.insight.base.auth.common.entity.IconInfo;
+import com.insight.util.Json;
 
 import java.io.Serializable;
 
@@ -9,7 +10,7 @@ import java.io.Serializable;
  * @date 2018/4/20
  * @remark 功能及权限数据类
  */
-public class FuncDTO implements Serializable {
+public class FuncDto implements Serializable {
     private static final long serialVersionUID = -1L;
 
     /**
@@ -51,6 +52,11 @@ public class FuncDTO implements Serializable {
      * 是否授权(true:已授权,false:已拒绝,null:未授权)
      */
     private Boolean permit;
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
+    }
 
     public String getId() {
         return id;

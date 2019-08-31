@@ -1,6 +1,6 @@
 package com.insight.base.auth.service;
 
-import com.insight.base.auth.common.dto.LoginDTO;
+import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.util.Json;
 import com.insight.util.ReplyHelper;
 import com.insight.util.pojo.AccessToken;
@@ -58,7 +58,7 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens")
-    public Reply getToken(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDTO login) {
+    public Reply getToken(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String appId = login.getAppId();
         if (appId == null || appId.isEmpty()) {
@@ -76,7 +76,7 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens/withWechatCode")
-    public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDTO login) {
+    public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String appId = login.getAppId();
         if (appId == null || appId.isEmpty()) {
@@ -94,7 +94,7 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens/withWechatUnionId")
-    public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDTO login) {
+    public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String appId = login.getAppId();
         if (appId == null || appId.isEmpty()) {

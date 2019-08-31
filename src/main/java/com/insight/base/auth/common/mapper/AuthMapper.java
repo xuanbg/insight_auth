@@ -1,8 +1,8 @@
 package com.insight.base.auth.common.mapper;
 
 import com.insight.base.auth.common.dto.AuthInfo;
-import com.insight.base.auth.common.dto.FuncDTO;
-import com.insight.base.auth.common.dto.NavDTO;
+import com.insight.base.auth.common.dto.FuncDto;
+import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.entity.IconInfo;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.entity.ModuleInfo;
@@ -80,7 +80,7 @@ public interface AuthMapper extends Mapper {
             "JOIN (SELECT DISTINCT a.function_id FROM ibr_role_func_permit a JOIN ibv_user_roles r ON r.role_id=a.role_id " +
             "WHERE user_id=#{userId} AND tenant_id=#{tenantId} AND (dept_id=#{deptId} OR dept_id IS NULL) GROUP BY a.function_id " +
             "HAVING min(a.permit)> 0) a ON a.function_id=f.id WHERE m.app_id=#{appId}) l ORDER BY l.parent_id,l.`index`;")
-    List<NavDTO> getNavigators(@Param("tenantId") String tenantId, @Param("appId") String appId, @Param("userId") String userId, @Param("deptId") String deptId);
+    List<NavDto> getNavigators(@Param("tenantId") String tenantId, @Param("appId") String appId, @Param("userId") String userId, @Param("deptId") String deptId);
 
     /**
      * 获取指定模块的全部可用功能集合及对指定用户的授权情况
@@ -97,7 +97,7 @@ public interface AuthMapper extends Mapper {
             "ON r.role_id=a.role_id AND r.user_id=#{userId} AND r.tenant_id=#{tenantId} AND (r.dept_id=#{deptId} OR r.dept_id IS NULL) " +
             "GROUP BY a.function_id) a ON a.function_id=f.id WHERE f.nav_id = #{moduleId}" +
             "ORDER BY f.`index`;")
-    List<FuncDTO> getModuleFunctions(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("deptId") String deptId, @Param("moduleId") String moduleId);
+    List<FuncDto> getModuleFunctions(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("deptId") String deptId, @Param("moduleId") String moduleId);
 
     /**
      * 根据ID查询用户数据

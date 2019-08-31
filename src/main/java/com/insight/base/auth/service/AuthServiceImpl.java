@@ -2,7 +2,8 @@ package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.Token;
-import com.insight.base.auth.common.dto.LoginDTO;
+import com.insight.base.auth.common.client.MessageClient;
+import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenPackage;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.enums.TokenType;
@@ -29,14 +30,16 @@ import java.util.concurrent.TimeUnit;
 public class AuthServiceImpl implements AuthService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Core core;
+    private final MessageClient client;
 
     /**
      * 构造函数
      *
      * @param core Core
      */
-    public AuthServiceImpl(Core core) {
+    public AuthServiceImpl(Core core, MessageClient client) {
         this.core = core;
+        this.client = client;
     }
 
     /**
@@ -47,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply initConfig() {
         List<InterfaceConfig> configs = core.getConfigs();
-        if (configs == null || configs.isEmpty()){
+        if (configs == null || configs.isEmpty()) {
             return ReplyHelper.fail("读取数据失败");
         }
 
@@ -94,9 +97,6 @@ public class AuthServiceImpl implements AuthService {
 
             User user = Json.toBean(json, User.class);
             code = core.getSmsCode(userId, user.getMobile());
-            if ("短信发送失败".equals(code)) {
-                return ReplyHelper.fail(code.toString());
-            }
         }
 
         return ReplyHelper.success(code);
@@ -109,7 +109,7 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public Reply getToken(LoginDTO login) {
+    public Reply getToken(LoginDto login) {
         // 验证签名
         String code = core.getCode(login.getSignature());
         if (code == null) {
@@ -160,7 +160,7 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public Reply getTokenWithWeChat(LoginDTO login) {
+    public Reply getTokenWithWeChat(LoginDto login) {
         String code = login.getCode();
         String weChatAppId = login.getWeChatAppId();
 
@@ -202,10 +202,12 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public Reply getTokenWithUserInfo(LoginDTO login) {
+    public Reply getTokenWithUserInfo(LoginDto login) {
         // 验证账号绑定的手机号
         String mobile = login.getAccount();
-        if (!core.verifySmsCode(0, mobile, login.getCode(), false)) {
+        String verifyKey = Util.md5(0 + mobile + login.getCode());
+        Reply reply = client.verifySmsCode(verifyKey);
+        if (!reply.getSuccess()) {
             return ReplyHelper.invalidParam("短信验证码错误");
         }
 

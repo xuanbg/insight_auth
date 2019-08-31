@@ -1,6 +1,6 @@
 package com.insight.base.auth.service;
 
-import com.insight.base.auth.common.dto.LoginDTO;
+import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.LoginInfo;
 import com.insight.util.pojo.Reply;
@@ -34,7 +34,7 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    Reply getToken(LoginDTO login);
+    Reply getToken(LoginDto login);
 
     /**
      * 通过微信授权码获取Token
@@ -42,7 +42,7 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    Reply getTokenWithWeChat(LoginDTO login);
+    Reply getTokenWithWeChat(LoginDto login);
 
     /**
      * 通过微信UnionId获取Token
@@ -50,7 +50,7 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    Reply getTokenWithUserInfo(LoginDTO login);
+    Reply getTokenWithUserInfo(LoginDto login);
 
     /**
      * 刷新访问令牌过期时间

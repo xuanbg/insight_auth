@@ -1,5 +1,6 @@
 package com.insight.base.auth.common;
 
+import com.insight.base.auth.common.client.MessageClient;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.mapper.AuthMapper;
@@ -8,11 +9,7 @@ import com.insight.util.Json;
 import com.insight.util.Redis;
 import com.insight.util.Util;
 import com.insight.util.encrypt.Encryptor;
-import com.insight.util.pojo.AccessToken;
-import com.insight.util.pojo.LoginInfo;
-import com.insight.util.pojo.Reply;
-import com.insight.util.pojo.User;
-import com.insight.utils.message.pojo.Sms;
+import com.insight.util.pojo.*;
 import com.insight.utils.wechat.WeChatHelper;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
@@ -20,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +33,7 @@ public class Core {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final AuthMapper mapper;
     private final WeChatHelper weChatHelper;
+    private final MessageClient client;
 
     /**
      * RSA私钥
@@ -49,6 +46,11 @@ public class Core {
     private static final int GENERAL_CODE_LEFT = 30;
 
     /**
+     * 登录短信验证码长度(6位)
+     */
+    private static final int SMS_CODE_LENGTH = 6;
+
+    /**
      * 登录短信验证码有效时间(300秒)
      */
     private static final int SMS_CODE_LEFT = 300;
@@ -58,10 +60,12 @@ public class Core {
      *
      * @param mapper       AuthMapper
      * @param weChatHelper WeChatHelper
+     * @param client       MessageClient
      */
-    public Core(AuthMapper mapper, WeChatHelper weChatHelper) {
+    public Core(AuthMapper mapper, WeChatHelper weChatHelper, MessageClient client) {
         this.mapper = mapper;
         this.weChatHelper = weChatHelper;
+        this.client = client;
     }
 
     /**
@@ -146,15 +150,17 @@ public class Core {
      * @return Code
      */
     public String getSmsCode(String userId, String mobile) {
-        String smsCode = generateSmsCode(mobile);
-        String key = Util.md5(mobile + Util.md5(smsCode));
-        Map<String, Object> map = new HashMap<>(16);
+        String smsCode = Generator.randomStr(SMS_CODE_LENGTH);
+        Map<String, Object> map = new HashMap<>(4);
         map.put("code", smsCode);
+        map.put("minutes", SMS_CODE_LEFT);
 
-        Reply reply = sendMessageSyn(mobile, map);
-        if (reply == null || !reply.getSuccess()) {
-            return "短信发送失败";
-        }
+        Sms sms = new Sms();
+        sms.setMobiles(mobile);
+        sms.setScene("0001");
+        sms.setParam(map);
+        Reply reply = client.sendMessage(sms);
+        String key = Util.md5(mobile + Util.md5(smsCode));
 
         return generateCode(userId, key, SMS_CODE_LEFT);
     }
@@ -167,7 +173,7 @@ public class Core {
      * @param userId 用户ID
      * @return 令牌数据包
      */
-    public TokenPackage creatorToken(String code, LoginDTO login, String userId) {
+    public TokenPackage creatorToken(String code, LoginDto login, String userId) {
         String appId = login.getAppId();
         String tenantId = login.getTenantId();
         String deptId = login.getDeptId();
@@ -307,67 +313,6 @@ public class Core {
     }
 
     /**
-     * 生成短信验证码
-     *
-     * @param mobile 手机号
-     * @return 短信验证码
-     */
-    private String generateSmsCode(String mobile) {
-        String code = Generator.randomStr(4);
-        logger.info("为手机号【" + mobile + "】生成了类型为" + 4 + "的验证码:" + code + ",有效时间:" + 5 + "分钟.");
-        String key = "SMSCode:" + Util.md5(4 + mobile + code);
-
-        return code;
-    }
-
-    /**
-     * 同步发送短信
-     *
-     * @param mobile 手机号
-     * @param map    模板参数Map
-     */
-    private Reply sendMessageSyn(String mobile, Map<String, Object> map) {
-        Sms sms = new Sms();
-        sms.setCode("SMS00005");
-        sms.setParams(map);
-        sms.setReceivers(Collections.singletonList(mobile));
-
-        return null;
-    }
-
-    /**
-     * 验证短信验证码
-     *
-     * @param type   验证码类型(0:验证手机号;1:注册用户账号;2:重置密码;3:修改支付密码;4:登录验证码)
-     * @param mobile 手机号
-     * @param code   验证码
-     * @return 是否通过验证
-     */
-    public Boolean verifySmsCode(int type, String mobile, String code) {
-        return verifySmsCode(type, mobile, code, false);
-    }
-
-    /**
-     * 验证短信验证码
-     *
-     * @param type    验证码类型(0:验证手机号;1:注册用户账号;2:重置密码;3:修改支付密码;4:登录验证码)
-     * @param mobile  手机号
-     * @param code    验证码
-     * @param isCheck 是否检验模式(true:检验模式,验证后验证码不失效;false:验证模式,验证后验证码失效)
-     * @return 是否通过验证
-     */
-    public Boolean verifySmsCode(int type, String mobile, String code, Boolean isCheck) {
-        String key = "SMSCode:" + Util.md5(type + mobile + code);
-        Boolean isExisted = Redis.hasKey(key);
-        if (!isExisted || isCheck) {
-            return isExisted;
-        }
-
-        Redis.deleteKey(key);
-        return true;
-    }
-
-    /**
      * 通过签名获取Code
      *
      * @param sign 签名
@@ -479,7 +424,7 @@ public class Core {
      * @param info 用户登录信息
      * @return 导航数据
      */
-    public List<NavDTO> getNavigators(LoginInfo info) {
+    public List<NavDto> getNavigators(LoginInfo info) {
         return mapper.getNavigators(info.getTenantId(), info.getAppId(), info.getUserId(), info.getDeptId());
     }
 
@@ -490,7 +435,7 @@ public class Core {
      * @param moduleId 模块ID
      * @return 模块功能数据
      */
-    public List<FuncDTO> getModuleFunctions(LoginInfo info, String moduleId) {
+    public List<FuncDto> getModuleFunctions(LoginInfo info, String moduleId) {
         return mapper.getModuleFunctions(info.getTenantId(), info.getDeptId(), info.getUserId(), moduleId);
     }
 

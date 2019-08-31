@@ -7,7 +7,7 @@ import com.insight.util.Json;
  * @date 2017/9/7
  * @remark 登录数据类
  */
-public class LoginDTO {
+public class LoginDto {
 
     /**
      * 应用ID
