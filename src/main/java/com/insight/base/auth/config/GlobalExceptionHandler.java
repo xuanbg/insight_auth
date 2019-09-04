@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -68,9 +67,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public Reply handleIllegalArgumentException(IllegalArgumentException e) {
-        String msg = "不合法的参数: " + e.getMessage();
+        logger.info("不合法的参数: {}", e.getMessage());
 
-        return ReplyHelper.invalidParam(msg);
+        return ReplyHelper.invalidParam("不合法的参数");
     }
 
     /**
@@ -81,9 +80,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ServletRequestBindingException.class)
     public Reply handleServletRequestBindingException(ServletRequestBindingException e) {
-        String msg = "参数绑定错误: " + e.getMessage();
+        logger.info("参数绑定错误: {}", e.getMessage());
 
-        return ReplyHelper.invalidParam(msg);
+        return ReplyHelper.invalidParam("参数绑定错误");
     }
 
     /**
@@ -94,9 +93,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public Reply handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        String msg = "参数解析失败: " + e.getMessage();
+        logger.info("参数解析失败: {}", e.getMessage());
 
-        return ReplyHelper.invalidParam(msg);
+        return ReplyHelper.invalidParam("参数解析失败");
     }
 
     /**
@@ -107,11 +106,14 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Reply handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        BindingResult result = e.getBindingResult();
-        FieldError error = result.getFieldError();
-        String msg = "参数解析失败: " + Objects.requireNonNull(error).getField();
+        FieldError error = e.getBindingResult().getFieldError();
+        if (error == null) {
+            logger.info("参数解析失败: {}", e.getMessage());
 
-        return ReplyHelper.invalidParam(msg);
+            return ReplyHelper.invalidParam("参数解析失败");
+        }
+
+        return ReplyHelper.invalidParam("参数解析失败: " + error.getDefaultMessage());
     }
 
     /**
@@ -122,11 +124,14 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BindException.class)
     public Reply handleBindException(BindException e) {
-        BindingResult result = e.getBindingResult();
-        FieldError error = result.getFieldError();
-        String msg = "参数绑定失败: " + Objects.requireNonNull(error).getField();
+        FieldError error = e.getBindingResult().getFieldError();
+        if (error == null) {
+            logger.info("参数绑定失败: {}", e.getMessage());
 
-        return ReplyHelper.invalidParam(msg);
+            return ReplyHelper.invalidParam("参数绑定失败");
+        }
+
+        return ReplyHelper.invalidParam("参数绑定失败: " + error.getDefaultMessage());
     }
 
     /**
@@ -137,9 +142,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public Reply handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
-        String msg = "不支持当前媒体类型: " + e.getMessage();
+        logger.info("不支持当前媒体类型: {}", e.getMessage());
 
-        return ReplyHelper.invalidParam(msg);
+        return ReplyHelper.invalidParam("不支持当前媒体类型");
     }
 
     /**
@@ -150,9 +155,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(UnexpectedTypeException.class)
     public Reply handleUnexpectedTypeException(UnexpectedTypeException e) {
-        String msg = "类型不匹配: " + e.getMessage();
+        logger.info("参数类型不匹配: {}", e.getMessage());
 
-        return ReplyHelper.fail(msg);
+        return ReplyHelper.invalidParam("参数类型不匹配");
     }
 
     /**

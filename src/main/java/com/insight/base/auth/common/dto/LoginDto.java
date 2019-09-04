@@ -2,6 +2,8 @@ package com.insight.base.auth.common.dto;
 
 import com.insight.util.Json;
 
+import javax.validation.constraints.NotEmpty;
+
 /**
  * @author 宣炳刚
  * @date 2017/9/7
@@ -12,6 +14,7 @@ public class LoginDto {
     /**
      * 应用ID
      */
+    @NotEmpty(message = "应用ID不能为空")
     private String appId;
 
     /**

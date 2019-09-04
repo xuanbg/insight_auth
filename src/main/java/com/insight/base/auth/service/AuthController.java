@@ -8,6 +8,8 @@ import com.insight.util.pojo.LoginInfo;
 import com.insight.util.pojo.Reply;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 /**
  * @author 宣炳刚
  * @date 2017/12/18
@@ -48,11 +50,11 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens")
-    public Reply getToken(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDto login) {
+    public Reply getToken(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
-        String appId = login.getAppId();
-        if (appId == null || appId.isEmpty()) {
-            return ReplyHelper.invalidParam("appId不能为空");
+        String account = login.getAccount();
+        if (account == null || account.isEmpty()) {
+            return ReplyHelper.invalidParam("登录账号不能为空");
         }
 
         return service.getToken(login);
@@ -66,11 +68,11 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens/withWechatCode")
-    public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDto login) {
+    public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
-        String appId = login.getAppId();
+        String appId = login.getWeChatAppId();
         if (appId == null || appId.isEmpty()) {
-            return ReplyHelper.invalidParam("appId不能为空");
+            return ReplyHelper.invalidParam("weChatAppId不能为空");
         }
 
         return service.getTokenWithWeChat(login);
@@ -84,11 +86,11 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens/withWechatUnionId")
-    public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @RequestBody LoginDto login) {
+    public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
-        String appId = login.getAppId();
+        String appId = login.getWeChatAppId();
         if (appId == null || appId.isEmpty()) {
-            return ReplyHelper.invalidParam("appId不能为空");
+            return ReplyHelper.invalidParam("weChatAppId不能为空");
         }
 
         return service.getTokenWithUserInfo(login);
@@ -124,7 +126,7 @@ public class AuthController {
     /**
      * 用户账号离线
      *
-     * @param token       访问令牌字符串
+     * @param token 访问令牌字符串
      * @return Reply
      */
     @DeleteMapping("/v1.0/tokens")

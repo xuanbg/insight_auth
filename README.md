@@ -14,6 +14,13 @@
 - [应用权限接口](#应用权限接口)
   - [获取模块导航](#获取模块导航)
   - [获取模块功能](#获取模块功能)
+- [配置管理接口](#配置管理接口)
+  - [获取接口配置列表](#获取接口配置列表)
+  - [获取接口配置详情](#获取接口配置详情)
+  - [新增接口配置](#新增接口配置)
+  - [编辑接口配置](#编辑接口配置)
+  - [删除接口配置](#删除接口配置)
+  - [加载接口配置表](#加载接口配置表)
 - [DTO类型说明](#DTO类型说明)
 
 ## 概述
@@ -461,7 +468,7 @@ public void testHttpCall() throws IOException {
 
 ### 获取模块导航
 
-调用该接口可获取指定应用的模块导航数据。
+获取指定应用的全部模块导航数据。
 
 请求方法：**GET**
 
@@ -541,7 +548,7 @@ public void testHttpCall() throws IOException {
 
 ### 获取模块功能
 
-接口功能描述(提供什么功能、影响什么数据、调用什么服务)
+根据模块ID获取该模块的全部权限(功能)信息,客户端程序可通过permit字段判断当前用户是否拥有功能的授权.
 
 请求方法：**method**
 
@@ -665,6 +672,290 @@ public void testHttpCall() throws IOException {
       "permit": null
     }
   ],
+  "option": null
+}
+```
+
+[回目录](#目录)
+
+## 配置管理接口
+
+### 获取接口配置列表
+
+通过关键词查询接口配置.查询关键词作用于接口名称,接口URL已及授权码.该接口支持分页,如不传分页参数,则返回最近添加的20条数据.
+
+请求方法：**GET**
+
+接口URL：**/base/auth/manage/v1.0/configs**
+
+请求参数如下：
+
+|类型|属性|是否必需|属性说明|
+| ------------ | ------------ | ------------ | ------------ |
+|String|key|否|查询关键词|
+|Integer|page|否|分页页码|
+|Integer|size|否|每页记录数|
+
+接口返回数据类型：
+
+|类型|属性|属性说明|
+| ------------ | ------------ | ------------ |
+|String|id|接口配置ID|
+|String|name|接口名称|
+|String|method|请求方法(GET|POST|PUT|DELETE)|
+|String|url|接口URL|
+|Integer|type|授权类型:0.公开;1.私有;2.授权|
+|String|authCode|授权码,仅授权接口需要具有授权码|
+|Boolean|limit|是否限流|
+
+返回结果示例：
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": [
+    {
+      "id": "8b761354ce1611e9bbd40242ac110008",
+      "name": "获取接口配置列表",
+      "method": "GET",
+      "url": "/base/auth/manage/v1.0/configs",
+      "type": 2,
+      "authCode": "getConfig",
+      "limit": true
+    },
+    {
+      "id": "8b7613afce1611e9bbd40242ac110008",
+      "name": "获取接口配置详情",
+      "method": "GET",
+      "url": "/base/auth/manage/v1.0/configs/{id}",
+      "type": 2,
+      "authCode": "getConfig",
+      "limit": true
+    }
+  ],
+  "option": 2
+}
+```
+
+[回目录](#目录)
+
+### 获取接口配置详情
+
+获取指定ID的接口配置详情.
+
+请求方法：**GET**
+
+接口URL：**/base/auth/manage/v1.0/configs/{id}**
+
+请求参数如下：
+
+|类型|属性|是否必需|属性说明|
+| ------------ | ------------ | ------------ | ------------ |
+|String|id|是|接口配置ID|
+
+接口返回数据类型：
+
+|类型|属性|属性说明|
+| ------------ | ------------ | ------------ |
+|String|id|接口配置ID|
+|String|name|接口名称|
+|String|method|请求方法(GET|POST|PUT|DELETE)|
+|String|url|接口URL|
+|Integer|type|授权类型:0.公开;1.私有;2.授权|
+|String|authCode|授权码|
+|Boolean|limit|是否限流|
+|Integer|limitGap|访问最小时间间隔(秒)|
+|Integer|limitCycle|限流周期(秒)|
+|Integer|limitMax|最多调用次数/限流周期|
+|String|remark|备注|
+|Date|createdTime|创建时间|
+
+返回结果示例：
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": {
+    "id": "7179f5e4c7f84879bdfb70de0999b067",
+    "name": "获取用户列表",
+    "method": "GET",
+    "url": "/base/user/v1.0/users",
+    "type": 2,
+    "authCode": "getUser",
+    "limitGap": 1,
+    "limitCycle": 86400,
+    "limitMax": 360,
+    "message": "获取Code接口每24小时调用次数为360次,请合理使用",
+    "remark": null,
+    "createdTime": "2019-09-05 09:36:07",
+    "limit": true
+  },
+  "option": null
+}
+```
+
+[回目录](#目录)
+
+### 新增接口配置
+
+新增一个接口配置.
+
+请求方法：**POST**
+
+接口URL：**/base/auth/manage/v1.0/configs**
+
+请求参数如下：
+
+|类型|属性|是否必需|属性说明|
+| ------------ | ------------ | ------------ | ------------ |
+|String|name|是|接口名称|
+|String|method|是|请求方法(GET|POST|PUT|DELETE)|
+|String|url|是|接口URL|
+|Integer|type|是|授权类型:0.公开;1.私有;2.授权|
+|String|authCode|否|授权码,仅授权接口需要具有授权码|
+|Boolean|limit|是|是否限流,如配置为限流,则需配置对应限流参数|
+|Integer|limitGap|否|访问最小时间间隔(秒)|
+|Integer|limitCycle|否|限流周期(秒)|
+|Integer|limitMax|否|最多调用次数/限流周期|
+|String|remark|否|备注|
+
+请求参数示例：
+
+```json
+{
+  "name": "获取用户列表",
+  "method": "GET",
+  "url": "/base/user/v1.0/users",
+  "type": 2,
+  "authCode": null,
+  "limit": true,
+  "limitGap": 1,
+  "limitCycle": 86400,
+  "limitMax": 360,
+  "message": "获取Code接口每24小时调用次数为360次,请合理使用",
+  "remark": null
+}
+```
+
+返回结果示例：
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": "5697c57cf0954631a5f347d7c001ecee",
+  "option": null
+}
+```
+
+[回目录](#目录)
+
+### 编辑接口配置
+
+修改指定ID的接口配置信息.
+
+请求方法：**PUT**
+
+接口URL：**/base/auth/manage/v1.0/configs**
+
+请求参数如下：
+
+|类型|属性|是否必需|属性说明|
+| ------------ | ------------ | ------------ | ------------ |
+|String|id|是|接口配置ID|
+|String|name|是|接口名称|
+|String|method|是|请求方法(GET|POST|PUT|DELETE)|
+|String|url|是|接口URL|
+|Integer|type|是|授权类型:0.公开;1.私有;2.授权|
+|String|authCode|否|授权码,仅授权接口需要具有授权码|
+|Boolean|limit|是|是否限流,如配置为限流,则需配置对应限流参数|
+|Integer|limitGap|否|访问最小时间间隔(秒)|
+|Integer|limitCycle|否|限流周期(秒)|
+|Integer|limitMax|否|最多调用次数/限流周期|
+|String|remark|否|备注|
+
+请求参数示例：
+
+```json
+{
+  "id": "7179f5e4c7f84879bdfb70de0999b067",
+  "name": "获取用户列表",
+  "method": "GET",
+  "url": "/base/user/v1.0/users",
+  "type": 2,
+  "authCode": null,
+  "limit": true,
+  "limitGap": 1,
+  "limitCycle": 86400,
+  "limitMax": 360,
+  "message": "获取Code接口每24小时调用次数为360次,请合理使用",
+  "remark": null
+}
+```
+
+返回结果示例：
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": null,
+  "option": null
+}
+```
+
+[回目录](#目录)
+
+### 删除接口配置
+
+获取指定ID的接口配置详情.
+
+请求方法：**DELETE**
+
+接口URL：**/base/auth/manage/v1.0/configs/{id}**
+
+请求参数如下：
+
+|类型|属性|是否必需|属性说明|
+| ------------ | ------------ | ------------ | ------------ |
+|String|id|是|接口配置ID|
+
+返回结果示例：
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": null,
+  "option": null
+}
+```
+
+[回目录](#目录)
+
+### 加载接口配置到缓存
+
+获取指定ID的接口配置详情.
+
+请求方法：**GET**
+
+接口URL：**/base/auth/manage/v1.0/configs/load**
+
+返回结果示例：
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": null,
   "option": null
 }
 ```

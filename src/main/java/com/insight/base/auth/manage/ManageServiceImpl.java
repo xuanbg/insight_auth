@@ -9,6 +9,7 @@ import com.insight.util.Json;
 import com.insight.util.Redis;
 import com.insight.util.ReplyHelper;
 import com.insight.util.pojo.Reply;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -17,8 +18,8 @@ import java.util.List;
  * @date 2019-09-02
  * @remark 配置管理服务
  */
-@org.springframework.stereotype.Service
-public class ServiceImpl implements Service {
+@Service
+public class ManageServiceImpl implements ManageService {
     private final ConfigMapper mapper;
 
     /**
@@ -26,7 +27,7 @@ public class ServiceImpl implements Service {
      *
      * @param mapper ConfigMapper
      */
-    public ServiceImpl(ConfigMapper mapper) {
+    public ManageServiceImpl(ConfigMapper mapper) {
         this.mapper = mapper;
     }
 
@@ -68,10 +69,15 @@ public class ServiceImpl implements Service {
      */
     @Override
     public Reply newConfig(InterfaceConfig dto) {
-        dto.setId(Generator.uuid());
+        Object id = Generator.uuid();
+        dto.setId(id.toString());
         int count = mapper.addConfig(dto);
+        if (count == 0) {
+            return ReplyHelper.fail("写入数据失败");
+        }
 
-        return count == 0 ? ReplyHelper.fail("写入数据失败") : loadConfigs();
+        Reply reply = loadConfigs();
+        return reply.getSuccess() ? ReplyHelper.success(id) : reply;
     }
 
     /**

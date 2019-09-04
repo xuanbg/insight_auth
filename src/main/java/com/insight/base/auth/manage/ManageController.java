@@ -5,6 +5,8 @@ import com.insight.util.ReplyHelper;
 import com.insight.util.pojo.Reply;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 /**
  * @author 宣炳刚
  * @date 2019-09-02
@@ -13,15 +15,15 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 @RestController
 @RequestMapping("/base/auth/manage")
-public class Controller {
-    private final Service service;
+public class ManageController {
+    private final ManageService service;
 
     /**
      * 构造方法
      *
      * @param service 自动注入的Service
      */
-    public Controller(Service service) {
+    public ManageController(ManageService service) {
         this.service = service;
     }
 
@@ -45,8 +47,8 @@ public class Controller {
      * @return Reply
      */
     @GetMapping("/v1.0/configs/{id}")
-    Reply getConfig(@PathVariable String id){
-        if (id == null || id.isEmpty()){
+    Reply getConfig(@PathVariable String id) {
+        if (id == null || id.isEmpty()) {
             return ReplyHelper.invalidParam();
         }
 
@@ -60,8 +62,8 @@ public class Controller {
      * @return Reply
      */
     @PostMapping("/v1.0/configs")
-    public Reply newConfig(@RequestBody InterfaceConfig dto){
-        if (dto == null){
+    public Reply newConfig(@Valid @RequestBody InterfaceConfig dto) {
+        if (dto == null) {
             return ReplyHelper.invalidParam();
         }
 
@@ -75,8 +77,8 @@ public class Controller {
      * @return Reply
      */
     @PutMapping("/v1.0/configs")
-    public Reply editConfig(@RequestBody InterfaceConfig dto){
-        if (dto == null){
+    public Reply editConfig(@Valid @RequestBody InterfaceConfig dto) {
+        if (dto == null) {
             return ReplyHelper.invalidParam();
         }
 
@@ -90,8 +92,8 @@ public class Controller {
      * @return Reply
      */
     @DeleteMapping("/v1.0/configs/{id}")
-    Reply deleteConfig(@PathVariable String id){
-        if (id == null || id.isEmpty()){
+    Reply deleteConfig(@PathVariable String id) {
+        if (id == null || id.isEmpty()) {
             return ReplyHelper.invalidParam();
         }
 
@@ -104,7 +106,7 @@ public class Controller {
      * @return Reply
      */
     @GetMapping("/v1.0/configs/load")
-    public Reply loadConfigs(){
+    public Reply loadConfigs() {
         return service.loadConfigs();
     }
 }

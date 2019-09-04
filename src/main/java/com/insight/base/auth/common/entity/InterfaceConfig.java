@@ -1,6 +1,7 @@
 package com.insight.base.auth.common.entity;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -36,7 +37,7 @@ public class InterfaceConfig {
     /**
      * 接口类型:0.公开;1.私有;2.授权
      */
-    @NotEmpty(message = "接口类型不能为空")
+    @NotNull(message = "接口类型不能为空")
     private Integer type;
 
     /**
@@ -52,7 +53,7 @@ public class InterfaceConfig {
     /**
      * 是否限流
      */
-    @NotEmpty(message = "接口限流设置不能为空")
+    @NotNull(message = "接口限流设置不能为空")
     private Boolean isLimit;
 
     /**

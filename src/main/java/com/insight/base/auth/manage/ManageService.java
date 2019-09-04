@@ -8,7 +8,7 @@ import com.insight.util.pojo.Reply;
  * @date 2019-09-02
  * @remark 配置管理服务接口
  */
-public interface Service {
+public interface ManageService {
 
     /**
      * 获取接口配置列表
