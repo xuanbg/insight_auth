@@ -69,15 +69,15 @@ public class ManageServiceImpl implements ManageService {
      */
     @Override
     public Reply newConfig(InterfaceConfig dto) {
-        Object id = Generator.uuid();
-        dto.setId(id.toString());
+        String id = Generator.uuid();
+        dto.setId(id);
         int count = mapper.addConfig(dto);
         if (count == 0) {
             return ReplyHelper.fail("写入数据失败");
         }
 
         Reply reply = loadConfigs();
-        return reply.getSuccess() ? ReplyHelper.success(id) : reply;
+        return reply.getSuccess() ? ReplyHelper.created(id) : reply;
     }
 
     /**
