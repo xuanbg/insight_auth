@@ -3,9 +3,9 @@ package com.insight.base.auth.service;
 import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.Token;
 import com.insight.base.auth.common.client.MessageClient;
+import com.insight.base.auth.common.client.RabbitClient;
 import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenPackage;
-import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.enums.TokenType;
 import com.insight.util.*;
 import com.insight.util.pojo.AccessToken;
@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,34 +29,17 @@ import java.util.concurrent.TimeUnit;
 public class AuthServiceImpl implements AuthService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Core core;
-    private final MessageClient client;
+    private final MessageClient messageClient;
 
     /**
      * 构造函数
      *
-     * @param core Core
+     * @param core          Core
+     * @param messageClient MessageClient
      */
-    public AuthServiceImpl(Core core, MessageClient client) {
+    public AuthServiceImpl(Core core, MessageClient messageClient) {
         this.core = core;
-        this.client = client;
-    }
-
-    /**
-     * 初始化接口配置
-     *
-     * @return Reply
-     */
-    @Override
-    public Reply initConfig() {
-        List<InterfaceConfig> configs = core.getConfigs();
-        if (configs == null || configs.isEmpty()) {
-            return ReplyHelper.fail("读取数据失败");
-        }
-
-        String json = Json.toJson(configs);
-        Redis.set("Config:Interface", json);
-
-        return ReplyHelper.success();
+        this.messageClient = messageClient;
     }
 
     /**
@@ -206,7 +188,7 @@ public class AuthServiceImpl implements AuthService {
         // 验证账号绑定的手机号
         String mobile = login.getAccount();
         String verifyKey = Util.md5(0 + mobile + login.getCode());
-        Reply reply = client.verifySmsCode(verifyKey);
+        Reply reply = messageClient.verifySmsCode(verifyKey);
         if (!reply.getSuccess()) {
             return ReplyHelper.invalidParam("短信验证码错误");
         }
@@ -222,7 +204,16 @@ public class AuthServiceImpl implements AuthService {
 
         String userId = core.getUserId(mobile);
         if (userId == null || userId.isEmpty()) {
-            // TODO 根据微信用户信息创建用户
+            String account = Generator.uuid();
+            String password = Util.md5(Generator.uuid());
+            User user = new User();
+            user.setName(weChatUser.getNickname());
+            user.setAccount(account);
+            user.setMobile(mobile);
+            user.setUnionId(unionId);
+            user.setPassword(password);
+            user.setHeadImg(weChatUser.getHeadimgurl());
+            RabbitClient.sendTopic(user);
 
             core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
             TokenPackage tokens = core.creatorToken(Generator.uuid(), login, userId);
@@ -231,7 +222,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = core.getUser(userId);
-        if (!unionId.equals(user.getUnionId())) {
+        if (unionId.equals(user.getUnionId())) {
             if (login.getReplace()) {
                 user.setUnionId(unionId);
                 key = "User:" + userId;

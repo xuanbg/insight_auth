@@ -1,7 +1,7 @@
 package com.insight.base.auth.common.client;
 
 import com.insight.util.pojo.Reply;
-import com.insight.utils.message.pojo.Sms;
+import com.insight.util.pojo.Sms;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +22,7 @@ public interface MessageClient {
      * @param sms 短信对象
      * @return Reply
      */
-    @PostMapping("/base/message/sms")
+    @PostMapping("/base/message/sms/v1.0/messages")
     Reply sendMessage(@RequestBody Sms sms);
 
     /**
@@ -31,6 +31,6 @@ public interface MessageClient {
      * @param key 验证参数,MD5(type + mobile + code)
      * @return Reply
      */
-    @GetMapping("/base/message/sms/code/{key}/status")
+    @GetMapping("/base/message/sms/v1.0/code/{key}/status")
     Reply verifySmsCode(@PathVariable String key);
 }

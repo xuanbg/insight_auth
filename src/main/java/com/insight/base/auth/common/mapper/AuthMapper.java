@@ -4,7 +4,6 @@ import com.insight.base.auth.common.dto.AuthInfo;
 import com.insight.base.auth.common.dto.FuncDto;
 import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.entity.IconInfo;
-import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.entity.ModuleInfo;
 import com.insight.util.common.JsonTypeHandler;
 import com.insight.util.pojo.Application;
@@ -20,13 +19,6 @@ import java.util.List;
  */
 @Mapper
 public interface AuthMapper extends Mapper {
-
-    /**
-     * 获取接口配置
-     * @return 接口配置表
-     */
-    @Select("select * from ibi_interface;")
-    List<InterfaceConfig> getConfigs();
 
     /**
      * 根据登录账号查询用户数据

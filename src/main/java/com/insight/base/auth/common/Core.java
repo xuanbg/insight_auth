@@ -2,18 +2,13 @@ package com.insight.base.auth.common;
 
 import com.insight.base.auth.common.client.MessageClient;
 import com.insight.base.auth.common.dto.*;
-import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.util.Generator;
 import com.insight.util.Json;
 import com.insight.util.Redis;
 import com.insight.util.Util;
 import com.insight.util.encrypt.Encryptor;
-import com.insight.util.pojo.AccessToken;
-import com.insight.util.pojo.LoginInfo;
-import com.insight.util.pojo.Reply;
-import com.insight.util.pojo.User;
-import com.insight.utils.message.pojo.Sms;
+import com.insight.util.pojo.*;
 import com.insight.utils.wechat.WeChatHelper;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
@@ -441,14 +436,5 @@ public class Core {
      */
     public List<FuncDto> getModuleFunctions(LoginInfo info, String moduleId) {
         return mapper.getModuleFunctions(info.getTenantId(), info.getDeptId(), info.getUserId(), moduleId);
-    }
-
-    /**
-     * 获取接口配置
-     *
-     * @return 接口配置
-     */
-    public List<InterfaceConfig> getConfigs() {
-        return mapper.getConfigs();
     }
 }

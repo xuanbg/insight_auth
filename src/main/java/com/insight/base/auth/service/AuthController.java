@@ -29,16 +29,6 @@ public class AuthController {
     }
 
     /**
-     * 初始化接口配置
-     *
-     * @return Reply
-     */
-    @GetMapping("/v1.0/configs")
-    public Reply initConfig(){
-        return service.initConfig();
-    }
-
-    /**
      * 获取Code
      *
      * @param account 用户登录账号

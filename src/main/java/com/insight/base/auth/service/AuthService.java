@@ -13,13 +13,6 @@ import com.insight.util.pojo.Reply;
 public interface AuthService {
 
     /**
-     * 初始化接口配置
-     *
-     * @return Reply
-     */
-    Reply initConfig();
-
-    /**
      * 获取Code
      *
      * @param account 用户登录账号

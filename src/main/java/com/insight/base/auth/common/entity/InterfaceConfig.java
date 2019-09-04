@@ -1,5 +1,6 @@
 package com.insight.base.auth.common.entity;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.Date;
 
 /**
@@ -17,21 +18,25 @@ public class InterfaceConfig {
     /**
      * 接口名称
      */
+    @NotEmpty(message = "接口名称不能为空")
     private String name;
 
     /**
      * 接口HTTP请求方法
      */
+    @NotEmpty(message = "接口请求方法不能为空")
     private String method;
 
     /**
      * 接口URL
      */
+    @NotEmpty(message = "接口URL不能为空")
     private String url;
 
     /**
      * 接口类型:0.公开;1.私有;2.授权
      */
+    @NotEmpty(message = "接口类型不能为空")
     private Integer type;
 
     /**
@@ -47,6 +52,7 @@ public class InterfaceConfig {
     /**
      * 是否限流
      */
+    @NotEmpty(message = "接口限流设置不能为空")
     private Boolean isLimit;
 
     /**
