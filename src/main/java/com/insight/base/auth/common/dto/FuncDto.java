@@ -1,0 +1,125 @@
+package com.insight.base.auth.common.dto;
+
+import com.insight.base.auth.common.entity.IconInfo;
+import com.insight.util.Json;
+
+import java.io.Serializable;
+
+/**
+ * @author 宣炳刚
+ * @date 2018/4/20
+ * @remark 功能及权限数据类
+ */
+public class FuncDto implements Serializable {
+    private static final long serialVersionUID = -1L;
+
+    /**
+     * 功能ID
+     */
+    private String id;
+
+    /**
+     * 上级节点ID
+     */
+    private String navId;
+
+    /**
+     * 节点类型
+     */
+    private Integer type;
+
+    /**
+     * 索引,排序用
+     */
+    private Integer index;
+
+    /**
+     * 功能名称
+     */
+    private String name;
+
+    /**
+     * 授权码
+     */
+    private String authCode;
+
+    /**
+     * 功能图标信息
+     */
+    private IconInfo iconInfo;
+
+    /**
+     * 是否授权(true:已授权,false:已拒绝,null:未授权)
+     */
+    private Boolean permit;
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getNavId() {
+        return navId;
+    }
+
+    public void setNavId(String navId) {
+        this.navId = navId;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    public Integer getIndex() {
+        return index;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAuthCode() {
+        return authCode;
+    }
+
+    public void setAuthCode(String authCode) {
+        this.authCode = authCode;
+    }
+
+    public IconInfo getIconInfo() {
+        return iconInfo;
+    }
+
+    public void setIconInfo(IconInfo iconInfo) {
+        this.iconInfo = iconInfo;
+    }
+
+    public Boolean getPermit() {
+        return permit;
+    }
+
+    public void setPermit(Boolean permit) {
+        this.permit = permit;
+    }
+}
+
