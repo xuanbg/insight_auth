@@ -1,5 +1,6 @@
 package com.insight.base.auth.common.mapper;
 
+import com.insight.base.auth.common.dto.ConfigDto;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import org.apache.ibatis.annotations.*;
 
@@ -40,11 +41,10 @@ public interface ConfigMapper {
      * 在数据库中写入接口配置
      *
      * @param config 接口配置
-     * @return 受影响行数
      */
     @Insert("INSERT ibi_interface(`id`, `type`, `name`, `method`, `url`, `auth_code`, `is_limit`, `limit_gap`, `limit_cycle`, `limit_max`, `message`, `remark`) " +
             "VALUES (#{id}, #{type}, #{name}, #{method}, #{url}, #{authCode}, #{isLimit}, #{limitGap}, #{limitCycle}, #{limitMax}, #{message}, #{remark});")
-    int addConfig(InterfaceConfig config);
+    void addConfig(InterfaceConfig config);
 
     /**
      * 在数据库中写入接口配置
@@ -65,7 +65,7 @@ public interface ConfigMapper {
      * @return 受影响行数
      */
     @Delete("delete from ibi_interface where id = #{id};")
-    Integer deleteConfig(String id);
+    int deleteConfig(String id);
 
     /**
      * 获取接口配置
@@ -73,5 +73,5 @@ public interface ConfigMapper {
      * @return 接口配置表
      */
     @Select("select type, method, url, auth_code, is_limit, limit_gap, limit_cycle, limit_max, message from ibi_interface;")
-    List<InterfaceConfig> loadConfigs();
+    List<ConfigDto> loadConfigs();
 }

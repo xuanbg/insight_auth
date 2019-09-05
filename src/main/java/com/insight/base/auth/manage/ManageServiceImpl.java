@@ -2,6 +2,7 @@ package com.insight.base.auth.manage;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.insight.base.auth.common.dto.ConfigDto;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.mapper.ConfigMapper;
 import com.insight.util.Generator;
@@ -71,13 +72,15 @@ public class ManageServiceImpl implements ManageService {
     public Reply newConfig(InterfaceConfig dto) {
         String id = Generator.uuid();
         dto.setId(id);
-        int count = mapper.addConfig(dto);
-        if (count == 0) {
-            return ReplyHelper.fail("写入数据失败");
-        }
+        mapper.addConfig(dto);
 
         Reply reply = loadConfigs();
-        return reply.getSuccess() ? ReplyHelper.created(id) : reply;
+        if (reply.getSuccess()) {
+            return ReplyHelper.created(id);
+        }
+
+        reply.setData(id);
+        return reply;
     }
 
     /**
@@ -90,7 +93,7 @@ public class ManageServiceImpl implements ManageService {
     public Reply editConfig(InterfaceConfig dto) {
         int count = mapper.editConfig(dto);
 
-        return count == 0 ? ReplyHelper.fail("未更新数据") : loadConfigs();
+        return count == 0 ? ReplyHelper.fail("ID不存在,未更新数据") : loadConfigs();
     }
 
     /**
@@ -103,7 +106,7 @@ public class ManageServiceImpl implements ManageService {
     public Reply deleteConfig(String id) {
         int count = mapper.deleteConfig(id);
 
-        return count == 0 ? ReplyHelper.fail("未删除数据") : loadConfigs();
+        return count == 0 ? ReplyHelper.fail("ID不存在,未删除数据") : loadConfigs();
     }
 
     /**
@@ -113,9 +116,9 @@ public class ManageServiceImpl implements ManageService {
      */
     @Override
     public Reply loadConfigs() {
-        List<InterfaceConfig> configs = mapper.loadConfigs();
+        List<ConfigDto> configs = mapper.loadConfigs();
         if (configs == null || configs.isEmpty()) {
-            return ReplyHelper.fail("读取数据失败");
+            return ReplyHelper.fail("读取数据失败,请重新加载");
         }
 
         String json = Json.toJson(configs);

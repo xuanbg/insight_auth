@@ -42,7 +42,7 @@ Auth 服务是一个依赖于用户数据的、基于Token的用户身份认证�
 **Insight** 所有的服务都支持 **HTTP/HTTPS** 协议的访问请求，以 **URL Params** 、 **Path Variable** 或 **BODY** 传递参数。如使用 **BODY** 传参，则需使用 **JSON** 格式的请求参数。接口 **URL** 区分大小写，请求以及返回都使用 **UTF-8** 字符集进行编码，接口返回的数据封装为统一的 **JSON** 格式，详见：[**Reply**](#Reply) 数据类型。除获取Token等公开接口外，都需要在请求头的 **Authorization** 字段承载 **AccessToken** 数据。HTTP请求头参数设置如下：
 
 |参数名|参数值|
-| ------------ | ------------ |
+|----|----|
 |Accept|application/json|
 |Authorization|AccessToken(Base64编码的字符串)|
 |Content-Type|application/json|
@@ -64,34 +64,24 @@ Auth 服务是一个依赖于用户数据的、基于Token的用户身份认证�
 
 请求参数如下：
 
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
 |String|account|是|登录账号/手机号/邮箱|
 |Integer|type|否|登录类型:0.密码登录;1.验证码登录,默认为0|
 
 接口返回数据类型：
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
-|String||Code,30秒内使用有效|
+|类型|字段|字段说明|
+|----|----|----|
+|String|-|Code,30秒内使用有效|
 
-请求参数示例：
+请求示例：
 
-```java
-@Test
-public void testHttpCall() throws IOException {
-    // given
-    HttpGet request = new HttpGet("http://127.0.0.1:6200/base/auth/v1.0/tokens/codes?account=admin");
-    request.add("Accept", "application/json");
-
-    // when
-    HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-    // then
-    HttpEntity entity = response.getEntity();
-    String jsonString = EntityUtils.toString(entity);
-    loger.info(jsonString);
-}
+```bash
+curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
+ -H 'Accept: application/json' \
+ -H 'Accept-Encoding: gzip, identity' \
+ -H 'Content-Type: application/json'
 ```
 
 返回结果示例：
@@ -118,8 +108,8 @@ public void testHttpCall() throws IOException {
 
 请求参数如下：
 
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
 |String|appId|是|应用ID|
 |String|tenantId|否|租户ID|
 |String|deptId|否|登录部门ID|
@@ -129,8 +119,8 @@ public void testHttpCall() throws IOException {
 
 接口返回数据类型：
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|accessToken|访问用令牌|
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
@@ -190,8 +180,8 @@ public void testHttpCall() throws IOException {
 
 请求参数如下：
 
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
 |String|appId|是|应用ID|
 |String|tenantId|否|租户ID|
 |String|deptId|否|登录部门ID|
@@ -201,8 +191,8 @@ public void testHttpCall() throws IOException {
 
 接口返回数据类型：
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|accessToken|访问用令牌|
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
@@ -288,8 +278,8 @@ public void testHttpCall() throws IOException {
 
 请求参数如下：
 
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
 |String|appId|是|应用ID|
 |String|tenantId|否|租户ID|
 |String|deptId|否|登录部门ID|
@@ -300,8 +290,8 @@ public void testHttpCall() throws IOException {
 
 接口返回数据类型：
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|accessToken|访问用令牌|
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
@@ -358,24 +348,15 @@ public void testHttpCall() throws IOException {
 
 接口URL：**/base/auth/v1.0/tokens/status**
 
-请求参数示例：
+请求示例：
 
-```java
-@Test
-public void testHttpCall() throws IOException {
-    // given
-    HttpGet request = new HttpGet("http://127.0.0.1:6200/base/auth/v1.0/tokens/verify");
-    request.add("Accept", "application/json");
-    request.add("Authorization","eyJpZCI6ImQxNzUwMjA5NzRlYjQ1MzJiY2U3MmY0NWRiZTkzMWYyIiwidXNlcklkIjoiMDAwMDAwMDAwMDAMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMTI5YTQ3MWRiMWYxNDA0DkxMzU5Y2JjNjcwYmE0NDQifQ==");
-
-    // when
-    HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-    // then
-    HttpEntity entity = response.getEntity();
-    String jsonString = EntityUtils.toString(entity);
-    loger.info(jsonString);
-}
+```bash
+curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/status" \
+ -H 'Accept: application/json' \
+ -H 'Accept-Encoding: gzip, identity' \
+ -H 'Authorization:
+ eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
+ -H 'Content-Type: application/json'
 ```
 
 返回结果示例：
@@ -402,8 +383,8 @@ public void testHttpCall() throws IOException {
 
 接口返回数据类型：
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|accessToken|访问用令牌|
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
@@ -476,8 +457,8 @@ public void testHttpCall() throws IOException {
 
 接口返回数据类型：
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|id|导航ID|
 |String|parentId|父级导航ID|
 |Integer|type|导航级别|
@@ -485,6 +466,17 @@ public void testHttpCall() throws IOException {
 |String|name|导航名称|
 |[ModuleInfo](#ModuleInfo)|moduleInfo|模块信息|
 |List\<[FuncDTO](#FuncDTO)>|functions|功能集合|
+
+请求示例：
+
+```bash
+curl "http://192.168.16.1:6200/base/auth/v1.0/navigators" \
+ -H 'Accept: application/json' \
+ -H 'Accept-Encoding: gzip, identity' \
+ -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
+ -H 'Content-Type: application/json'
+
+```
 
 返回结果示例：
 
@@ -556,14 +548,14 @@ public void testHttpCall() throws IOException {
 
 请求参数如下：
 
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
 |String|id|是|模块ID(二级导航ID)|
 
 接口返回数据类型：
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|id|功能ID|
 |String|navId|导航ID|
 |Integer|type|节点类型|
@@ -572,6 +564,16 @@ public void testHttpCall() throws IOException {
 |String|authCode|授权码|
 |[IconInfo](#IconInfo)|iconInfo|功能图标信息|
 |Boolean|permit|是否授权(true:已授权,false:已拒绝,null:未授权)|
+
+请求示例：
+
+```bash
+curl "http://192.168.16.1:6200/base/auth/v1.0/navigators/711aad8daf654bcdb3a126d70191c15c/functions" \
+ -H 'Accept: application/json' \
+ -H 'Accept-Encoding: gzip, identity' \
+ -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
+ -H 'Content-Type: application/json'
+```
 
 返回结果示例：
 
@@ -690,16 +692,26 @@ public void testHttpCall() throws IOException {
 
 请求参数如下：
 
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
 |String|key|否|查询关键词|
 |Integer|page|否|分页页码|
 |Integer|size|否|每页记录数|
 
+请求示例：
+
+```bash
+curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs?key=getConfig" \
+ -H 'Accept: application/json' \
+ -H 'Accept-Encoding: gzip, identity' \
+ -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
+ -H 'Content-Type: application/json'
+```
+
 接口返回数据类型：
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|id|接口配置ID|
 |String|name|接口名称|
 |String|method|请求方法(GET|POST|PUT|DELETE)|
@@ -751,14 +763,14 @@ public void testHttpCall() throws IOException {
 
 请求参数如下：
 
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
 |String|id|是|接口配置ID|
 
 接口返回数据类型：
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|id|接口配置ID|
 |String|name|接口名称|
 |String|method|请求方法(GET|POST|PUT|DELETE)|
@@ -771,6 +783,16 @@ public void testHttpCall() throws IOException {
 |Integer|limitMax|最多调用次数/限流周期|
 |String|remark|备注|
 |Date|createdTime|创建时间|
+
+请求示例：
+
+```bash
+curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64420b92776411c" \
+ -H 'Accept: application/json' \
+ -H 'Accept-Encoding: gzip, identity' \
+ -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
+ -H 'Content-Type: application/json'
+```
 
 返回结果示例：
 
@@ -810,8 +832,8 @@ public void testHttpCall() throws IOException {
 
 请求参数如下：
 
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
 |String|name|是|接口名称|
 |String|method|是|请求方法(GET|POST|PUT|DELETE)|
 |String|url|是|接口URL|
@@ -865,8 +887,8 @@ public void testHttpCall() throws IOException {
 
 请求参数如下：
 
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
 |String|id|是|接口配置ID|
 |String|name|是|接口名称|
 |String|method|是|请求方法(GET|POST|PUT|DELETE)|
@@ -918,13 +940,19 @@ public void testHttpCall() throws IOException {
 
 请求方法：**DELETE**
 
-接口URL：**/base/auth/manage/v1.0/configs/{id}**
+接口URL：**/base/auth/manage/v1.0/configs**
 
 请求参数如下：
 
-|类型|属性|是否必需|属性说明|
-| ------------ | ------------ | ------------ | ------------ |
-|String|id|是|接口配置ID|
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
+|String|-|是|接口配置ID|
+
+请求参数示例：
+
+```json
+"7179f5e4c7f84879bdfb70de0999b067"
+```
 
 返回结果示例：
 
@@ -948,6 +976,16 @@ public void testHttpCall() throws IOException {
 
 接口URL：**/base/auth/manage/v1.0/configs/load**
 
+请求示例：
+
+```bash
+curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/load" \
+ -H 'Accept: application/json' \
+ -H 'Accept-Encoding: gzip, identity' \
+ -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
+ -H 'Content-Type: application/json'
+```
+
 返回结果示例：
 
 ```json
@@ -968,8 +1006,8 @@ public void testHttpCall() throws IOException {
 
 ### Reply
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |Boolean|success|接口调用是否成功，成功：true；失败：false|
 |Integer|code|错误代码，2xx代表成功，4xx或5xx代表失败|
 |String|message|错误消息，描述了接口调用失败原因|
@@ -980,8 +1018,8 @@ public void testHttpCall() throws IOException {
 
 ### UserInfo
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|id|用户ID|
 |String|tenantId|用户当前登录租户ID|
 |String|deptId|用户当前登录部门ID|
@@ -998,8 +1036,8 @@ public void testHttpCall() throws IOException {
 
 ### WeChatUser
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|unionid|微信用户唯一ID|
 |String|openid|微信公众号OpenId|
 |String|nickname|微信昵称|
@@ -1015,8 +1053,8 @@ public void testHttpCall() throws IOException {
 
 ### ModuleInfo
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|icon|图标|
 |String|iconUrl|图标路径|
 |String|module|模块名称|
@@ -1027,8 +1065,8 @@ public void testHttpCall() throws IOException {
 
 ### FuncDTO
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|id|功能ID|
 |String|navId|导航ID|
 |Integer|type|节点类型|
@@ -1042,8 +1080,8 @@ public void testHttpCall() throws IOException {
 
 ### IconInfo
 
-|类型|属性|属性说明|
-| ------------ | ------------ | ------------ |
+|类型|字段|字段说明|
+|----|----|----|
 |String|icon|图标|
 |String|iconUrl|图标路径|
 |Boolean|isBeginGroup|是否开始分组|

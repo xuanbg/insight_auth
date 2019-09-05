@@ -91,8 +91,8 @@ public class ManageController {
      * @param id 接口配置ID
      * @return Reply
      */
-    @DeleteMapping("/v1.0/configs/{id}")
-    Reply deleteConfig(@PathVariable String id) {
+    @DeleteMapping("/v1.0/configs")
+    Reply deleteConfig(@RequestBody String id) {
         if (id == null || id.isEmpty()) {
             return ReplyHelper.invalidParam();
         }
