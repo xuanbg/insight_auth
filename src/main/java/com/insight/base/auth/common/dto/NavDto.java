@@ -1,6 +1,5 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.base.auth.common.entity.ModuleInfo;
 import com.insight.util.Json;
 
 import java.io.Serializable;
@@ -9,7 +8,7 @@ import java.util.List;
 /**
  * @author 宣炳刚
  * @date 2018/4/20
- * @remark 导航数据类
+ * @remark 导航数据DTO
  */
 public class NavDto implements Serializable {
     private static final long serialVersionUID = -1L;
@@ -48,11 +47,6 @@ public class NavDto implements Serializable {
      * 功能集合
      */
     private List<FuncDto> functions;
-
-    @Override
-    public String toString() {
-        return Json.toJson(this);
-    }
 
     public String getId() {
         return id;
@@ -108,5 +102,10 @@ public class NavDto implements Serializable {
 
     public void setFunctions(List<FuncDto> functions) {
         this.functions = functions;
+    }
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
     }
 }

@@ -1,14 +1,16 @@
 package com.insight.base.auth.common.dto;
 
+import com.insight.util.Json;
+
 import java.io.Serializable;
 import java.util.Date;
 
 /**
  * @author 宣炳刚
  * @date 2018/4/13
- * @remark 用户关键信息
+ * @remark 用户关键信息DTO
  */
-public class UserInfo implements Serializable {
+public class UserInfoDto implements Serializable {
     private static final long serialVersionUID = -1L;
 
     /**
@@ -152,5 +154,10 @@ public class UserInfo implements Serializable {
 
     public void setCreatedTime(Date createdTime) {
         this.createdTime = createdTime;
+    }
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
     }
 }

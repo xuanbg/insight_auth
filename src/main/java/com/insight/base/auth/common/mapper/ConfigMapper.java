@@ -1,6 +1,7 @@
 package com.insight.base.auth.common.mapper;
 
 import com.insight.base.auth.common.dto.ConfigDto;
+import com.insight.base.auth.common.dto.ConfigListDto;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import org.apache.ibatis.annotations.*;
 
@@ -20,13 +21,13 @@ public interface ConfigMapper {
      * @param key 查询关键词
      * @return 接口配置表
      */
-    @Select("<script>select id, type, `name`, method, url, auth_code, is_limit from ibi_interface" +
+    @Select("<script>select id, name, method, url, auth_code, is_verify, is_limit from ibi_interface" +
             "<if test = 'key!=null'> where " +
             "name like concat('%',#{key},'%') or " +
             "url like concat('%',#{key},'%') or " +
             "auth_code like concat('%',#{key},'%')</if>" +
             "order by created_time desc</script>")
-    List<InterfaceConfig> getConfigs(@Param("key") String key);
+    List<ConfigListDto> getConfigs(@Param("key") String key);
 
     /**
      * 获取接口配置详情
@@ -42,8 +43,8 @@ public interface ConfigMapper {
      *
      * @param config 接口配置
      */
-    @Insert("INSERT ibi_interface(`id`, `type`, `name`, `method`, `url`, `auth_code`, `is_limit`, `limit_gap`, `limit_cycle`, `limit_max`, `message`, `remark`) " +
-            "VALUES (#{id}, #{type}, #{name}, #{method}, #{url}, #{authCode}, #{isLimit}, #{limitGap}, #{limitCycle}, #{limitMax}, #{message}, #{remark});")
+    @Insert("INSERT ibi_interface(id, name, method, url, auth_code, limit_gap, limit_cycle, limit_max, message, remark, is_verify, is_limit) VALUES " +
+            "(#{id}, #{name}, #{method}, #{url}, #{authCode}, #{limitGap}, #{limitCycle}, #{limitMax}, #{message}, #{remark}, #{isVerify}, #{isLimit});")
     void addConfig(InterfaceConfig config);
 
     /**
@@ -53,9 +54,9 @@ public interface ConfigMapper {
      * @return 受影响行数
      */
     @Update("UPDATE ibi_interface SET " +
-            "`type` = #{type}, `name` = #{name}, `method` = #{method}, `url` = #{url}, `auth_code` = #{authCode}, " +
-            "`is_limit` = #{isLimit}, `limit_gap` = #{limitGap}, `limit_cycle` = #{limitCycle}, `limit_max` = #{limitMax}, " +
-            "`message` = #{message}, `remark` = #{remark} WHERE `id` = #{id};")
+            "type = #{type}, name = #{name}, method = #{method}, url = #{url}, auth_code = #{authCode}, " +
+            "limit_gap = #{limitGap}, limit_cycle = #{limitCycle}, limit_max = #{limitMax}, message = #{message}, " +
+            "remark = #{remark}, is_verify = #{isVerify}, is_limit = #{isLimit} WHERE id = #{id};")
     int editConfig(InterfaceConfig config);
 
     /**
@@ -72,6 +73,6 @@ public interface ConfigMapper {
      *
      * @return 接口配置表
      */
-    @Select("select type, method, url, auth_code, is_limit, limit_gap, limit_cycle, limit_max, message from ibi_interface;")
+    @Select("select method, url, auth_code, limit_gap, limit_cycle, limit_max, message, is_verify, is_limit from ibi_interface;")
     List<ConfigDto> loadConfigs();
 }

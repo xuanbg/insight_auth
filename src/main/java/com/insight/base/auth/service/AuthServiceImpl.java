@@ -5,7 +5,7 @@ import com.insight.base.auth.common.Token;
 import com.insight.base.auth.common.client.MessageClient;
 import com.insight.base.auth.common.client.RabbitClient;
 import com.insight.base.auth.common.dto.LoginDto;
-import com.insight.base.auth.common.dto.TokenPackage;
+import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.enums.TokenType;
 import com.insight.util.*;
 import com.insight.util.pojo.AccessToken;
@@ -130,7 +130,7 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.fail("用户被禁止登录");
         }
 
-        TokenPackage tokens = core.creatorToken(code, login, userId);
+        TokenDto tokens = core.creatorToken(code, login, userId);
 
         return ReplyHelper.success(tokens);
     }
@@ -172,7 +172,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
-        TokenPackage tokens = core.creatorToken(Generator.uuid(), login, userId);
+        TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
 
         return ReplyHelper.success(tokens);
     }
@@ -216,7 +216,7 @@ public class AuthServiceImpl implements AuthService {
             RabbitClient.sendTopic(user);
 
             core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
-            TokenPackage tokens = core.creatorToken(Generator.uuid(), login, userId);
+            TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
 
             return ReplyHelper.success(tokens);
         }
@@ -239,7 +239,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
-        TokenPackage tokens = core.creatorToken(Generator.uuid(), login, userId);
+        TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
 
         return ReplyHelper.success(tokens);
     }
@@ -270,7 +270,7 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.fail("用户被禁止登录");
         }
 
-        TokenPackage tokens = core.refreshToken(token, tokenId, fingerprint, userId);
+        TokenDto tokens = core.refreshToken(token, tokenId, fingerprint, userId);
 
         return ReplyHelper.success(tokens);
     }

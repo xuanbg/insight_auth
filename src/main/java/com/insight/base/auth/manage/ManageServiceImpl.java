@@ -3,6 +3,7 @@ package com.insight.base.auth.manage;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.insight.base.auth.common.dto.ConfigDto;
+import com.insight.base.auth.common.dto.ConfigListDto;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.mapper.ConfigMapper;
 import com.insight.util.Generator;
@@ -43,8 +44,8 @@ public class ManageServiceImpl implements ManageService {
     @Override
     public Reply getConfigs(String key, int page, int size) {
         PageHelper.startPage(page, size);
-        List<InterfaceConfig> configs = mapper.getConfigs(key);
-        PageInfo<InterfaceConfig> pageInfo = new PageInfo<>(configs);
+        List<ConfigListDto> configs = mapper.getConfigs(key);
+        PageInfo<ConfigListDto> pageInfo = new PageInfo<>(configs);
 
         return ReplyHelper.success(configs, pageInfo.getTotal());
     }

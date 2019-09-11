@@ -3,14 +3,15 @@ package com.insight.base.auth.common.dto;
 import com.insight.util.Json;
 
 import javax.validation.constraints.NotEmpty;
+import java.io.Serializable;
 
 /**
  * @author 宣炳刚
  * @date 2017/9/7
- * @remark 登录数据类
+ * @remark 登录数据DTO
  */
-public class LoginDto {
-
+public class LoginDto implements Serializable {
+    private static final long serialVersionUID = -1L;
     /**
      * 应用ID
      */
@@ -71,11 +72,6 @@ public class LoginDto {
      * 用户特征串
      */
     private String fingerprint;
-
-    @Override
-    public String toString() {
-        return Json.toJson(this);
-    }
 
     public String getAppId() {
         return appId;
@@ -171,5 +167,10 @@ public class LoginDto {
 
     public void setFingerprint(String fingerprint) {
         this.fingerprint = fingerprint;
+    }
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
     }
 }

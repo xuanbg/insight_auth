@@ -125,7 +125,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfo|用户信息|
+|[UserInfo](#UserInfo)|userInfoDto|用户信息|
 
 请求参数示例：
 
@@ -150,7 +150,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
     "refreshToken": "eyJpZCI6IjQwNGEyNTdiYzM1YTQ1NDBhZWQwNzlkYzRiNDhkOTU3IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiYjRhOWNhNDE2ODFlNGUyNjg4ZTU3NjI4ODdmZDE4MjEifQ==",
     "expire": 7200000,
     "failure": 86400000,
-    "userInfo": {
+    "userInfoDto": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
       "deptId": null,
@@ -197,7 +197,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfo|用户信息|
+|[UserInfo](#UserInfo)|userInfoDto|用户信息|
 
 请求参数示例：
 
@@ -221,7 +221,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
     "refreshToken": "eyJpZCI6IjQwNGEyNTdiYzM1YTQ1NDBhZWQwNzlkYzRiNDhkOTU3IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiYjRhOWNhNDE2ODFlNGUyNjg4ZTU3NjI4ODdmZDE4MjEifQ==",
     "expire": 7200000,
     "failure": 86400000,
-    "userInfo": {
+    "userInfoDto": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
       "deptId": null,
@@ -296,7 +296,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfo|用户信息|
+|[UserInfo](#UserInfo)|userInfoDto|用户信息|
 
 请求参数示例：
 
@@ -320,7 +320,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
     "refreshToken": "eyJpZCI6IjQwNGEyNTdiYzM1YTQ1NDBhZWQwNzlkYzRiNDhkOTU3IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiYjRhOWNhNDE2ODFlNGUyNjg4ZTU3NjI4ODdmZDE4MjEifQ==",
     "expire": 7200000,
     "failure": 86400000,
-    "userInfo": {
+    "userInfoDto": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
       "deptId": null,
@@ -389,7 +389,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/status" \
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfo|用户信息|
+|[UserInfo](#UserInfo)|userInfoDto|用户信息|
 
 返回结果示例：
 
@@ -403,7 +403,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/status" \
     "refreshToken": "eyJpZCI6IjQwNGEyNTdiYzM1YTQ1NDBhZWQwNzlkYzRiNDhkOTU3IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiYjRhOWNhNDE2ODFlNGUyNjg4ZTU3NjI4ODdmZDE4MjEifQ==",
     "expire": 7200000,
     "failure": 86400000,
-    "userInfo": {
+    "userInfoDto": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
       "deptId": null,

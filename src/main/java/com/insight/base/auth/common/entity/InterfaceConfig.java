@@ -35,26 +35,9 @@ public class InterfaceConfig {
     private String url;
 
     /**
-     * 接口类型:0.公开;1.私有;2.授权
-     */
-    @NotNull(message = "接口类型不能为空")
-    private Integer type;
-
-    /**
-     * 接口URL正则表达式
-     */
-    private String regular;
-
-    /**
      * 接口授权码
      */
     private String authCode;
-
-    /**
-     * 是否限流
-     */
-    @NotNull(message = "接口限流设置不能为空")
-    private Boolean isLimit;
 
     /**
      * 访问最小时间间隔(秒),0表示无调用时间间隔
@@ -80,6 +63,18 @@ public class InterfaceConfig {
      * 接口描述
      */
     private String remark;
+
+    /**
+     * 是否验证Token
+     */
+    @NotNull(message = "接口验证设置不能为空")
+    private Boolean isVerify;
+
+    /**
+     * 是否限流
+     */
+    @NotNull(message = "接口限流设置不能为空")
+    private Boolean isLimit;
 
     /**
      * 创建时间
@@ -118,36 +113,12 @@ public class InterfaceConfig {
         this.url = url;
     }
 
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public String getRegular() {
-        return regular;
-    }
-
-    public void setRegular(String regular) {
-        this.regular = regular;
-    }
-
     public String getAuthCode() {
         return authCode;
     }
 
     public void setAuthCode(String authCode) {
         this.authCode = authCode;
-    }
-
-    public Boolean getLimit() {
-        return isLimit;
-    }
-
-    public void setLimit(Boolean limit) {
-        isLimit = limit;
     }
 
     public Integer getLimitGap() {
@@ -188,6 +159,22 @@ public class InterfaceConfig {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public Boolean getVerify() {
+        return isVerify;
+    }
+
+    public void setVerify(Boolean verify) {
+        isVerify = verify;
+    }
+
+    public Boolean getLimit() {
+        return isLimit;
+    }
+
+    public void setLimit(Boolean limit) {
+        isLimit = limit;
     }
 
     public Date getCreatedTime() {

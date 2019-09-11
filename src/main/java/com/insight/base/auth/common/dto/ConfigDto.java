@@ -1,12 +1,16 @@
 package com.insight.base.auth.common.dto;
 
+import com.insight.util.Json;
+
+import java.io.Serializable;
+
 /**
  * @author 宣炳刚
  * @date 2019-09-05
- * @remark
+ * @remark 接口配置DTO
  */
-public class ConfigDto {
-
+public class ConfigDto implements Serializable {
+    private static final long serialVersionUID = -1L;
     /**
      * 接口HTTP请求方法
      */
@@ -18,19 +22,9 @@ public class ConfigDto {
     private String url;
 
     /**
-     * 接口类型:0.公开;1.私有;2.授权
-     */
-    private Integer type;
-
-    /**
      * 接口授权码
      */
     private String authCode;
-
-    /**
-     * 是否限流
-     */
-    private Boolean isLimit;
 
     /**
      * 访问最小时间间隔(秒),0表示无调用时间间隔
@@ -52,6 +46,16 @@ public class ConfigDto {
      */
     private String message;
 
+    /**
+     * 是否验证Token
+     */
+    private Boolean isVerify;
+
+    /**
+     * 是否限流
+     */
+    private Boolean isLimit;
+
     public String getMethod() {
         return method;
     }
@@ -68,28 +72,12 @@ public class ConfigDto {
         this.url = url;
     }
 
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
     public String getAuthCode() {
         return authCode;
     }
 
     public void setAuthCode(String authCode) {
         this.authCode = authCode;
-    }
-
-    public Boolean getLimit() {
-        return isLimit;
-    }
-
-    public void setLimit(Boolean limit) {
-        isLimit = limit;
     }
 
     public Integer getLimitGap() {
@@ -122,5 +110,26 @@ public class ConfigDto {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Boolean getVerify() {
+        return isVerify;
+    }
+
+    public void setVerify(Boolean verify) {
+        isVerify = verify;
+    }
+
+    public Boolean getLimit() {
+        return isLimit;
+    }
+
+    public void setLimit(Boolean limit) {
+        isLimit = limit;
+    }
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
     }
 }

@@ -1,10 +1,7 @@
 package com.insight.base.auth.common.mapper;
 
-import com.insight.base.auth.common.dto.AuthInfo;
-import com.insight.base.auth.common.dto.FuncDto;
-import com.insight.base.auth.common.dto.NavDto;
-import com.insight.base.auth.common.entity.IconInfo;
-import com.insight.base.auth.common.entity.ModuleInfo;
+import com.insight.base.auth.common.dto.*;
+import com.insight.base.auth.common.dto.ModuleInfo;
 import com.insight.util.common.JsonTypeHandler;
 import com.insight.util.pojo.Application;
 import com.insight.util.pojo.User;
@@ -26,8 +23,7 @@ public interface AuthMapper extends Mapper {
      * @param key 关键词(ID/账号/手机号/E-mail/微信unionId)
      * @return 用户实体
      */
-    @Results({@Result(property = "builtin", column = "is_builtin"),
-            @Result(property = "invalid", column = "is_invalid")})
+    @Results({@Result(property = "builtin", column = "is_builtin"), @Result(property = "invalid", column = "is_invalid")})
     @Select("select * from ibu_user WHERE id =#{key} or account=#{key} or mobile=#{key} or email=#{key} or union_id=#{key} limit 1;")
     User getUser(String key);
 
@@ -37,8 +33,7 @@ public interface AuthMapper extends Mapper {
      * @param appId 应用ID
      * @return 应用信息
      */
-    @Results({@Result(property = "signinOne", column = "is_signin_one"),
-            @Result(property = "autoRefresh", column = "is_auto_refresh")})
+    @Results({@Result(property = "signinOne", column = "is_signin_one"), @Result(property = "autoRefresh", column = "is_auto_refresh")})
     @Select("SELECT * FROM ibs_application WHERE id=#{appId};")
     Application getApp(String appId);
 
@@ -87,8 +82,7 @@ public interface AuthMapper extends Mapper {
     @Select("SELECT f.id,f.nav_id,f.`type`,f.`index`,f.`name`,f.auth_code,f.icon_info,a.permit FROM ibs_function f " +
             "LEFT JOIN (SELECT a.function_id,min(a.permit) AS permit FROM ibr_role_func_permit a JOIN ibv_user_roles r " +
             "ON r.role_id=a.role_id AND r.user_id=#{userId} AND r.tenant_id=#{tenantId} AND (r.dept_id=#{deptId} OR r.dept_id IS NULL) " +
-            "GROUP BY a.function_id) a ON a.function_id=f.id WHERE f.nav_id = #{moduleId}" +
-            "ORDER BY f.`index`;")
+            "GROUP BY a.function_id) a ON a.function_id=f.id WHERE f.nav_id = #{moduleId} ORDER BY f.`index`;")
     List<FuncDto> getModuleFunctions(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("deptId") String deptId, @Param("moduleId") String moduleId);
 
     /**
@@ -97,8 +91,7 @@ public interface AuthMapper extends Mapper {
      * @param userId 用户ID
      * @return 用户实体
      */
-    @Results({@Result(property = "builtin", column = "is_builtin"),
-            @Result(property = "invalid", column = "is_invalid")})
+    @Results({@Result(property = "builtin", column = "is_builtin"), @Result(property = "invalid", column = "is_invalid")})
     @Select("SELECT * FROM ucb_user WHERE id=#{userId};")
     User getUserWithId(String userId);
 
@@ -125,7 +118,6 @@ public interface AuthMapper extends Mapper {
             "FROM ibs_function f JOIN ibs_navigator n ON n.id=f.nav_id AND n.app_id=#{appId} " +
             "JOIN ibr_role_func_permit a ON a.function_id=f.id JOIN ibv_user_roles r ON r.role_id=a.role_id " +
             "AND r.tenant_id=#{tenantId} AND r.user_id=#{userId} AND (r.dept_id IS NULL || r.dept_id=#{deptId}) " +
-            "WHERE f.auth_code IS NOT NULL " +
-            "GROUP BY f.id,f.nav_id,f.auth_code")
-    List<AuthInfo> getAuthInfos(@Param("appId") String appId, @Param("userId") String userId, @Param("tenantId") String tenantId, @Param("deptId") String deptId);
+            "WHERE f.auth_code IS NOT NULL GROUP BY f.id,f.nav_id,f.auth_code")
+    List<AuthDto> getAuthInfos(@Param("appId") String appId, @Param("userId") String userId, @Param("tenantId") String tenantId, @Param("deptId") String deptId);
 }

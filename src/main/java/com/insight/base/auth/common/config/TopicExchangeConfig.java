@@ -1,4 +1,4 @@
-package com.insight.base.auth.config;
+package com.insight.base.auth.common.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;

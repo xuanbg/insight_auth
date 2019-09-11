@@ -1,13 +1,15 @@
 package com.insight.base.auth.common.dto;
 
+import com.insight.util.Json;
+
 import java.io.Serializable;
 
 /**
  * @author 宣炳刚
  * @date 2017/9/15
- * @remark 令牌包，向客户端返回令牌数据用
+ * @remark 令牌数据DTO
  */
-public class TokenPackage implements Serializable {
+public class TokenDto implements Serializable {
     private static final long serialVersionUID = -1L;
 
     /**
@@ -33,18 +35,7 @@ public class TokenPackage implements Serializable {
     /**
      * 用户信息
      */
-    private UserInfo userInfo;
-
-    public UserInfo getUserInfo() {
-        return userInfo;
-    }
-
-    public void setUserInfo(UserInfo userInfo) {
-        this.userInfo = userInfo;
-    }
-
-    public TokenPackage() {
-    }
+    private UserInfoDto userInfo;
 
     public String getAccessToken() {
         return accessToken;
@@ -76,5 +67,18 @@ public class TokenPackage implements Serializable {
 
     public void setFailure(Long failure) {
         this.failure = failure;
+    }
+
+    public UserInfoDto getUserInfo() {
+        return userInfo;
+    }
+
+    public void setUserInfo(UserInfoDto userInfo) {
+        this.userInfo = userInfo;
+    }
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
     }
 }

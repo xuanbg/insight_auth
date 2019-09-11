@@ -1,12 +1,16 @@
-package com.insight.base.auth.common.entity;
+package com.insight.base.auth.common.dto;
+
+import com.insight.util.Json;
+
+import java.io.Serializable;
 
 /**
  * @author 宣炳刚
  * @date 2017/9/15
- * @remark 授权信息类
+ * @remark 模块信息
  */
-public class ModuleInfo {
-
+public class ModuleInfo implements Serializable {
+    private static final long serialVersionUID = -1L;
     /**
      * 图标
      */
@@ -70,5 +74,10 @@ public class ModuleInfo {
 
     public void setDefault(Boolean aDefault) {
         isDefault = aDefault;
+    }
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
     }
 }

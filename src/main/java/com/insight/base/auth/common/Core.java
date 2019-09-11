@@ -172,7 +172,7 @@ public class Core {
      * @param userId 用户ID
      * @return 令牌数据包
      */
-    public TokenPackage creatorToken(String code, LoginDto login, String userId) {
+    public TokenDto creatorToken(String code, LoginDto login, String userId) {
         String appId = login.getAppId();
         String tenantId = login.getTenantId();
         String deptId = login.getDeptId();
@@ -180,8 +180,8 @@ public class Core {
 
         Token token = new Token(appId, tenantId, deptId);
         if (tenantId != null) {
-            List<AuthInfo> funs = mapper.getAuthInfos(appId, userId, tenantId, deptId);
-            List<String> list = funs.stream().filter(i -> i.getPermit() > 0).map(AuthInfo::getAuthCode).collect(Collectors.toList());
+            List<AuthDto> funs = mapper.getAuthInfos(appId, userId, tenantId, deptId);
+            List<String> list = funs.stream().filter(i -> i.getPermit() > 0).map(AuthDto::getAuthCode).collect(Collectors.toList());
             token.setPermitFuncs(list);
         }
 
@@ -200,7 +200,7 @@ public class Core {
      * @param userId      用户ID
      * @return 令牌数据包
      */
-    public TokenPackage refreshToken(Token token, String tokenId, String fingerprint, String userId) {
+    public TokenDto refreshToken(Token token, String tokenId, String fingerprint, String userId) {
         String appId = token.getAppId();
         token.refresh();
 
@@ -217,7 +217,7 @@ public class Core {
      * @param appId       应用ID
      * @return 令牌数据包
      */
-    private TokenPackage initPackage(Token token, String code, String fingerprint, String userId, String appId) {
+    private TokenDto initPackage(Token token, String code, String fingerprint, String userId, String appId) {
         // 生成令牌数据
         AccessToken accessToken = new AccessToken();
         accessToken.setId(code);
@@ -230,21 +230,21 @@ public class Core {
         refreshToken.setSecret(token.getRefreshKey());
 
         long life = token.getLife() * 12;
-        TokenPackage tokenPackage = new TokenPackage();
-        tokenPackage.setAccessToken(Json.toBase64(accessToken));
-        tokenPackage.setRefreshToken(Json.toBase64(refreshToken));
-        tokenPackage.setExpire(token.getLife());
-        tokenPackage.setFailure(life);
+        TokenDto tokenDto = new TokenDto();
+        tokenDto.setAccessToken(Json.toBase64(accessToken));
+        tokenDto.setRefreshToken(Json.toBase64(refreshToken));
+        tokenDto.setExpire(token.getLife());
+        tokenDto.setFailure(life);
 
         // 缓存令牌数据
-        String hashKey = tokenPackage.getAccessToken() + fingerprint;
+        String hashKey = tokenDto.getAccessToken() + fingerprint;
         token.setHash(Util.md5(hashKey));
         Redis.set("Token:" + code, Json.toJson(token), life, TimeUnit.MILLISECONDS);
 
         // 更新用户缓存
         String key = "User:" + userId;
         String json = Redis.get(key, "User");
-        UserInfo info = Json.toBean(json, UserInfo.class);
+        UserInfoDto info = Json.toBean(json, UserInfoDto.class);
         String imgUrl = info.getHeadImg();
         if (imgUrl == null || imgUrl.isEmpty()) {
             String defaultHead = Redis.get("Config:DefaultHead");
@@ -255,9 +255,9 @@ public class Core {
         }
 
         info.setTenantId(token.getTenantId());
-        tokenPackage.setUserInfo(info);
+        tokenDto.setUserInfo(info);
 
-        return tokenPackage;
+        return tokenDto;
     }
 
     /**

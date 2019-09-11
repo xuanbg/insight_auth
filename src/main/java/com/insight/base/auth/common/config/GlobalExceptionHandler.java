@@ -1,4 +1,4 @@
-package com.insight.base.auth.config;
+package com.insight.base.auth.common.config;
 
 import com.insight.util.Json;
 import com.insight.util.ReplyHelper;

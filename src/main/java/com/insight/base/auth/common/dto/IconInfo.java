@@ -1,9 +1,9 @@
-package com.insight.base.auth.common.entity;
+package com.insight.base.auth.common.dto;
 
 /**
  * @author 宣炳刚
  * @date 2017/9/15
- * @remark 授权信息类
+ * @remark 图标信息
  */
 public class IconInfo {
 

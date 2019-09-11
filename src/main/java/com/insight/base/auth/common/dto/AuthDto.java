@@ -5,9 +5,9 @@ import java.io.Serializable;
 /**
  * @author 宣炳刚
  * @date 2017/9/15
- * @remark 授权信息类
+ * @remark 授权信息DTO
  */
-public class AuthInfo implements Serializable {
+public class AuthDto implements Serializable {
     private static final long serialVersionUID = -1L;
 
     /**

@@ -1,24 +1,48 @@
+
+-- ----------------------------
+-- Table structure for ibl_operate_log
+-- ----------------------------
+DROP TABLE IF EXISTS `ibl_operate_log`;
+CREATE TABLE `ibl_operate_log` (
+  `id` char(32) NOT NULL COMMENT 'UUID主键',
+  `type` varchar(16) NOT NULL COMMENT '类型',
+  `business_id` char(32) DEFAULT NULL COMMENT '业务ID',
+  `business` varchar(16) DEFAULT NULL COMMENT '业务名称',
+  `content` json DEFAULT NULL COMMENT '日志内容',
+  `dept_id` char(32) DEFAULT NULL COMMENT '创建人部门ID',
+  `creator` varchar(32) NOT NULL COMMENT '创建人,系统自动为系统',
+  `creator_id` char(32) NOT NULL COMMENT '创建人ID,系统自动为32个0',
+  `created_time` datetime NOT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_operate_log_type` (`type`) USING BTREE,
+  KEY `idx_operate_log_business_id` (`business_id`) USING BTREE,
+  KEY `idx_operate_log_dept_id` (`dept_id`) USING BTREE,
+  KEY `idx_operate_log_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_operate_log_created_time` (`created_time`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='操作日志记录表';
+
 -- ----------------------------
 -- Table structure for ibi_interface
 -- ----------------------------
 DROP TABLE IF EXISTS `ibi_interface`;
 CREATE TABLE `ibi_interface` (
   `id` char(32) NOT NULL COMMENT 'UUID主键',
-  `type` tinyint(3) unsigned NOT NULL COMMENT '接口类型:0.公开;1.私有;2.授权',
   `name` varchar(64) NOT NULL COMMENT '接口名称',
   `method` varchar(8) NOT NULL COMMENT 'HTTP请求方法',
   `url` varchar(128) NOT NULL COMMENT '接口URL',
-  `auth_code` varchar(32) DEFAULT NULL COMMENT '授权码',
-  `is_limit` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否限流:0.不限流;1.限流',
+  `auth_code` varchar(32) DEFAULT NULL COMMENT '授权码,如接口需要鉴权,则必须设置授权码',
   `limit_gap` int(10) unsigned DEFAULT NULL DEFAULT 0 COMMENT '最小间隔(秒),0表示无调用时间间隔',
   `limit_cycle` int(10) unsigned DEFAULT NULL COMMENT '限流周期(秒),null表示不进行周期性限流',
   `limit_max` int(10) unsigned DEFAULT NULL COMMENT '限制次数/限流周期,null表示不进行周期性限流',
   `message` varchar(32) DEFAULT NULL COMMENT '限流消息',
   `remark` varchar(1024) DEFAULT NULL COMMENT '描述',
+  `is_verify` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否验证Token:0.公开接口,不需要验证Token;1.私有接口,需要验证Token',
+  `is_limit` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否限流:0.不限流;1.限流',
   `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `idx_interface_hash` (`method`,`url`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='接口表';
+  UNIQUE KEY `idx_interface_hash` (`method`,`url`) USING BTREE,
+  KEY `idx_interface_created_time` (`created_time`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='接口配置表';
 
 
 -- ----------------------------
@@ -41,7 +65,10 @@ CREATE TABLE `ibt_tenant` (
   `creator` varchar(64) NOT NULL COMMENT '创建人',
   `creator_id` char(32) NOT NULL COMMENT '创建人ID',
   `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_tenant_code` (`code`) USING BTREE,
+  KEY `idx_tenant_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_tenant_created_time` (`created_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='租户表';
 
 -- ----------------------------
@@ -88,7 +115,9 @@ CREATE TABLE `ibs_application` (
   `creator` varchar(64) NOT NULL COMMENT '创建人',
   `creator_id` char(32) NOT NULL COMMENT '创建用户ID',
   `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_application_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_application_created_time` (`created_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='应用表';
 
 -- ----------------------------
@@ -109,7 +138,9 @@ CREATE TABLE `ibs_navigator` (
   `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_navigator_app_id` (`app_id`) USING BTREE,
-  KEY `idx_navigator_parent_id` (`parent_id`) USING BTREE
+  KEY `idx_navigator_parent_id` (`parent_id`) USING BTREE,
+  KEY `idx_navigator_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_navigator_created_time` (`created_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='导航表';
 
 -- ----------------------------
@@ -122,22 +153,24 @@ CREATE TABLE `ibs_function` (
   `type` tinyint(3) unsigned NOT NULL COMMENT '功能类型 0:全局功能;1:数据项功能;2:其他功能',
   `index` int(11) unsigned NOT NULL COMMENT '序号',
   `name` varchar(64) NOT NULL COMMENT '名称',
-  `auth_code` varchar(32) DEFAULT NULL COMMENT '权限代码',
+  `auth_code` varchar(32) DEFAULT NULL COMMENT '接口授权码,多个授权码使用英文逗号分隔',
   `icon_info` json DEFAULT NULL COMMENT '图标信息',
   `remark` varchar(256) DEFAULT NULL COMMENT '备注',
   `creator` varchar(64) NOT NULL COMMENT '创建人',
   `creator_id` char(32) NOT NULL COMMENT '创建用户ID',
   `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_function_nav_id` (`nav_id`) USING BTREE
+  KEY `idx_function_nav_id` (`nav_id`) USING BTREE,
+  KEY `idx_function_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_function_created_time` (`created_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='功能表';
 
 
 -- ----------------------------
--- Table structure for ibo_org
+-- Table structure for ibo_organize
 -- ----------------------------
-DROP TABLE IF EXISTS `ibo_org`;
-CREATE TABLE `ibo_org` (
+DROP TABLE IF EXISTS `ibo_organize`;
+CREATE TABLE `ibo_organize` (
   `id` char(32) NOT NULL COMMENT '主键(UUID)',
   `tenant_id` char(32) NOT NULL COMMENT '租户ID',
   `parent_id` char(32) DEFAULT NULL COMMENT '父级ID',
@@ -153,21 +186,23 @@ CREATE TABLE `ibo_org` (
   `creator_id` char(32) NOT NULL COMMENT '创建人ID',
   `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_org_tenant_id` (`tenant_id`) USING BTREE,
-  KEY `idx_org_parent_id` (`parent_id`) USING BTREE
+  KEY `idx_organize_tenant_id` (`tenant_id`) USING BTREE,
+  KEY `idx_organize_parent_id` (`parent_id`) USING BTREE,
+  KEY `idx_organize_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_organize_created_time` (`created_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='组织机构表';
 
 -- ----------------------------
--- Table structure for ibo_org_member
+-- Table structure for ibo_organize_member
 -- ----------------------------
-DROP TABLE IF EXISTS `ibo_org_member`;
-CREATE TABLE `ibo_org_member` (
+DROP TABLE IF EXISTS `ibo_organize_member`;
+CREATE TABLE `ibo_organize_member` (
   `id` char(32) NOT NULL COMMENT '主键(UUID)',
-  `org_id` char(32) NOT NULL COMMENT '职位ID(组织机构表ID)',
+  `post_id` char(32) NOT NULL COMMENT '职位ID(组织机构表ID)',
   `user_id` char(32) NOT NULL COMMENT '用户ID(用户表ID)',
   PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_org_member_org_id` (`org_id`) USING BTREE,
-  KEY `idx_org_member_user_id` (`user_id`) USING BTREE
+  KEY `idx_organize_member_post_id` (`post_id`) USING BTREE,
+  KEY `idx_organize_member_user_id` (`user_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='职位成员表';
 
 
@@ -183,6 +218,7 @@ CREATE TABLE `ibu_user` (
   `mobile` varchar(32) DEFAULT NULL COMMENT '手机号',
   `email` varchar(64) DEFAULT NULL COMMENT '电子邮箱',
   `union_id` varchar(128) DEFAULT NULL COMMENT '微信UnionID',
+  `open_id` json DEFAULT NULL COMMENT '微信OpenID',
   `password` varchar(256) NOT NULL DEFAULT 'e10adc3949ba59abbe56e057f20f883e' COMMENT '密码(RSA加密)',
   `paypw` char(32) DEFAULT NULL COMMENT '支付密码(MD5)',
   `head_img` varchar(256) DEFAULT NULL COMMENT '用户头像',
@@ -197,53 +233,11 @@ CREATE TABLE `ibu_user` (
   UNIQUE KEY `idx_user_account` (`account`) USING BTREE,
   UNIQUE KEY `idx_user_mobile` (`mobile`) USING BTREE,
   UNIQUE KEY `idx_user_email` (`email`) USING BTREE,
-  UNIQUE KEY `idx_user_union_id` (`union_id`) USING BTREE
+  UNIQUE KEY `idx_user_union_id` (`union_id`) USING BTREE,
+  KEY `idx_user_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_user_created_time` (`created_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='用户表';
 
--- ----------------------------
--- Table structure for ibu_user_device
--- ----------------------------
-DROP TABLE IF EXISTS `ibu_user_device`;
-CREATE TABLE `ibu_user_device` (
-  `id` varchar(64) NOT NULL COMMENT '主键(设备唯一标识)',
-  `user_id` char(32) NOT NULL COMMENT '用户ID',
-  `device_model` varchar(32) DEFAULT NULL COMMENT '设备型号',
-  `is_invalid` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否失效:0.有效;1.失效',
-  `update_time` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_user_device_user_id` (`user_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='用户设备表';
-
--- ----------------------------
--- Table structure for ibu_user_openid
--- ----------------------------
-DROP TABLE IF EXISTS `ibu_user_openid`;
-CREATE TABLE `ibu_user_openid` (
-  `id` varchar(64) NOT NULL COMMENT '主键(微信OpenID)',
-  `user_id` char(32) NOT NULL COMMENT '用户ID',
-  `app_id` varchar(32) DEFAULT NULL COMMENT '微信AppID',
-  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_user_device_user_id` (`user_id`) USING BTREE,
-  KEY `idx_user_device_app_id` (`app_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='用户绑定微信OpenID记录表';
-
--- ----------------------------
--- Table structure for ibu_user_tag
--- ----------------------------
-DROP TABLE IF EXISTS `ibu_user_tag`;
-CREATE TABLE `ibu_user_tag` (
-  `id` char(32) NOT NULL COMMENT '主键(UUID)',
-  `user_id` char(32) NOT NULL COMMENT '用户ID',
-  `tag` varchar(32) DEFAULT NULL COMMENT '标签',
-  `creator` varchar(64) NOT NULL COMMENT '创建人',
-  `creator_id` char(32) NOT NULL COMMENT '创建人ID',
-  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_user_device_tag` (`tag`) USING BTREE,
-  KEY `idx_user_device_user_id` (`user_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='用户标签表';
 
 -- ----------------------------
 -- Table structure for ibu_group
@@ -259,7 +253,9 @@ CREATE TABLE `ibu_group` (
   `creator_id` char(32) NOT NULL COMMENT '创建人ID',
   `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_group_tenant_id` (`tenant_id`) USING BTREE
+  KEY `idx_group_tenant_id` (`tenant_id`) USING BTREE,
+  KEY `idx_group_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_group_created_time` (`created_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='用户组表';
 
 -- ----------------------------
@@ -285,7 +281,7 @@ CREATE TABLE `ibr_config` (
   `data_type` int(3) unsigned NOT NULL COMMENT '类型:0.无归属;1.仅本人;2.仅本部门;3.部门所有;4.机构所有',
   `name` varchar(32) NOT NULL COMMENT '名称',
   PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_role_data_permit_data_type` (`data_type`) USING BTREE
+  KEY `idx_config_data_type` (`data_type`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='数据配置表';
 
 -- ----------------------------
@@ -304,7 +300,9 @@ CREATE TABLE `ibr_role` (
   `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_tenant_id` (`tenant_id`) USING BTREE,
-  KEY `idx_role_app_id` (`app_id`) USING BTREE
+  KEY `idx_role_app_id` (`app_id`) USING BTREE,
+  KEY `idx_role_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_role_created_time` (`created_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='角色表';
 
 -- ----------------------------
@@ -318,9 +316,6 @@ CREATE TABLE `ibr_role_data_permit` (
   `mode` int(3) unsigned NOT NULL COMMENT '授权模式:0.相对模式;1.用户模式;2.部门模式',
   `owner_id` char(32) NOT NULL COMMENT '数据所有者ID,相对模式下为模式ID',
   `permit` bit(1) NOT NULL DEFAULT b'0' COMMENT '授权类型:0.只读;1.读写',
-  `creator` varchar(64) NOT NULL COMMENT '创建人',
-  `creator_id` char(32) NOT NULL COMMENT '创建人ID',
-  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_data_permit_role_id` (`role_id`) USING BTREE,
   KEY `idx_role_data_permit_module_id` (`module_id`) USING BTREE
@@ -335,9 +330,6 @@ CREATE TABLE `ibr_role_func_permit` (
   `role_id` char(32) NOT NULL COMMENT '角色ID',
   `function_id` char(32) NOT NULL COMMENT '功能ID',
   `permit` bit(1) NOT NULL DEFAULT b'0' COMMENT '授权类型:0.拒绝;1.允许',
-  `creator` varchar(64) NOT NULL COMMENT '创建人',
-  `creator_id` char(32) NOT NULL COMMENT '创建人ID',
-  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_func_permit_role_id` (`role_id`) USING BTREE,
   KEY `idx_role_func_permit_function_id` (`function_id`) USING BTREE
@@ -352,9 +344,6 @@ CREATE TABLE `ibr_role_member` (
   `type` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '成员类型:0.未定义;1.用户;2.用户组;3.职位',
   `role_id` char(32) NOT NULL COMMENT '角色ID',
   `member_id` char(32) NOT NULL COMMENT '成员ID',
-  `creator` varchar(64) NOT NULL COMMENT '创建人',
-  `creator_id` char(32) NOT NULL COMMENT '创建人ID',
-  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_member_role_id` (`role_id`) USING BTREE,
   KEY `idx_role_member_member_id` (`member_id`) USING BTREE
@@ -395,8 +384,8 @@ SELECT
 FROM
 	ibr_role r
 	JOIN ibr_role_member m ON m.role_id = r.id
-	JOIN ibo_org_member p ON p.org_id = m.member_id
-	JOIN ibo_org o ON o.id = p.org_id 
+	JOIN ibo_organize_member p ON p.post_id = m.member_id
+	JOIN ibo_organize o ON o.id = p.post_id 
 	AND m.type = 3;
 
 -- ----------------------------
@@ -453,7 +442,7 @@ INSERT ibt_tenant_user (`id`, `tenant_id`, `user_id`) VALUES
 -- ----------------------------
 -- 初始化组织机构:因赛特软件
 -- ----------------------------
-INSERT ibo_org (`id`, `tenant_id`, `type`, `index`, `code`, `name`, `alias`, `full_name`, `creator`, `creator_id`) VALUES 
+INSERT ibo_organize (`id`, `tenant_id`, `type`, `index`, `code`, `name`, `alias`, `full_name`, `creator`, `creator_id`) VALUES 
 ('2564cd559cd340f0b81409723fd8632a', '2564cd559cd340f0b81409723fd8632a', 1, 0, 'TI-001', '因赛特软件有限公司', '因赛特', '因赛特软件', '系统管理员', '00000000000000000000000000000000');
 
 -- ----------------------------
@@ -473,8 +462,10 @@ INSERT ibs_navigator(`id`, `parent_id`, `app_id`, `type`, `index`, `name`, `modu
 ('8c95d6e097f340d6a8d93a3b5631ba39', null, '9dd99dd9e6df467a8207d05ea5581125', 1, 1, '运营中心', json_object("icon", null), '系统管理员', '00000000000000000000000000000000'),
 ('711aad8daf654bcdb3a126d70191c15c', '8c95d6e097f340d6a8d93a3b5631ba39', '9dd99dd9e6df467a8207d05ea5581125', 2, 1, '租户管理', json_object("module", 'Tenants', "file", 'Base.dll', "default", true, "icon", null), '系统管理员', '00000000000000000000000000000000'),
 ('a65a562582bb489ea729bb0838bbeff8', '8c95d6e097f340d6a8d93a3b5631ba39', '9dd99dd9e6df467a8207d05ea5581125', 2, 2, '应用管理', json_object("module", 'Apps', "file", 'Base.dll', "default", false, "icon", null), '系统管理员', '00000000000000000000000000000000'),
+('5e4a994ccd2611e9bbd40242ac110008', null, '9dd99dd9e6df467a8207d05ea5581125', 1, 2, '系统设置', json_object("icon", null), '系统管理员', '00000000000000000000000000000000'),
+('d6254874cd2611e9bbd40242ac110008', '5e4a994ccd2611e9bbd40242ac110008', '9dd99dd9e6df467a8207d05ea5581125', 2, 1, '接口管理', json_object("module", 'Tenants', "file", 'Base.dll', "default", true, "icon", null), '系统管理员', '00000000000000000000000000000000'),
 ('4b3ac9336dd8496597e603fc7e8f5140', null, 'e46c0d4f85f24f759ad4d86b9505b1d4', 1, 2, '系统设置', json_object("icon", null), '系统管理员', '00000000000000000000000000000000'),
-('100ff6e2748f493586ea4e4cd3f7a4b1', '4b3ac9336dd8496597e603fc7e8f5140', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 1, '组织机构', json_object("module", 'Organizations', "file", 'Base.dll', "default", false, "icon", null), '系统管理员', '00000000000000000000000000000000'),
+('100ff6e2748f493586ea4e4cd3f7a4b1', '4b3ac9336dd8496597e603fc7e8f5140', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 1, '组织机构', json_object("module", 'Organizes', "file", 'Base.dll', "default", false, "icon", null), '系统管理员', '00000000000000000000000000000000'),
 ('cdf0ffb178b741b287d1f155d0165112', '4b3ac9336dd8496597e603fc7e8f5140', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 2, '用户', json_object("module", 'Users', "file", 'Base.dll', "default", false, "icon", null), '系统管理员', '00000000000000000000000000000000'),
 ('b13a3593c4ec4d2fb9432045846f7ff9', '4b3ac9336dd8496597e603fc7e8f5140', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 3, '用户组', json_object("module", 'Groups', "file", 'Base.dll', "default", false, "icon", null), '系统管理员', '00000000000000000000000000000000'),
 ('0e74cbb3f9d44bddbd3be3cc702d2a82', '4b3ac9336dd8496597e603fc7e8f5140', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 4, '角色权限', json_object("module", 'Roles', "file", 'Base.dll', "default", false, "icon", null), '系统管理员', '00000000000000000000000000000000');
@@ -483,33 +474,39 @@ INSERT ibs_navigator(`id`, `parent_id`, `app_id`, `type`, `index`, `name`, `modu
 -- 初始化应用:系统功能
 -- ----------------------------
 INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_code`, `icon_info`, `creator`, `creator_id`) VALUES
-(replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 0, 1, '刷新', 'getTenants', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 0, 1, '刷新', 'getTenant', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 0, 2, '新增租户', 'newTenant', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 1, 3, '编辑', 'editTenant', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 1, 4, '删除', 'deleteTenant', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 1, 5, '绑定应用', 'bindApp', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 1, 6, '续租', 'extend', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 
-(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 0, 1, '刷新', 'getApps', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 0, 2, '新建应用', 'newApp', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 0, 1, '刷新', 'getApp', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 0, 2, '新增应用', 'newApp', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 3, '编辑', 'editApp', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 4, '删除', 'deleteApp', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 5, '新建导航', 'newNav', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 5, '新增导航', 'newNav', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 6, '编辑', 'editNav', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 7, '删除', 'deleteNav', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 8, '新建功能', 'newFun', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 8, '新增功能', 'newFun', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 9, '编辑', 'editFun', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 10, '删除', 'deleteFun', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 
-(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 0, 1, '刷新', 'getOrgs', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 0, 2, '新建', 'newOrg', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 1, 3, '编辑', 'editOrg', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 1, 4, '删除', 'deleteOrg', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 1, 5, '添加成员', 'addOrgMember', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 1, 6, '移除成员', 'removeOrgMember', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 0, 1, '刷新', 'getConfig', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 0, 2, '新增', 'newConfig', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 1, 3, '编辑', 'editConfig', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 1, 4, '删除', 'deleteConfig', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 1, 5, '加载配置', 'loadConfigs', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 
-(replace(uuid(), '-', ''), 'cdf0ffb178b741b287d1f155d0165112', 0, 1, '刷新', 'getUsers', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), 'cdf0ffb178b741b287d1f155d0165112', 0, 2, '新建', 'newUser', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 0, 1, '刷新', 'getOrganize', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 0, 2, '新增', 'newOrganize', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 1, 3, '编辑', 'editOrganize', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 1, 4, '删除', 'deleteOrganize', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 1, 5, '添加成员', 'addOrganizeMember', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 1, 6, '移除成员', 'removeOrganizeMember', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+
+(replace(uuid(), '-', ''), 'cdf0ffb178b741b287d1f155d0165112', 0, 1, '刷新', 'getUser', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'cdf0ffb178b741b287d1f155d0165112', 0, 2, '新增', 'newUser', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'cdf0ffb178b741b287d1f155d0165112', 1, 3, '编辑', 'editUser', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'cdf0ffb178b741b287d1f155d0165112', 1, 4, '删除', 'deleteUser', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'cdf0ffb178b741b287d1f155d0165112', 1, 5, '封禁', 'bannedUser', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
@@ -517,16 +514,16 @@ INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_code`, `icon_
 (replace(uuid(), '-', ''), 'cdf0ffb178b741b287d1f155d0165112', 1, 7, '重置密码', 'resetPassword', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'cdf0ffb178b741b287d1f155d0165112', 1, 7, '邀请用户', 'inviteUser', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 
-(replace(uuid(), '-', ''), 'b13a3593c4ec4d2fb9432045846f7ff9', 0, 1, '刷新', 'getGroups', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), 'b13a3593c4ec4d2fb9432045846f7ff9', 0, 2, '新建用户组', 'newGroup', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'b13a3593c4ec4d2fb9432045846f7ff9', 0, 1, '刷新', 'getGroup', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'b13a3593c4ec4d2fb9432045846f7ff9', 0, 2, '新增用户组', 'newGroup', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'b13a3593c4ec4d2fb9432045846f7ff9', 1, 3, '编辑', 'editGroup', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'b13a3593c4ec4d2fb9432045846f7ff9', 1, 4, '删除', 'deleteGroup', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'b13a3593c4ec4d2fb9432045846f7ff9', 1, 5, '添加成员', 'addGroupMember', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'b13a3593c4ec4d2fb9432045846f7ff9', 1, 6, '移除成员', 'removeGroupMember', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 
-(replace(uuid(), '-', ''), '0e74cbb3f9d44bddbd3be3cc702d2a82', 0, 1, '刷新', 'getRoles', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), '0e74cbb3f9d44bddbd3be3cc702d2a82', 0, 2, '新建', 'newRole,getApps', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), '0e74cbb3f9d44bddbd3be3cc702d2a82', 1, 3, '编辑', 'editRole,getApps', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), '0e74cbb3f9d44bddbd3be3cc702d2a82', 0, 1, '刷新', 'getRole', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), '0e74cbb3f9d44bddbd3be3cc702d2a82', 0, 2, '新增', 'newRole,getApp', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), '0e74cbb3f9d44bddbd3be3cc702d2a82', 1, 3, '编辑', 'editRole,getApp', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), '0e74cbb3f9d44bddbd3be3cc702d2a82', 1, 4, '删除', 'deleteRole', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), '0e74cbb3f9d44bddbd3be3cc702d2a82', 1, 5, '添加成员', 'addRoleMember', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), '0e74cbb3f9d44bddbd3be3cc702d2a82', 1, 6, '移除成员', 'removeRoleMember', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000');
@@ -556,8 +553,8 @@ from ibu_user u, ibu_group g;
 -- ----------------------------
 ALTER TABLE `ibr_role_member` 
 MODIFY COLUMN `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键(UUID)' FIRST;
-insert ibr_role_member(id, `type`, role_id, member_id, creator, creator_id)
-select uuid(), 2, r.id, g.id, '系统管理员', '00000000000000000000000000000000'
+insert ibr_role_member(id, `type`, role_id, member_id)
+select uuid(), 2, r.id, g.id
 from ibr_role r, ibu_group g;
 update ibr_role_member set id = replace(id, '-', '');
 ALTER TABLE `ibr_role_member` 
@@ -568,8 +565,8 @@ MODIFY COLUMN `id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT
 -- ---------------------------- 
 ALTER TABLE `ibr_role_func_permit` 
 MODIFY COLUMN `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键(UUID)' FIRST;
-INSERT `ibr_role_func_permit`(`id`, `role_id`, `function_id`, `permit`, `creator`, `creator_id`) 
-select uuid(), r.id, f.id, 1, '系统管理员', '00000000000000000000000000000000'
+INSERT `ibr_role_func_permit`(`id`, `role_id`, `function_id`, `permit`) 
+select uuid(), r.id, f.id, 1
 from ibr_role r
 join ibs_navigator n on n.app_id = r.app_id
 join ibs_function f on f.nav_id = n.id;
@@ -580,13 +577,19 @@ MODIFY COLUMN `id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT
 -- ----------------------------
 -- 初始化接口配置
 -- ---------------------------- 
-INSERT `ibi_interface`(`id`, `type`, `name`, `method`, `url`, `auth_code`, `is_limit`, `limit_gap`, `limit_cycle`, `limit_max`, `message`) VALUES 
-(replace(uuid(), '-', ''), 0, '获取Code', 'GET', '/base/auth/v1.0/tokens/codes', NULL, 1, 1, 86400, 360, '获取Code接口每24小时调用次数为360次,请合理使用'),
-(replace(uuid(), '-', ''), 0, '获取Token', 'POST', '/base/auth/v1.0/tokens', NULL, 1, 1, 86400, 360, '获取Token接口每24小时调用次数为360次,请合理使用'),
-(replace(uuid(), '-', ''), 0, '通过微信授权码获取Token', 'POST', '/base/auth/v1.0/tokens/withWechatCode', NULL, 1, 1, 86400, 360, '获取Token接口每24小时调用次数为360次,请合理使用'),
-(replace(uuid(), '-', ''), 0, '通过微信UnionId获取Token', 'POST', '/base/auth/v1.0/tokens/withWechatUnionId', NULL, 1, 1, 86400, 360, '获取Token接口每24小时调用次数为360次,请合理使用'),
-(replace(uuid(), '-', ''), 1, '验证Token', 'GET', '/base/auth/v1.0/tokens/status', NULL, 0, NULL, NULL, NULL, NULL),
-(replace(uuid(), '-', ''), 0, '刷新Token', 'PUT', '/base/auth/v1.0/tokens', NULL, 1, 1, 3600, 10, '刷新Token接口每小时调用次数为10次,请合理使用'),
-(replace(uuid(), '-', ''), 1, '用户账号离线', 'DELETE', '/base/auth/v1.0/tokens', NULL, 1, 1, NULL, NULL, NULL),
-(replace(uuid(), '-', ''), 1, '获取用户导航栏', 'GET', '/base/auth/v1.0/navigators', NULL, 1, 1, NULL, NULL, NULL),
-(replace(uuid(), '-', ''), 1, '获取模块功能', 'GET', '/base/auth/v1.0/navigators/{id}/functions', NULL, 1, 1, NULL, NULL, NULL);
+INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, `limit_cycle`, `limit_max`, `message`, `is_verify`, `is_limit`) VALUES 
+(replace(uuid(), '-', ''), '获取Code', 'GET', '/base/auth/v1.0/tokens/codes', NULL, 1, 86400, 360, '获取Code接口每24小时调用次数为360次,请合理使用', 0, 1),
+(replace(uuid(), '-', ''), '获取Token', 'POST', '/base/auth/v1.0/tokens', NULL, 1, 86400, 360, '获取Token接口每24小时调用次数为360次,请合理使用', 0, 1),
+(replace(uuid(), '-', ''), '通过微信授权码获取Token', 'POST', '/base/auth/v1.0/tokens/withWechatCode', NULL, 1, 86400, 360, '获取Token接口每24小时调用次数为360次,请合理使用', 0, 1),
+(replace(uuid(), '-', ''), '通过微信UnionId获取Token', 'POST', '/base/auth/v1.0/tokens/withWechatUnionId', NULL, 1, 86400, 360, '获取Token接口每24小时调用次数为360次,请合理使用', 0, 1),
+(replace(uuid(), '-', ''), '验证Token', 'GET', '/base/auth/v1.0/tokens/status', NULL, NULL, NULL, NULL, NULL, 1, 0),
+(replace(uuid(), '-', ''), '刷新Token', 'PUT', '/base/auth/v1.0/tokens', NULL, 1, 3600, 10, '刷新Token接口每小时调用次数为10次,请合理使用', 0, 1),
+(replace(uuid(), '-', ''), '用户账号离线', 'DELETE', '/base/auth/v1.0/tokens', NULL, 1, NULL, NULL, NULL, 1, 1),
+(replace(uuid(), '-', ''), '获取用户导航栏', 'GET', '/base/auth/v1.0/navigators', NULL, 1, NULL, NULL, NULL, 1, 1),
+(replace(uuid(), '-', ''), '获取模块功能', 'GET', '/base/auth/v1.0/navigators/{id}/functions', NULL, 1, NULL, NULL, NULL, 1, 1),
+(replace(uuid(), '-', ''), '获取接口配置列表', 'GET', '/base/auth/manage/v1.0/configs', 'getConfig', 1, NULL, NULL, NULL, 1, 1),
+(replace(uuid(), '-', ''), '获取接口配置详情', 'GET', '/base/auth/manage/v1.0/configs/{id}', 'getConfig', 1, NULL, NULL, NULL, 1, 1),
+(replace(uuid(), '-', ''), '新增接口配置', 'POST', '/base/auth/manage/v1.0/configs', 'newConfig', 1, NULL, NULL, NULL, 1, 1),
+(replace(uuid(), '-', ''), '编辑接口配置', 'PUT', '/base/auth/manage/v1.0/configs', 'editConfig', 1, NULL, NULL, NULL, 1, 1),
+(replace(uuid(), '-', ''), '删除接口配置', 'DELETE', '/base/auth/manage/v1.0/configs', 'deleteConfig', 1, NULL, NULL, NULL, 1, 1),
+(replace(uuid(), '-', ''), '加载接口配置表', 'GET', '/base/auth/manage/v1.0/configs/load', 'loadConfigs', 1, NULL, NULL, NULL, 1, 1);
