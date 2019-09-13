@@ -73,6 +73,9 @@ public class AuthServiceImpl implements AuthService {
             code = core.getGeneralCode(userId, account, password);
         } else {
             code = core.getSmsCode(userId, account);
+            if(code == null){
+                return ReplyHelper.fail("发送短信失败,请稍后重试");
+            }
         }
 
         return ReplyHelper.success(code);

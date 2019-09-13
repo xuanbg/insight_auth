@@ -158,10 +158,15 @@ public class Core {
         sms.setMobiles(mobile);
         sms.setScene("0001");
         sms.setParam(map);
-        Reply reply = client.sendMessage(sms);
-        String key = Util.md5(mobile + Util.md5(smsCode));
+        try {
+            Reply reply = client.sendMessage(sms);
+            String key = Util.md5(mobile + Util.md5(smsCode));
+            logger.info("手机号{}的短信验证码为: {}", mobile, smsCode);
 
-        return generateCode(userId, key, SMS_CODE_LEFT);
+            return generateCode(userId, key, SMS_CODE_LEFT);
+        }catch (Exception ex){
+            return null;
+        }
     }
 
     /**
