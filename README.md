@@ -20,6 +20,8 @@
   - [新增接口配置](#新增接口配置)
   - [编辑接口配置](#编辑接口配置)
   - [删除接口配置](#删除接口配置)
+  - [获取日志列表](#获取日志列表)
+  - [获取日志详情](#获取日志详情)
   - [加载接口配置表](#加载接口配置表)
 - [DTO类型说明](#DTO类型说明)
 
@@ -34,8 +36,8 @@ Auth 服务是一个依赖于用户数据的、基于Token的用户身份认证�
 
 1. Token的发放(账号/密码|手机号/验证码|微信授权)、验证、刷新、注销；
 2. 获取应用的功能模块导航信息，以及指定模块的功能和授权信息；
-3. 各类短信验证码的生成-发送、校验、验证；
-4. 支付密码的设置/更改、验证。
+3. 接口配置数据的管理；
+4. 接口配置数据变更日志查询。
 
 ### 通讯方式
 
@@ -125,7 +127,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfoDto|用户信息|
+|[UserInfo](#UserInfo)|userInfo|用户信息|
 
 请求参数示例：
 
@@ -150,7 +152,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
     "refreshToken": "eyJpZCI6IjQwNGEyNTdiYzM1YTQ1NDBhZWQwNzlkYzRiNDhkOTU3IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiYjRhOWNhNDE2ODFlNGUyNjg4ZTU3NjI4ODdmZDE4MjEifQ==",
     "expire": 7200000,
     "failure": 86400000,
-    "userInfoDto": {
+    "userInfo": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
       "deptId": null,
@@ -197,7 +199,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfoDto|用户信息|
+|[UserInfo](#UserInfo)|userInfo|用户信息|
 
 请求参数示例：
 
@@ -221,7 +223,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
     "refreshToken": "eyJpZCI6IjQwNGEyNTdiYzM1YTQ1NDBhZWQwNzlkYzRiNDhkOTU3IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiYjRhOWNhNDE2ODFlNGUyNjg4ZTU3NjI4ODdmZDE4MjEifQ==",
     "expire": 7200000,
     "failure": 86400000,
-    "userInfoDto": {
+    "userInfo": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
       "deptId": null,
@@ -296,7 +298,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfoDto|用户信息|
+|[UserInfo](#UserInfo)|userInfo|用户信息|
 
 请求参数示例：
 
@@ -320,7 +322,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
     "refreshToken": "eyJpZCI6IjQwNGEyNTdiYzM1YTQ1NDBhZWQwNzlkYzRiNDhkOTU3IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiYjRhOWNhNDE2ODFlNGUyNjg4ZTU3NjI4ODdmZDE4MjEifQ==",
     "expire": 7200000,
     "failure": 86400000,
-    "userInfoDto": {
+    "userInfo": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
       "deptId": null,
@@ -389,7 +391,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/status" \
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfoDto|用户信息|
+|[UserInfo](#UserInfo)|userInfo|用户信息|
 
 返回结果示例：
 
@@ -403,7 +405,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/status" \
     "refreshToken": "eyJpZCI6IjQwNGEyNTdiYzM1YTQ1NDBhZWQwNzlkYzRiNDhkOTU3IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiYjRhOWNhNDE2ODFlNGUyNjg4ZTU3NjI4ODdmZDE4MjEifQ==",
     "expire": 7200000,
     "failure": 86400000,
-    "userInfoDto": {
+    "userInfo": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
       "deptId": null,
@@ -684,7 +686,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/navigators/711aad8daf654bcdb3a126d
 
 ### 获取接口配置列表
 
-通过关键词查询接口配置.查询关键词作用于接口名称,接口URL已及授权码.该接口支持分页,如不传分页参数,则返回最近添加的20条数据.
+通过关键词查询接口配置。查询关键词作用于接口名称、接口URL已及授权码。该接口支持分页，如不传分页参数，则返回最近添加的20条数据。
 
 请求方法：**GET**
 
@@ -755,7 +757,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs?key=getConfig" \
 
 ### 获取接口配置详情
 
-获取指定ID的接口配置详情.
+获取指定ID的接口配置详情。
 
 请求方法：**GET**
 
@@ -824,7 +826,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 
 ### 新增接口配置
 
-新增一个接口配置.
+新增一个接口配置。
 
 请求方法：**POST**
 
@@ -879,7 +881,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 
 ### 编辑接口配置
 
-修改指定ID的接口配置信息.
+修改指定ID的接口配置信息。
 
 请求方法：**PUT**
 
@@ -936,7 +938,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 
 ### 删除接口配置
 
-获取指定ID的接口配置详情.
+删除指定ID的接口配置数据。
 
 请求方法：**DELETE**
 
@@ -968,9 +970,161 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 
 [回目录](#目录)
 
+### 获取日志列表
+
+通过关键词查询接口配置数据变更记录。查询关键词作用于操作类型、业务名称、业务ID、部门ID、操作人ID和操作人姓名。该接口支持分页，如不传分页参数，则返回最近添加的20条数据。
+
+请求方法：**GET**
+
+接口URL：**/base/auth/manage/v1.0/configs/logs**
+
+请求参数如下：
+
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
+|String|key|否|查询关键词|
+|Integer|page|否|分页页码|
+|Integer|size|否|每页记录数|
+
+请求示例：
+
+```bash
+curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/logs?key=UPDATE" \
+ -H 'Accept: application/json' \
+ -H 'Accept-Encoding: gzip, identity' \
+ -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
+ -H 'Content-Type: application/json'
+```
+
+接口返回数据类型：
+
+|类型|字段|字段说明|
+|----|----|----|
+|String|id|日志ID|
+|String|type|操作类型|
+|String|business|业务名称|
+|String|businessId|业务ID|
+|String|deptId|创建人登录部门ID|
+|String|creator|创建人|
+|String|creatorId|创建人ID|
+|Date|createdTime|创建时间|
+
+返回结果示例：
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": [
+    {
+      "id": "fbd221108249433c9e850285263804d7",
+      "type": "UPDATE",
+      "business": "接口配置管理",
+      "businessId": "c097f07552ca47c190f76803f9e89fb1",
+      "content": null,
+      "deptId": null,
+      "creator": "系统管理员",
+      "creatorId": "00000000000000000000000000000000",
+      "createdTime": "2019-09-13 17:11:36"
+    },
+    {
+      "id": "e7c4643e8c4942a08dc4a9a72b4a9ff5",
+      "type": "UPDATE",
+      "business": "接口配置管理",
+      "businessId": "c097f07552ca47c190f76803f9e89fb1",
+      "content": null,
+      "deptId": null,
+      "creator": "系统管理员",
+      "creatorId": "00000000000000000000000000000000",
+      "createdTime": "2019-09-13 17:12:59"
+    }
+  ],
+  "option": 2
+}
+```
+
+[回目录](#目录)
+
+### 获取日志详情
+
+获取指定ID的日志详情。
+
+请求方法：**GET**
+
+接口URL：**/base/auth/manage/v1.0/configs/logs/{id}**
+
+请求参数如下：
+
+|类型|字段|是否必需|字段说明|
+|----|----|----|----|
+|String|id|是|接口配置ID|
+
+接口返回数据类型：
+
+|类型|字段|字段说明|
+|----|----|----|
+|String|id|日志ID|
+|String|type|操作类型|
+|String|business|业务名称|
+|String|businessId|业务ID|
+|Object|content|日志内容|
+|String|deptId|创建人登录部门ID|
+|String|creator|创建人|
+|String|creatorId|创建人ID|
+|Date|createdTime|创建时间|
+
+请求示例：
+
+```bash
+curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/logs/bc3e1a2256af4445a64420b92776411c" \
+ -H 'Accept: application/json' \
+ -H 'Accept-Encoding: gzip, identity' \
+ -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
+ -H 'Content-Type: application/json'
+```
+
+返回结果示例：
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": {
+    "id": "aa8c5ee4b421440bae6e0099b6550992",
+    "type": "INSERT",
+    "business": "接口配置管理",
+    "businessId": "c097f07552ca47c190f76803f9e89fb1",
+    "content": {
+      "id": "c097f07552ca47c190f76803f9e89fb1",
+      "url": "/base/user/v1.0/user",
+      "name": "获取用户列表",
+      "limit": true,
+      "method": "GET",
+      "remark": null,
+      "verify": true,
+      "message": "获取Code接口每24小时调用次数为360次,请合理使用",
+      "authCode": null,
+      "limitGap": 1,
+      "limitMax": 360,
+      "limitCycle": 86400,
+      "createdTime": null
+    },
+    "deptId": null,
+    "creator": "系统管理员",
+    "creatorId": "00000000000000000000000000000000",
+    "createdTime": "2019-09-13 17:10:38"
+  },
+  "option": null
+}
+```
+
+[回目录](#目录)
+
 ### 加载接口配置到缓存
 
-获取指定ID的接口配置详情.
+从数据库读取全部接口配置数据，并加载到Redis。
 
 请求方法：**GET**
 
