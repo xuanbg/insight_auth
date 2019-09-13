@@ -496,7 +496,8 @@ INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_code`, `icon_
 (replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 0, 2, '新增', 'newConfig', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 1, 3, '编辑', 'editConfig', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 1, 4, '删除', 'deleteConfig', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
-(replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 1, 5, '加载配置', 'loadConfigs', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 1, 5, '查询日志', 'getLog', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
+(replace(uuid(), '-', ''), 'd6254874cd2611e9bbd40242ac110008', 1, 6, '加载配置', 'loadConfigs', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
 
 (replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 0, 1, '刷新', 'getOrganize', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000'),
 (replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 0, 2, '新增', 'newOrganize', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000'),
@@ -592,4 +593,6 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 (replace(uuid(), '-', ''), '新增接口配置', 'POST', '/base/auth/manage/v1.0/configs', 'newConfig', 1, NULL, NULL, NULL, 1, 1),
 (replace(uuid(), '-', ''), '编辑接口配置', 'PUT', '/base/auth/manage/v1.0/configs', 'editConfig', 1, NULL, NULL, NULL, 1, 1),
 (replace(uuid(), '-', ''), '删除接口配置', 'DELETE', '/base/auth/manage/v1.0/configs', 'deleteConfig', 1, NULL, NULL, NULL, 1, 1),
+(replace(uuid(), '-', ''), '获取日志列表', 'GET', '/base/auth/manage/v1.0/configs/logs', 'getLog', 1, NULL, NULL, NULL, 1, 1),
+(replace(uuid(), '-', ''), '获取日志详情', 'GET', '/base/auth/manage/v1.0/configs/logs/{id}', 'getLog', 1, NULL, NULL, NULL, 1, 1),
 (replace(uuid(), '-', ''), '加载接口配置表', 'GET', '/base/auth/manage/v1.0/configs/load', 'loadConfigs', 1, NULL, NULL, NULL, 1, 1);

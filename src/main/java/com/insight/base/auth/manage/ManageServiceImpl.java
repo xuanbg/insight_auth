@@ -10,9 +10,13 @@ import com.insight.util.Generator;
 import com.insight.util.Json;
 import com.insight.util.Redis;
 import com.insight.util.ReplyHelper;
+import com.insight.util.pojo.Log;
+import com.insight.util.pojo.LoginInfo;
+import com.insight.util.pojo.OperateType;
 import com.insight.util.pojo.Reply;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -66,14 +70,16 @@ public class ManageServiceImpl implements ManageService {
     /**
      * 新增接口配置
      *
-     * @param dto 接口配置
+     * @param info 用户关键信息
+     * @param dto  接口配置
      * @return Reply
      */
     @Override
-    public Reply newConfig(InterfaceConfig dto) {
+    public Reply newConfig(LoginInfo info, InterfaceConfig dto) {
         String id = Generator.uuid();
         dto.setId(id);
         mapper.addConfig(dto);
+        writeLog(info, OperateType.INSERT, id, dto);
 
         Reply reply = loadConfigs();
         if (reply.getSuccess()) {
@@ -87,27 +93,72 @@ public class ManageServiceImpl implements ManageService {
     /**
      * 编辑接口配置
      *
-     * @param dto 接口配置DTO
+     * @param info 用户关键信息
+     * @param dto  接口配置DTO
      * @return Reply
      */
     @Override
-    public Reply editConfig(InterfaceConfig dto) {
-        int count = mapper.editConfig(dto);
+    public Reply editConfig(LoginInfo info, InterfaceConfig dto) {
+        String id = dto.getId();
+        InterfaceConfig config = mapper.getConfig(id);
+        if (config == null) {
+            return ReplyHelper.fail("ID不存在,未更新数据");
+        }
 
-        return count == 0 ? ReplyHelper.fail("ID不存在,未更新数据") : loadConfigs();
+        writeLog(info, OperateType.UPDATE, id, dto);
+        mapper.editConfig(dto);
+
+        return loadConfigs();
     }
 
     /**
      * 删除接口配置
      *
-     * @param id 接口配置ID
+     * @param info 用户关键信息
+     * @param id   接口配置ID
      * @return Reply
      */
     @Override
-    public Reply deleteConfig(String id) {
-        int count = mapper.deleteConfig(id);
+    public Reply deleteConfig(LoginInfo info, String id) {
+        InterfaceConfig config = mapper.getConfig(id);
+        if (config == null) {
+            return ReplyHelper.fail("ID不存在,未删除数据");
+        }
 
-        return count == 0 ? ReplyHelper.fail("ID不存在,未删除数据") : loadConfigs();
+        writeLog(info, OperateType.DELETE, id, config);
+        mapper.deleteConfig(id);
+
+        return loadConfigs();
+    }
+
+    /**
+     * 获取日志列表
+     *
+     * @param key  查询关键词
+     * @param page 分页页码
+     * @param size 每页记录数
+     * @return Reply
+     */
+    @Override
+    public Reply getLogs(String key, int page, int size) {
+        PageHelper.startPage(page, size);
+        List<Log> logs = mapper.getLogs(key);
+        PageInfo<Log> pageInfo = new PageInfo<>(logs);
+
+        return ReplyHelper.success(logs, pageInfo.getTotal());
+    }
+
+    /**
+     * 获取日志详情
+     *
+     * @param id 日志ID
+     * @return Reply
+     */
+    @Override
+    public Reply getLog(String id) {
+        Log log = mapper.getLog(id);
+
+        return ReplyHelper.success(log);
     }
 
     /**
@@ -126,5 +177,29 @@ public class ManageServiceImpl implements ManageService {
         Redis.set("Config:Interface", json);
 
         return ReplyHelper.success();
+    }
+
+    /**
+     * 记录操作日志
+     *
+     * @param info    用户关键信息
+     * @param type    操作类型
+     * @param id      业务ID
+     * @param content 日志内容
+     */
+    private void writeLog(LoginInfo info, OperateType type, String id, Object content) {
+
+        Log log = new Log();
+        log.setId(Generator.uuid());
+        log.setType(type);
+        log.setBusiness("接口配置管理");
+        log.setBusinessId(id);
+        log.setContent(content);
+        log.setDeptId(info.getDeptId());
+        log.setCreator(info.getUserName());
+        log.setCreatorId(info.getUserId());
+        log.setCreatedTime(new Date());
+
+        mapper.addLog(log);
     }
 }

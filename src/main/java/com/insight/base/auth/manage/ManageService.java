@@ -1,6 +1,7 @@
 package com.insight.base.auth.manage;
 
 import com.insight.base.auth.common.entity.InterfaceConfig;
+import com.insight.util.pojo.LoginInfo;
 import com.insight.util.pojo.Reply;
 
 /**
@@ -31,26 +32,47 @@ public interface ManageService {
     /**
      * 新增接口配置
      *
-     * @param dto 接口配置
+     * @param info 用户关键信息
+     * @param dto  接口配置
      * @return Reply
      */
-    Reply newConfig(InterfaceConfig dto);
+    Reply newConfig(LoginInfo info, InterfaceConfig dto);
 
     /**
      * 编辑接口配置
      *
-     * @param dto 接口配置DTO
+     * @param info 用户关键信息
+     * @param dto  接口配置DTO
      * @return Reply
      */
-    Reply editConfig(InterfaceConfig dto);
+    Reply editConfig(LoginInfo info, InterfaceConfig dto);
 
     /**
      * 删除接口配置
      *
-     * @param id 接口配置ID
+     * @param info 用户关键信息
+     * @param id   接口配置ID
      * @return Reply
      */
-    Reply deleteConfig(String id);
+    Reply deleteConfig(LoginInfo info, String id);
+
+    /**
+     * 获取日志列表
+     *
+     * @param key  查询关键词
+     * @param page 分页页码
+     * @param size 每页记录数
+     * @return Reply
+     */
+    Reply getLogs(String key, int page, int size);
+
+    /**
+     * 获取日志详情
+     *
+     * @param id 日志ID
+     * @return Reply
+     */
+    Reply getLog(String id);
 
     /**
      * 加载接口配置到缓存

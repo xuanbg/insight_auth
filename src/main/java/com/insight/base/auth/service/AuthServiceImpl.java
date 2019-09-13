@@ -28,18 +28,18 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class AuthServiceImpl implements AuthService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final Core core;
     private final MessageClient messageClient;
+    private final Core core;
 
     /**
      * 构造函数
      *
-     * @param core          Core
      * @param messageClient MessageClient
+     * @param core          Core
      */
-    public AuthServiceImpl(Core core, MessageClient messageClient) {
-        this.core = core;
+    public AuthServiceImpl(MessageClient messageClient, Core core) {
         this.messageClient = messageClient;
+        this.core = core;
     }
 
     /**
@@ -63,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 生成Code
-        Object code;
+        String code;
         if (type == 0) {
             String password = Redis.get(key, "Password");
             if (password == null || password.isEmpty()) {
@@ -72,13 +72,7 @@ public class AuthServiceImpl implements AuthService {
 
             code = core.getGeneralCode(userId, account, password);
         } else {
-            String json = Redis.get(key, "User");
-            if (json == null || json.isEmpty()) {
-                return null;
-            }
-
-            User user = Json.toBean(json, User.class);
-            code = core.getSmsCode(userId, user.getMobile());
+            code = core.getSmsCode(userId, account);
         }
 
         return ReplyHelper.success(code);

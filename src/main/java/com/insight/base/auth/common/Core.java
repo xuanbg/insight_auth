@@ -149,7 +149,7 @@ public class Core {
      * @return Code
      */
     public String getSmsCode(String userId, String mobile) {
-        String smsCode = Generator.randomStr(SMS_CODE_LENGTH);
+        String smsCode = Generator.randomInt(SMS_CODE_LENGTH);
         Map<String, Object> map = new HashMap<>(4);
         map.put("code", smsCode);
         map.put("minutes", SMS_CODE_LEFT);
