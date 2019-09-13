@@ -45,8 +45,8 @@ public interface ConfigMapper {
      *
      * @param config 接口配置
      */
-    @Insert("INSERT ibi_interface(id, name, method, url, auth_code, limit_gap, limit_cycle, limit_max, message, remark, is_verify, is_limit) VALUES " +
-            "(#{id}, #{name}, #{method}, #{url}, #{authCode}, #{limitGap}, #{limitCycle}, #{limitMax}, #{message}, #{remark}, #{isVerify}, #{isLimit});")
+    @Insert("INSERT ibi_interface(id, name, method, url, auth_code, limit_gap, limit_cycle, limit_max, message, remark, is_verify, is_limit, created_time) VALUES " +
+            "(#{id}, #{name}, #{method}, #{url}, #{authCode}, #{limitGap}, #{limitCycle}, #{limitMax}, #{message}, #{remark}, #{isVerify}, #{isLimit}, #{createdTime});")
     void addConfig(InterfaceConfig config);
 
     /**

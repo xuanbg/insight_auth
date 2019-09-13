@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author 宣炳刚
@@ -78,6 +80,7 @@ public class ManageServiceImpl implements ManageService {
     public Reply newConfig(LoginInfo info, InterfaceConfig dto) {
         String id = Generator.uuid();
         dto.setId(id);
+        dto.setCreatedTime(new Date());
         mapper.addConfig(dto);
         writeLog(info, OperateType.INSERT, id, dto);
 
@@ -188,18 +191,20 @@ public class ManageServiceImpl implements ManageService {
      * @param content 日志内容
      */
     private void writeLog(LoginInfo info, OperateType type, String id, Object content) {
+        ExecutorService threadPool = Executors.newCachedThreadPool();
+        threadPool.submit(() -> {
+            Log log = new Log();
+            log.setId(Generator.uuid());
+            log.setType(type);
+            log.setBusiness("接口配置管理");
+            log.setBusinessId(id);
+            log.setContent(content);
+            log.setDeptId(info.getDeptId());
+            log.setCreator(info.getUserName());
+            log.setCreatorId(info.getUserId());
+            log.setCreatedTime(new Date());
 
-        Log log = new Log();
-        log.setId(Generator.uuid());
-        log.setType(type);
-        log.setBusiness("接口配置管理");
-        log.setBusinessId(id);
-        log.setContent(content);
-        log.setDeptId(info.getDeptId());
-        log.setCreator(info.getUserName());
-        log.setCreatorId(info.getUserId());
-        log.setCreatedTime(new Date());
-
-        mapper.addLog(log);
+            mapper.addLog(log);
+        });
     }
 }
