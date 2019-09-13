@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.insight.base</groupId>
     <artifactId>auth</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-RELEASE</version>
     <name>Auth</name>
     <description>Auth project for Spring Boot</description>
 
