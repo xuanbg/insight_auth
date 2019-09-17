@@ -23,7 +23,7 @@ public interface ConfigMapper {
      * @param key 查询关键词
      * @return 接口配置表
      */
-    @Select("<script>select id, name, method, url, auth_code, is_verify, is_limit from ibi_interface" +
+    @Select("<script>select id, name, method, url, auth_code, is_verify, is_limit from ibi_interface " +
             "<if test = 'key!=null'>where " +
             "name like concat('%',#{key},'%') or " +
             "url like concat('%',#{key},'%') or " +
@@ -45,7 +45,7 @@ public interface ConfigMapper {
      *
      * @param config 接口配置
      */
-    @Insert("INSERT ibi_interface(id, name, method, url, auth_code, limit_gap, limit_cycle, limit_max, message, remark, is_verify, is_limit, created_time) VALUES " +
+    @Insert("insert ibi_interface(id, name, method, url, auth_code, limit_gap, limit_cycle, limit_max, message, remark, is_verify, is_limit, created_time) values " +
             "(#{id}, #{name}, #{method}, #{url}, #{authCode}, #{limitGap}, #{limitCycle}, #{limitMax}, #{message}, #{remark}, #{isVerify}, #{isLimit}, #{createdTime});")
     void addConfig(InterfaceConfig config);
 
@@ -54,10 +54,10 @@ public interface ConfigMapper {
      *
      * @param config 接口配置
      */
-    @Update("UPDATE ibi_interface SET " +
+    @Update("update ibi_interface set " +
             "name = #{name}, method = #{method}, url = #{url}, auth_code = #{authCode}, " +
             "limit_gap = #{limitGap}, limit_cycle = #{limitCycle}, limit_max = #{limitMax}, message = #{message}, " +
-            "remark = #{remark}, is_verify = #{isVerify}, is_limit = #{isLimit} WHERE id = #{id};")
+            "remark = #{remark}, is_verify = #{isVerify}, is_limit = #{isLimit} where id = #{id};")
     void editConfig(InterfaceConfig config);
 
     /**
@@ -81,7 +81,7 @@ public interface ConfigMapper {
      *
      * @param log 日志DTO
      */
-    @Insert("insert ibl_operate_log(id, type, business, business_id, content, dept_id, creator, creator_id, created_time) VALUES " +
+    @Insert("insert ibl_operate_log(id, type, business, business_id, content, dept_id, creator, creator_id, created_time) values " +
             "(#{id}, #{type}, #{business}, #{businessId}, #{content, typeHandler = com.insight.util.common.JsonTypeHandler}, " +
             "#{deptId}, #{creator}, #{creatorId}, #{createdTime});")
     void addLog(Log log);

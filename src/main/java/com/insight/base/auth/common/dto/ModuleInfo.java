@@ -1,7 +1,5 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.util.Json;
-
 import java.io.Serializable;
 
 /**
@@ -74,10 +72,5 @@ public class ModuleInfo implements Serializable {
 
     public void setDefault(Boolean aDefault) {
         isDefault = aDefault;
-    }
-
-    @Override
-    public String toString() {
-        return Json.toJson(this);
     }
 }

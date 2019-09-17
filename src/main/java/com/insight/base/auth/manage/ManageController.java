@@ -32,14 +32,14 @@ public class ManageController {
     /**
      * 获取接口配置列表
      *
-     * @param key  查询关键词
-     * @param page 分页页码
-     * @param size 每页记录数
+     * @param keyword 查询关键词
+     * @param page    分页页码
+     * @param size    每页记录数
      * @return Reply
      */
     @GetMapping("/v1.0/configs")
-    public Reply getConfigs(@RequestParam(required = false) String key, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size) {
-        return service.getConfigs(key, page, size);
+    public Reply getConfigs(@RequestParam(required = false) String keyword, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size) {
+        return service.getConfigs(keyword, page, size);
     }
 
     /**
@@ -111,14 +111,14 @@ public class ManageController {
     /**
      * 获取日志列表
      *
-     * @param key  查询关键词
-     * @param page 分页页码
-     * @param size 每页记录数
+     * @param keyword 查询关键词
+     * @param page    分页页码
+     * @param size    每页记录数
      * @return Reply
      */
     @GetMapping("/v1.0/configs/logs")
-    public Reply getLogs(@RequestParam(required = false) String key, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size) {
-        return service.getLogs(key, page, size);
+    public Reply getLogs(@RequestParam(required = false) String keyword, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size) {
+        return service.getLogs(keyword, page, size);
     }
 
     /**

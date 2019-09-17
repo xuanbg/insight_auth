@@ -14,12 +14,12 @@ public interface ManageService {
     /**
      * 获取接口配置列表
      *
-     * @param key  查询关键词
-     * @param page 分页页码
-     * @param size 每页记录数
+     * @param keyword 查询关键词
+     * @param page    分页页码
+     * @param size    每页记录数
      * @return Reply
      */
-    Reply getConfigs(String key, int page, int size);
+    Reply getConfigs(String keyword, int page, int size);
 
     /**
      * 获取接口配置详情
@@ -59,12 +59,12 @@ public interface ManageService {
     /**
      * 获取日志列表
      *
-     * @param key  查询关键词
-     * @param page 分页页码
-     * @param size 每页记录数
+     * @param keyword 查询关键词
+     * @param page    分页页码
+     * @param size    每页记录数
      * @return Reply
      */
-    Reply getLogs(String key, int page, int size);
+    Reply getLogs(String keyword, int page, int size);
 
     /**
      * 获取日志详情

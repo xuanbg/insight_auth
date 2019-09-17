@@ -12,7 +12,7 @@ import java.util.Enumeration;
 /**
  * @author 宣炳刚
  * @date 2019-09-09
- * @remark
+ * @remark Feign配置类
  */
 @Component
 public class FeignClientConfig implements RequestInterceptor {

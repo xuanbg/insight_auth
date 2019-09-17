@@ -1,5 +1,7 @@
 package com.insight.base.auth.common.dto;
 
+import com.insight.util.Json;
+
 import java.io.Serializable;
 
 /**
@@ -60,5 +62,10 @@ public class AuthDto implements Serializable {
 
     public void setPermit(Integer permit) {
         this.permit = permit;
+    }
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
     }
 }

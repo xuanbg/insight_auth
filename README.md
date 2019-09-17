@@ -696,14 +696,14 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/navigators/711aad8daf654bcdb3a126d
 
 |类型|字段|是否必需|字段说明|
 |----|----|----|----|
-|String|key|否|查询关键词|
+|String|keyword|否|查询关键词|
 |Integer|page|否|分页页码|
 |Integer|size|否|每页记录数|
 
 请求示例：
 
 ```bash
-curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs?key=getConfig" \
+curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs?keyword=getConfig" \
  -H 'Accept: application/json' \
  -H 'Accept-Encoding: gzip, identity' \
  -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
@@ -982,14 +982,14 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 
 |类型|字段|是否必需|字段说明|
 |----|----|----|----|
-|String|key|否|查询关键词|
+|String|keyword|否|查询关键词|
 |Integer|page|否|分页页码|
 |Integer|size|否|每页记录数|
 
 请求示例：
 
 ```bash
-curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/logs?key=UPDATE" \
+curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/logs?keyword=UPDATE" \
  -H 'Accept: application/json' \
  -H 'Accept-Encoding: gzip, identity' \
  -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \

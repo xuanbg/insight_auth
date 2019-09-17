@@ -42,15 +42,15 @@ public class ManageServiceImpl implements ManageService {
     /**
      * 获取接口配置列表
      *
-     * @param key  查询关键词
-     * @param page 分页页码
-     * @param size 每页记录数
+     * @param keyword 查询关键词
+     * @param page    分页页码
+     * @param size    每页记录数
      * @return Reply
      */
     @Override
-    public Reply getConfigs(String key, int page, int size) {
+    public Reply getConfigs(String keyword, int page, int size) {
         PageHelper.startPage(page, size);
-        List<ConfigListDto> configs = mapper.getConfigs(key);
+        List<ConfigListDto> configs = mapper.getConfigs(keyword);
         PageInfo<ConfigListDto> pageInfo = new PageInfo<>(configs);
 
         return ReplyHelper.success(configs, pageInfo.getTotal());
@@ -65,6 +65,9 @@ public class ManageServiceImpl implements ManageService {
     @Override
     public Reply getConfig(String id) {
         InterfaceConfig config = mapper.getConfig(id);
+        if (config == null) {
+            return ReplyHelper.fail("ID不存在,未读取数据");
+        }
 
         return ReplyHelper.success(config);
     }
@@ -108,8 +111,8 @@ public class ManageServiceImpl implements ManageService {
             return ReplyHelper.fail("ID不存在,未更新数据");
         }
 
-        writeLog(info, OperateType.UPDATE, id, dto);
         mapper.editConfig(dto);
+        writeLog(info, OperateType.UPDATE, id, dto);
 
         return loadConfigs();
     }
@@ -128,8 +131,8 @@ public class ManageServiceImpl implements ManageService {
             return ReplyHelper.fail("ID不存在,未删除数据");
         }
 
-        writeLog(info, OperateType.DELETE, id, config);
         mapper.deleteConfig(id);
+        writeLog(info, OperateType.DELETE, id, config);
 
         return loadConfigs();
     }
@@ -137,15 +140,15 @@ public class ManageServiceImpl implements ManageService {
     /**
      * 获取日志列表
      *
-     * @param key  查询关键词
-     * @param page 分页页码
-     * @param size 每页记录数
+     * @param keyword 查询关键词
+     * @param page    分页页码
+     * @param size    每页记录数
      * @return Reply
      */
     @Override
-    public Reply getLogs(String key, int page, int size) {
+    public Reply getLogs(String keyword, int page, int size) {
         PageHelper.startPage(page, size);
-        List<Log> logs = mapper.getLogs(key);
+        List<Log> logs = mapper.getLogs(keyword);
         PageInfo<Log> pageInfo = new PageInfo<>(logs);
 
         return ReplyHelper.success(logs, pageInfo.getTotal());
@@ -160,6 +163,9 @@ public class ManageServiceImpl implements ManageService {
     @Override
     public Reply getLog(String id) {
         Log log = mapper.getLog(id);
+        if (log == null) {
+            return ReplyHelper.fail("ID不存在,未读取数据");
+        }
 
         return ReplyHelper.success(log);
     }
