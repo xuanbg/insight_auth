@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,19 +52,19 @@ public class AuthServiceImpl implements AuthService {
     public Reply getCode(String account, int type) {
         String userId = core.getUserId(account);
         if (userId == null) {
-            return ReplyHelper.notExist("账号或密码错误！");
+            return ReplyHelper.notExist("账号或密码错误");
         }
 
         String key = "User:" + userId;
         if (!Redis.hasKey(key)) {
-            Redis.deleteKey(account);
-            return ReplyHelper.fail("发生了一点小意外,请提交一次");
+            Redis.deleteKey("ID:" + account);
+            return ReplyHelper.fail("发生了一点小意外,请重新提交");
         }
 
         // 生成Code
         String code;
         if (type == 0) {
-            String password = Redis.get(key, "Password");
+            String password = Redis.get(key, "password");
             if (password == null || password.isEmpty()) {
                 return null;
             }
@@ -73,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
             code = core.getGeneralCode(userId, account, password);
         } else {
             code = core.getSmsCode(userId, account);
-            if(!code.matches("[0-9a-f]{32}")){
+            if (!code.matches("[0-9a-f]{32}")) {
                 return ReplyHelper.fail(code);
             }
         }
@@ -93,43 +92,39 @@ public class AuthServiceImpl implements AuthService {
         String code = core.getCode(login.getSignature());
         if (code == null) {
             String account = login.getAccount();
+            logger.warn("账号[{}]正在尝试使用错误的签名请求令牌!", account);
+
             String userId = core.getUserId(account);
             String key = "User:" + userId;
             if (!Redis.hasKey(key)) {
-                Redis.deleteKey(account);
-                return ReplyHelper.fail("发生了一点小意外,请提交一次");
+                Redis.deleteKey("ID:" + account);
+                return ReplyHelper.fail("发生了一点小意外,请重新提交");
             }
 
-            if (core.userIsInvalid(userId)) {
-                int failureCount = Integer.parseInt(Redis.get(key, "FailureCount"));
-                if (failureCount > 10) {
-                    return ReplyHelper.fail("错误次数过多，请重设密码");
-                }
-
-                failureCount++;
-                Redis.set(key, "FailureCount", failureCount);
-                Redis.set(key, "LastFailureTime", new Date());
-                logger.warn("账号[" + account + "]正在尝试使用错误的签名请求令牌!");
-
-                return ReplyHelper.invalidParam("账号或密码错误！");
+            int failureCount = core.getFailureCount(userId);
+            if (failureCount > 5) {
+                return ReplyHelper.fail("错误次数过多,账号已被锁定!请于10分钟后再试");
             }
+
+            Redis.set(key, "FailureCount", failureCount + 1);
+            Redis.set(key, "LastFailureTime", DateHelper.getDateTime());
+
+            return ReplyHelper.invalidParam("账号或密码错误");
         }
 
         // 验证用户
         String userId = core.getId(code);
         if (userId == null || userId.isEmpty()) {
-            return ReplyHelper.fail("缓存异常");
+            return ReplyHelper.fail("发生了一点小意外,请重新提交");
         }
 
         String key = "User:" + userId;
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "IsInvalid"));
+        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
         if (isInvalid) {
-            return ReplyHelper.fail("用户被禁止登录");
+            return ReplyHelper.forbid();
         }
 
-        TokenDto tokens = core.creatorToken(code, login, userId);
-
-        return ReplyHelper.success(tokens);
+        return ReplyHelper.success(core.creatorToken(code, login, userId));
     }
 
     /**
@@ -163,9 +158,9 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String key = "User:" + userId;
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "IsInvalid"));
+        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
         if (isInvalid) {
-            return ReplyHelper.fail("用户被禁止登录");
+            return ReplyHelper.forbid();
         }
 
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
@@ -230,9 +225,9 @@ public class AuthServiceImpl implements AuthService {
         }
 
         key = "User:" + userId;
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "IsInvalid"));
+        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
         if (isInvalid) {
-            return ReplyHelper.fail("用户被禁止登录");
+            return ReplyHelper.forbid();
         }
 
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
@@ -261,14 +256,12 @@ public class AuthServiceImpl implements AuthService {
 
         // 验证用户
         String key = "User:" + token.getUserId();
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "IsInvalid"));
+        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
         if (isInvalid) {
-            return ReplyHelper.fail("用户被禁止登录");
+            return ReplyHelper.forbid();
         }
 
-        TokenDto tokens = core.refreshToken(token, tokenId, fingerprint);
-
-        return ReplyHelper.success(tokens);
+        return ReplyHelper.success(core.refreshToken(token, tokenId, fingerprint));
     }
 
     /**

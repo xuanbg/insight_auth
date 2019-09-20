@@ -3,10 +3,7 @@ package com.insight.base.auth.common;
 import com.insight.base.auth.common.client.MessageClient;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.mapper.AuthMapper;
-import com.insight.util.Generator;
-import com.insight.util.Json;
-import com.insight.util.Redis;
-import com.insight.util.Util;
+import com.insight.util.*;
 import com.insight.util.encrypt.Encryptor;
 import com.insight.util.pojo.*;
 import com.insight.utils.wechat.WeChatHelper;
@@ -16,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,8 +72,7 @@ public class Core {
      * @return 用户ID
      */
     public String getUserId(String account) {
-        String key = "ID:" + account;
-        String userId = Redis.get(key);
+        String userId = Redis.get("ID:" + account);
         if (userId != null && !userId.isEmpty()) {
             return userId;
         }
@@ -93,35 +90,31 @@ public class Core {
 
             // 缓存用户ID到Redis
             userId = user.getId();
-            key = "ID:" + user.getAccount();
-            Redis.set(key, userId);
+            Redis.set("ID:" + user.getAccount(), userId);
 
             String mobile = user.getMobile();
             if (mobile != null && !mobile.isEmpty()) {
-                key = "ID:" + mobile;
-                Redis.set(key, userId);
-            }
-
-            String unionId = user.getUnionId();
-            if (unionId != null && !unionId.isEmpty()) {
-                key = "ID:" + unionId;
-                Redis.set(key, userId);
+                Redis.set("ID:" + mobile, userId);
             }
 
             String mail = user.getEmail();
             if (mail != null && !mail.isEmpty()) {
-                key = "ID:" + mail;
-                Redis.set(key, userId);
+                Redis.set("ID:" + mail, userId);
             }
 
-            key = "User:" + userId;
-            Redis.set(key, "User", Json.toJson(user));
-            Redis.set(key, "IsInvalid", user.getInvalid().toString());
-            Redis.set(key, "FailureCount", "0");
+            String unionId = user.getUnionId();
+            if (unionId != null && !unionId.isEmpty()) {
+                Redis.set("ID:" + unionId, userId);
+            }
 
+            // 解密用户密码
             String pw = user.getPassword();
             String password = pw.length() > 32 ? Encryptor.rsaDecrypt(pw, PRIVATE_KEY) : pw;
-            Redis.set(key, "Password", password);
+            user.setPassword(password);
+
+            String key = "User:" + userId;
+            Redis.set(key, Json.toMap(user));
+            Redis.set(key, "FailureCount", 0);
 
             return userId;
         }
@@ -161,7 +154,7 @@ public class Core {
         message.setParams(map);
         try {
             Reply reply = client.sendMessage(message);
-            if(!reply.getSuccess()){
+            if (!reply.getSuccess()) {
                 return reply.getMessage();
             }
 
@@ -169,7 +162,7 @@ public class Core {
             logger.info("手机号[{}]的短信验证码为: {}", mobile, smsCode);
 
             return generateCode(userId, key, SMS_CODE_LEFT);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             return "发送短信失败,请稍后重试";
         }
     }
@@ -195,7 +188,7 @@ public class Core {
             token.setPermitFuncs(list);
         }
 
-        String key = "User:" + userId;
+        String key = "UserToken:" + userId;
         Redis.set(key, appId, code);
 
         return initPackage(token, code, fingerprint, appId);
@@ -249,8 +242,7 @@ public class Core {
 
         // 更新用户缓存
         String key = "User:" + token.getUserId();
-        String json = Redis.get(key, "User");
-        UserInfoDto info = Json.toBean(json, UserInfoDto.class);
+        UserInfoDto info = Redis.get(key, UserInfoDto.class);
         String imgUrl = info.getHeadImg();
         if (imgUrl == null || imgUrl.isEmpty()) {
             String defaultHead = Redis.get("Config:DefaultHead");
@@ -366,23 +358,25 @@ public class Core {
      *
      * @return 用户是否失效状态
      */
-    public Boolean userIsInvalid(String userId) {
+    public int getFailureCount(String userId) {
         String key = "User:" + userId;
         String value = Redis.get(key, "LastFailureTime");
         if (value == null || value.isEmpty()) {
-            return false;
+            return 0;
         }
 
-        LocalDateTime lastFailureTime = LocalDateTime.parse(value);
+        LocalDateTime lastFailureTime = LocalDateTime.parse(value, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         LocalDateTime resetTime = lastFailureTime.plusMinutes(10);
         LocalDateTime now = LocalDateTime.now();
 
         int failureCount = Integer.parseInt(Redis.get(key, "FailureCount"));
         if (failureCount > 0 && now.isAfter(resetTime)) {
             failureCount = 0;
+            Redis.set(key, "FailureCount", 0);
+            Redis.set(key, "LastFailureTime", DateHelper.getDateTime());
         }
 
-        return failureCount > 5 || Boolean.parseBoolean(Redis.get(key, "IsInvalid"));
+        return failureCount;
     }
 
     /**

@@ -45,13 +45,13 @@ public class Token extends TokenInfo {
         Object tokenLife = Redis.get(key, "TokenLife");
         if (tokenLife == null) {
             app = mapper.getApp(appId);
-
             if (app == null) {
                 setLife(Long.valueOf("7200000"));
             } else {
-                setLife(app.getTokenLife());
-                Redis.set(key, "TokenLife", getLife().toString());
+                setLife(app.getTokenLife() * 1000);
             }
+
+            Redis.set(key, "TokenLife", getLife());
         } else {
             setLife(Long.valueOf(tokenLife.toString()));
         }
@@ -66,8 +66,9 @@ public class Token extends TokenInfo {
                 setSignInOne(false);
             } else {
                 setSignInOne(app.getSigninOne());
-                Redis.set(key, "SignInType", getSignInOne().toString());
             }
+
+            Redis.set(key, "SignInType", getSignInOne().toString());
         } else {
             setSignInOne(Boolean.valueOf(signInType.toString()));
         }
@@ -82,8 +83,9 @@ public class Token extends TokenInfo {
                 setAutoRefresh(false);
             } else {
                 setAutoRefresh(app.getAutoRefresh());
-                Redis.set(key, "RefreshType", getAutoRefresh().toString());
             }
+
+            Redis.set(key, "RefreshType", getAutoRefresh().toString());
         } else {
             setAutoRefresh(Boolean.valueOf(refreshType.toString()));
         }
