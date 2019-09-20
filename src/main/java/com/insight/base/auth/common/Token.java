@@ -9,7 +9,7 @@ import com.insight.util.common.ApplicationContextHolder;
 import com.insight.util.pojo.Application;
 import com.insight.util.pojo.TokenInfo;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * @author 宣炳刚
@@ -90,10 +90,11 @@ public class Token extends TokenInfo {
             setAutoRefresh(Boolean.valueOf(refreshType.toString()));
         }
 
+
         setSecretKey(Generator.uuid());
         setRefreshKey(Generator.uuid());
-        setExpiryTime(new Date(getLife() + System.currentTimeMillis()));
-        setFailureTime(new Date(getLife() * 12 + System.currentTimeMillis()));
+        setExpiryTime(LocalDateTime.now().plusSeconds(getLife() / 1000));
+        setFailureTime(LocalDateTime.now().plusSeconds(getLife() * 12 / 1000));
     }
 
     /**
@@ -130,8 +131,8 @@ public class Token extends TokenInfo {
      **/
     @JsonIgnore
     void refresh() {
-        setExpiryTime(new Date(getLife() + System.currentTimeMillis()));
-        setFailureTime(new Date(getLife() * 12 + System.currentTimeMillis()));
+        setExpiryTime(LocalDateTime.now().plusSeconds(getLife() / 1000));
+        setFailureTime(LocalDateTime.now().plusSeconds(getLife() * 12 / 1000));
         setSecretKey(Generator.uuid());
     }
 }
