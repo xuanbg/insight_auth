@@ -251,23 +251,22 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply refreshToken(String fingerprint, AccessToken accessToken) {
         String tokenId = accessToken.getId();
-        String userId = accessToken.getUserId();
         String secret = accessToken.getSecret();
 
         // 验证令牌
         Token token = core.getToken(tokenId);
-        if (token == null || !token.verify(secret, TokenType.RefreshToken, tokenId, userId)) {
+        if (token == null || !token.verify(secret, TokenType.RefreshToken, tokenId, token.getUserId())) {
             return ReplyHelper.invalidToken();
         }
 
         // 验证用户
-        String key = "User:" + userId;
+        String key = "User:" + token.getUserId();
         boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "IsInvalid"));
         if (isInvalid) {
             return ReplyHelper.fail("用户被禁止登录");
         }
 
-        TokenDto tokens = core.refreshToken(token, tokenId, fingerprint, userId);
+        TokenDto tokens = core.refreshToken(token, tokenId, fingerprint);
 
         return ReplyHelper.success(tokens);
     }

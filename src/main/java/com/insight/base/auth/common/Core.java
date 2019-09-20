@@ -154,12 +154,13 @@ public class Core {
         map.put("code", smsCode);
         map.put("minutes", SMS_CODE_LEFT);
 
-        Sms sms = new Sms();
-        sms.setMobiles(mobile);
-        sms.setScene("0001");
-        sms.setParam(map);
+        NormalMessage message = new NormalMessage();
+        message.setSceneCode("0001");
+        message.setAppId("9dd99dd9e6df467a8207d05ea5581125");
+        message.setReceivers(mobile);
+        message.setParams(map);
         try {
-            Reply reply = client.sendMessage(sms);
+            Reply reply = client.sendMessage(message);
             if(!reply.getSuccess()){
                 return reply.getMessage();
             }
@@ -187,7 +188,7 @@ public class Core {
         String deptId = login.getDeptId();
         String fingerprint = login.getFingerprint();
 
-        Token token = new Token(appId, tenantId, deptId);
+        Token token = new Token(userId, appId, tenantId, deptId);
         if (tenantId != null) {
             List<AuthDto> funs = mapper.getAuthInfos(appId, userId, tenantId, deptId);
             List<String> list = funs.stream().filter(i -> i.getPermit() > 0).map(AuthDto::getAuthCode).collect(Collectors.toList());
@@ -197,7 +198,7 @@ public class Core {
         String key = "User:" + userId;
         Redis.set(key, appId, code);
 
-        return initPackage(token, code, fingerprint, userId, appId);
+        return initPackage(token, code, fingerprint, appId);
     }
 
     /**
@@ -206,14 +207,13 @@ public class Core {
      * @param token       令牌
      * @param tokenId     令牌ID
      * @param fingerprint 用户特征串
-     * @param userId      用户ID
      * @return 令牌数据包
      */
-    public TokenDto refreshToken(Token token, String tokenId, String fingerprint, String userId) {
+    public TokenDto refreshToken(Token token, String tokenId, String fingerprint) {
         String appId = token.getAppId();
         token.refresh();
 
-        return initPackage(token, tokenId, fingerprint, userId, appId);
+        return initPackage(token, tokenId, fingerprint, appId);
     }
 
     /**
@@ -222,26 +222,23 @@ public class Core {
      * @param token       令牌数据
      * @param code        Code
      * @param fingerprint 用户特征串
-     * @param userId      用户ID
      * @param appId       应用ID
      * @return 令牌数据包
      */
-    private TokenDto initPackage(Token token, String code, String fingerprint, String userId, String appId) {
+    private TokenDto initPackage(Token token, String code, String fingerprint, String appId) {
         // 生成令牌数据
         AccessToken accessToken = new AccessToken();
         accessToken.setId(code);
-        accessToken.setUserId(userId);
         accessToken.setSecret(token.getSecretKey());
 
         AccessToken refreshToken = new AccessToken();
         refreshToken.setId(code);
-        refreshToken.setUserId(userId);
         refreshToken.setSecret(token.getRefreshKey());
 
         long life = token.getLife() * 12;
         TokenDto tokenDto = new TokenDto();
-        tokenDto.setAccessToken(Json.toBase64(accessToken));
-        tokenDto.setRefreshToken(Json.toBase64(refreshToken));
+        tokenDto.setAccessToken(accessToken.toString());
+        tokenDto.setRefreshToken(refreshToken.toString());
         tokenDto.setExpire(token.getLife());
         tokenDto.setFailure(life);
 
@@ -251,7 +248,7 @@ public class Core {
         Redis.set("Token:" + code, Json.toJson(token), life, TimeUnit.MILLISECONDS);
 
         // 更新用户缓存
-        String key = "User:" + userId;
+        String key = "User:" + token.getUserId();
         String json = Redis.get(key, "User");
         UserInfoDto info = Json.toBean(json, UserInfoDto.class);
         String imgUrl = info.getHeadImg();

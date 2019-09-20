@@ -1,8 +1,8 @@
 package com.insight.base.auth.common.client;
 
 import com.insight.base.auth.common.config.FeignClientConfig;
+import com.insight.util.pojo.NormalMessage;
 import com.insight.util.pojo.Reply;
-import com.insight.util.pojo.Sms;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,11 +20,11 @@ public interface MessageClient {
     /**
      * 同步发短信
      *
-     * @param sms 短信对象
+     * @param message 短信对象
      * @return Reply
      */
     @PostMapping("/base/message/sms/v1.0/messages")
-    Reply sendMessage(@RequestBody Sms sms);
+    Reply sendMessage(@RequestBody NormalMessage message);
 
     /**
      * 验证短信验证码

@@ -28,15 +28,17 @@ public class Token extends TokenInfo {
     /**
      * 构造方法
      *
+     * @param userId   用户ID
      * @param appId    应用ID
      * @param tenantId 租户ID
      * @param deptId   登录部门ID
      */
-    Token(String appId, String tenantId, String deptId) {
+    Token(String userId, String appId, String tenantId, String deptId) {
         AuthMapper mapper = ApplicationContextHolder.getContext().getBean(AuthMapper.class);
-        super.setAppId(appId);
-        super.setTenantId(tenantId);
-        super.setDeptId(deptId);
+        setUserId(userId);
+        setAppId(appId);
+        setTenantId(tenantId);
+        setDeptId(deptId);
 
         Application app = null;
         String key = "App:" + appId;
@@ -45,13 +47,13 @@ public class Token extends TokenInfo {
             app = mapper.getApp(appId);
 
             if (app == null) {
-                super.setLife(Long.valueOf("7200000"));
+                setLife(Long.valueOf("7200000"));
             } else {
-                super.setLife(app.getTokenLife());
-                Redis.set(key, "TokenLife", super.getLife().toString());
+                setLife(app.getTokenLife());
+                Redis.set(key, "TokenLife", getLife().toString());
             }
         } else {
-            super.setLife(Long.valueOf(tokenLife.toString()));
+            setLife(Long.valueOf(tokenLife.toString()));
         }
 
         Object signInType = Redis.get(key, "SignInType");
@@ -61,13 +63,13 @@ public class Token extends TokenInfo {
             }
 
             if (app == null) {
-                super.setSignInOne(false);
+                setSignInOne(false);
             } else {
-                super.setSignInOne(app.getSigninOne());
-                Redis.set(key, "SignInType", super.getSignInOne().toString());
+                setSignInOne(app.getSigninOne());
+                Redis.set(key, "SignInType", getSignInOne().toString());
             }
         } else {
-            super.setSignInOne(Boolean.valueOf(signInType.toString()));
+            setSignInOne(Boolean.valueOf(signInType.toString()));
         }
 
         Object refreshType = Redis.get(key, "RefreshType");
@@ -77,19 +79,19 @@ public class Token extends TokenInfo {
             }
 
             if (app == null) {
-                super.setAutoRefresh(false);
+                setAutoRefresh(false);
             } else {
-                super.setAutoRefresh(app.getAutoRefresh());
-                Redis.set(key, "RefreshType", super.getAutoRefresh().toString());
+                setAutoRefresh(app.getAutoRefresh());
+                Redis.set(key, "RefreshType", getAutoRefresh().toString());
             }
         } else {
-            super.setAutoRefresh(Boolean.valueOf(refreshType.toString()));
+            setAutoRefresh(Boolean.valueOf(refreshType.toString()));
         }
 
         setSecretKey(Generator.uuid());
         setRefreshKey(Generator.uuid());
-        setExpiryTime(new Date(super.getLife() + System.currentTimeMillis()));
-        setFailureTime(new Date(super.getLife() * 12 + System.currentTimeMillis()));
+        setExpiryTime(new Date(getLife() + System.currentTimeMillis()));
+        setFailureTime(new Date(getLife() * 12 + System.currentTimeMillis()));
     }
 
     /**
@@ -108,15 +110,15 @@ public class Token extends TokenInfo {
         }
 
         // 单点登录时验证令牌ID
-        if (super.getSignInOne()) {
-            String appId = super.getAppId();
+        if (getSignInOne()) {
+            String appId = getAppId();
             String id = Redis.get("User:" + userId, appId);
             if (!tokenId.equals(id)) {
                 return false;
             }
         }
 
-        String secret = type == TokenType.AccessToken ? super.getHash() : super.getRefreshKey();
+        String secret = type == TokenType.AccessToken ? getHash() : getRefreshKey();
 
         return key.equals(secret);
     }
@@ -126,9 +128,9 @@ public class Token extends TokenInfo {
      **/
     @JsonIgnore
     void refresh() {
-        setExpiryTime(new Date(super.getLife() + System.currentTimeMillis()));
-        setFailureTime(new Date(super.getLife() * 12 + System.currentTimeMillis()));
-        super.setSecretKey(Generator.uuid());
+        setExpiryTime(new Date(getLife() + System.currentTimeMillis()));
+        setFailureTime(new Date(getLife() * 12 + System.currentTimeMillis()));
+        setSecretKey(Generator.uuid());
     }
 }
 
