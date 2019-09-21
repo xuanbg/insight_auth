@@ -3,7 +3,7 @@ package com.insight.base.auth.common.dto;
 import com.insight.util.Json;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * @author 宣炳刚
@@ -66,7 +66,7 @@ public class UserInfoDto implements Serializable {
     /**
      * 创建时间
      */
-    private Date createdTime;
+    private LocalDateTime createdTime;
 
     public String getId() {
         return id;
@@ -148,11 +148,11 @@ public class UserInfoDto implements Serializable {
         this.builtin = builtin;
     }
 
-    public Date getCreatedTime() {
+    public LocalDateTime getCreatedTime() {
         return createdTime;
     }
 
-    public void setCreatedTime(Date createdTime) {
+    public void setCreatedTime(LocalDateTime createdTime) {
         this.createdTime = createdTime;
     }
 

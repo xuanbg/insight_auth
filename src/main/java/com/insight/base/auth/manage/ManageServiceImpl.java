@@ -17,7 +17,6 @@ import com.insight.util.pojo.Reply;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -84,7 +83,7 @@ public class ManageServiceImpl implements ManageService {
     public Reply newConfig(LoginInfo info, InterfaceConfig dto) {
         String id = Generator.uuid();
         dto.setId(id);
-        dto.setCreatedTime(new Date());
+        dto.setCreatedTime(LocalDateTime.now());
         mapper.addConfig(dto);
         writeLog(info, OperateType.INSERT, id, dto);
 

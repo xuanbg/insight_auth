@@ -25,8 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.UnexpectedTypeException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLSyntaxErrorException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -281,7 +281,7 @@ public class GlobalExceptionHandler {
         /**
          * 日志时间
          */
-        private Date time;
+        private LocalDateTime time;
 
         /**
          * 日志级别(DEBUG,INFO,WARN,ERROR)
@@ -308,12 +308,12 @@ public class GlobalExceptionHandler {
             requestId = request.getHeader("requestId");
         }
 
-        public Date getTime() {
+        public LocalDateTime getTime() {
             return time;
         }
 
         void setTime() {
-            time = new Date();
+            time = LocalDateTime.now();
         }
 
         public String getLevel() {
