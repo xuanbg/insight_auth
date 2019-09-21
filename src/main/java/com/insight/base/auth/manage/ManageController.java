@@ -111,14 +111,18 @@ public class ManageController {
     /**
      * 获取日志列表
      *
+     * @param info    用户关键信息
      * @param keyword 查询关键词
      * @param page    分页页码
      * @param size    每页记录数
      * @return Reply
      */
     @GetMapping("/v1.0/configs/logs")
-    public Reply getLogs(@RequestParam(required = false) String keyword, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size) {
-        return service.getLogs(keyword, page, size);
+    public Reply getLogs(@RequestHeader("loginInfo") String info, @RequestParam(required = false) String keyword,
+                         @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size) {
+        LoginInfo loginInfo = Json.toBeanFromBase64(info, LoginInfo.class);
+
+        return service.getLogs(loginInfo.getTenantId(), keyword, page, size);
     }
 
     /**

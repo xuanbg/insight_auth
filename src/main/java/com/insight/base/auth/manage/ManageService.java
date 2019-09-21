@@ -14,9 +14,9 @@ public interface ManageService {
     /**
      * 获取接口配置列表
      *
-     * @param keyword 查询关键词
-     * @param page    分页页码
-     * @param size    每页记录数
+     * @param keyword  查询关键词
+     * @param page     分页页码
+     * @param size     每页记录数
      * @return Reply
      */
     Reply getConfigs(String keyword, int page, int size);
@@ -59,12 +59,13 @@ public interface ManageService {
     /**
      * 获取日志列表
      *
-     * @param keyword 查询关键词
-     * @param page    分页页码
-     * @param size    每页记录数
+     * @param tenantId 租户ID
+     * @param keyword  查询关键词
+     * @param page     分页页码
+     * @param size     每页记录数
      * @return Reply
      */
-    Reply getLogs(String keyword, int page, int size);
+    Reply getLogs(String tenantId, String keyword, int page, int size);
 
     /**
      * 获取日志详情

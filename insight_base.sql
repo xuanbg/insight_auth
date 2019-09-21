@@ -5,6 +5,7 @@
 DROP TABLE IF EXISTS `ibl_operate_log`;
 CREATE TABLE `ibl_operate_log` (
   `id` char(32) NOT NULL COMMENT 'UUID主键',
+  `tenant_id` char(32) NOT NULL COMMENT '租户ID',
   `type` varchar(16) NOT NULL COMMENT '类型',
   `business_id` char(32) DEFAULT NULL COMMENT '业务ID',
   `business` varchar(16) DEFAULT NULL COMMENT '业务名称',
@@ -14,12 +15,13 @@ CREATE TABLE `ibl_operate_log` (
   `creator_id` char(32) NOT NULL COMMENT '创建人ID,系统自动为32个0',
   `created_time` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_operate_log_tenant_id` (`tenant_id`) USING BTREE,
   KEY `idx_operate_log_type` (`type`) USING BTREE,
   KEY `idx_operate_log_business_id` (`business_id`) USING BTREE,
   KEY `idx_operate_log_dept_id` (`dept_id`) USING BTREE,
   KEY `idx_operate_log_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_operate_log_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='操作日志记录表';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='操作日志记录表';
 
 -- ----------------------------
 -- Table structure for ibi_interface
@@ -588,6 +590,7 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 (replace(uuid(), '-', ''), '用户账号离线', 'DELETE', '/base/auth/v1.0/tokens', NULL, 10, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取用户导航栏', 'GET', '/base/auth/v1.0/navigators', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取模块功能', 'GET', '/base/auth/v1.0/navigators/{id}/functions', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+
 (replace(uuid(), '-', ''), '获取接口配置列表', 'GET', '/base/auth/manage/v1.0/configs', 'getConfig', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取接口配置详情', 'GET', '/base/auth/manage/v1.0/configs/{id}', 'getConfig', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '新增接口配置', 'POST', '/base/auth/manage/v1.0/configs', 'newConfig', 10, NULL, NULL, NULL, 1, 1, now()),
@@ -596,6 +599,26 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 (replace(uuid(), '-', ''), '获取日志列表', 'GET', '/base/auth/manage/v1.0/configs/logs', 'getLog', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取日志详情', 'GET', '/base/auth/manage/v1.0/configs/logs/{id}', 'getLog', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '加载接口配置表', 'GET', '/base/auth/manage/v1.0/configs/load', 'loadConfigs', 1, NULL, NULL, NULL, 1, 1, now()),
+
+(replace(uuid(), '-', ''), '获取短信模板列表', 'GET', '/base/message/manage/v1.0/templates', 'getTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '获取短信模板详情', 'GET', '/base/message/manage/v1.0/templates/{id}', 'getTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '新增短信模板', 'POST', '/base/message/manage/v1.0/templates', 'newTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '编辑短信模板', 'PUT', '/base/message/manage/v1.0/templates', 'editTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '删除短信模板', 'DELETE', '/base/message/manage/v1.0/templates', 'deleteTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '禁用短信模板', 'PUT', '/base/message/manage/v1.0/templates/disable', 'disableTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '启用短信模板', 'PUT', '/base/message/manage/v1.0/templates/enable', 'enableTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+
+(replace(uuid(), '-', ''), '获取场景列表', 'GET', '/base/message/manage/v1.0/scenes', 'getScene', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '获取场景详情', 'GET', '/base/message/manage/v1.0/scenes/{id}', 'getScene', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '新增场景', 'POST', '/base/message/manage/v1.0/scenes', 'newScene', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '编辑场景', 'PUT', '/base/message/manage/v1.0/scenes', 'editScene', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '删除场景', 'DELETE', '/base/message/manage/v1.0/scenes', 'deleteScene', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '禁用场景', 'PUT', '/base/message/manage/v1.0/scenes/disable', 'disableScene', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '启用场景', 'PUT', '/base/message/manage/v1.0/scenes/enable', 'enableScene', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '获取场景配置列表', 'GET', '/base/message/manage/v1.0/scenes/configs', 'getSceneTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '添加场景配置', 'POST', '/base/message/manage/v1.0/scenes/configs', 'addSceneTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '移除场景配置', 'DELETE', '/base/message/manage/v1.0/scenes/configs', 'removeSceneTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+
 (replace(uuid(), '-', ''), '发送短信', 'POST', '/base/message/sms/v1.0/messages', 'sendMessage', 10, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '发送短信验证码', 'POST', '/base/message/sms/v1.0/messages/codes', NULL, 10, 86400, 30, '今日验证码次数已达上限,请合理使用短信验证码', 0, 1, now()),
 (replace(uuid(), '-', ''), '验证短信验证码', 'GET', '/base/message/sms/v1.0/messages/codes/{key}/status', NULL, 1, NULL, NULL, NULL, 0, 1, now());

@@ -140,15 +140,16 @@ public class ManageServiceImpl implements ManageService {
     /**
      * 获取日志列表
      *
+     * @param tenantId 租户ID
      * @param keyword 查询关键词
      * @param page    分页页码
      * @param size    每页记录数
      * @return Reply
      */
     @Override
-    public Reply getLogs(String keyword, int page, int size) {
+    public Reply getLogs(String tenantId, String keyword, int page, int size) {
         PageHelper.startPage(page, size);
-        List<Log> logs = mapper.getLogs(keyword);
+        List<Log> logs = mapper.getLogs(tenantId, keyword);
         PageInfo<Log> pageInfo = new PageInfo<>(logs);
 
         return ReplyHelper.success(logs, pageInfo.getTotal());
@@ -201,6 +202,7 @@ public class ManageServiceImpl implements ManageService {
         threadPool.submit(() -> {
             Log log = new Log();
             log.setId(Generator.uuid());
+            log.setTenantId(info.getTenantId());
             log.setType(type);
             log.setBusiness("接口配置管理");
             log.setBusinessId(id);
