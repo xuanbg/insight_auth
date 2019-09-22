@@ -15,7 +15,7 @@ import java.util.List;
  * @remark 权限相关DAL
  */
 @Mapper
-public interface AuthMapper extends Mapper {
+public interface AuthMapper {
 
     /**
      * 根据登录账号查询用户数据

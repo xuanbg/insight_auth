@@ -152,6 +152,7 @@ public class Core {
         message.setAppId("9dd99dd9e6df467a8207d05ea5581125");
         message.setReceivers(mobile);
         message.setParams(map);
+        message.setBroadcast(false);
         try {
             Reply reply = client.sendMessage(message);
             if (!reply.getSuccess()) {
