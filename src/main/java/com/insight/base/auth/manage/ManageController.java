@@ -66,11 +66,8 @@ public class ManageController {
      */
     @PostMapping("/v1.0/configs")
     public Reply newConfig(@RequestHeader("loginInfo") String info, @Valid @RequestBody InterfaceConfig dto) {
-        if (dto == null) {
-            return ReplyHelper.invalidParam();
-        }
-
         LoginInfo loginInfo = Json.toBeanFromBase64(info, LoginInfo.class);
+
         return service.newConfig(loginInfo, dto);
     }
 
@@ -83,11 +80,8 @@ public class ManageController {
      */
     @PutMapping("/v1.0/configs")
     public Reply editConfig(@RequestHeader("loginInfo") String info, @Valid @RequestBody InterfaceConfig dto) {
-        if (dto == null) {
-            return ReplyHelper.invalidParam();
-        }
-
         LoginInfo loginInfo = Json.toBeanFromBase64(info, LoginInfo.class);
+
         return service.editConfig(loginInfo, dto);
     }
 
