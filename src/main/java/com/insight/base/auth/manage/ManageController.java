@@ -16,7 +16,7 @@ import javax.validation.Valid;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/base/auth/manage")
+@RequestMapping("/base/auth")
 public class ManageController {
     private final ManageService service;
 
