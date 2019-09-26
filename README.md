@@ -690,7 +690,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/navigators/711aad8daf654bcdb3a126d
 
 请求方法：**GET**
 
-接口URL：**/base/auth/manage/v1.0/configs**
+接口URL：**/base/auth/v1.0/configs**
 
 请求参数如下：
 
@@ -703,7 +703,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/navigators/711aad8daf654bcdb3a126d
 请求示例：
 
 ```bash
-curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs?keyword=getConfig" \
+curl "http://192.168.16.1:6200/base/auth/v1.0/configs?keyword=users" \
  -H 'Accept: application/json' \
  -H 'Accept-Encoding: gzip, identity' \
  -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
@@ -718,9 +718,9 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs?keyword=getConfig" 
 |String|name|接口名称|
 |String|method|请求方法(GET|POST|PUT|DELETE)|
 |String|url|接口URL|
-|Integer|type|授权类型:0.公开;1.私有;2.授权|
 |String|authCode|授权码,仅授权接口需要具有授权码|
-|Boolean|limit|是否限流|
+|Boolean|verify|是|是否需要验证,如配置了authCode,则需进行鉴权|
+|Boolean|limit|是|是否限流,如配置为限流,则需配置对应限流参数|
 
 返回结果示例：
 
@@ -731,25 +731,16 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs?keyword=getConfig" 
   "message": "请求成功",
   "data": [
     {
-      "id": "8b761354ce1611e9bbd40242ac110008",
-      "name": "获取接口配置列表",
+      "id": "d7c405a9ce1d49dbab17f3d7a3e0fabf",
+      "name": "获取用户列表",
       "method": "GET",
-      "url": "/base/auth/manage/v1.0/configs",
-      "type": 2,
-      "authCode": "getConfig",
-      "limit": true
-    },
-    {
-      "id": "8b7613afce1611e9bbd40242ac110008",
-      "name": "获取接口配置详情",
-      "method": "GET",
-      "url": "/base/auth/manage/v1.0/configs/{id}",
-      "type": 2,
-      "authCode": "getConfig",
+      "url": "/base/user/v1.0/users",
+      "authCode": null,
+      "verify": true,
       "limit": true
     }
   ],
-  "option": 2
+  "option": 1
 }
 ```
 
@@ -761,7 +752,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs?keyword=getConfig" 
 
 请求方法：**GET**
 
-接口URL：**/base/auth/manage/v1.0/configs/{id}**
+接口URL：**/base/auth/v1.0/configs/{id}**
 
 请求参数如下：
 
@@ -777,19 +768,20 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs?keyword=getConfig" 
 |String|name|接口名称|
 |String|method|请求方法(GET|POST|PUT|DELETE)|
 |String|url|接口URL|
-|Integer|type|授权类型:0.公开;1.私有;2.授权|
 |String|authCode|授权码|
-|Boolean|limit|是否限流|
 |Integer|limitGap|访问最小时间间隔(秒)|
 |Integer|limitCycle|限流周期(秒)|
 |Integer|limitMax|最多调用次数/限流周期|
+|String|message|限流时返回的错误消息|
 |String|remark|备注|
+|Boolean|verify|是|是否需要验证,如配置了authCode,则需进行鉴权|
+|Boolean|limit|是|是否限流,如配置为限流,则需配置对应限流参数|
 |Date|createdTime|创建时间|
 
 请求示例：
 
 ```bash
-curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64420b92776411c" \
+curl "http://192.168.16.1:6200/base/auth/v1.0/configs/c0592bb8dc3a11e9bc200242ac110004" \
  -H 'Accept: application/json' \
  -H 'Accept-Encoding: gzip, identity' \
  -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
@@ -804,18 +796,18 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
   "code": 200,
   "message": "请求成功",
   "data": {
-    "id": "7179f5e4c7f84879bdfb70de0999b067",
-    "name": "获取用户列表",
+    "id": "c0592bb8dc3a11e9bc200242ac110004",
+    "name": "验证短信验证码",
     "method": "GET",
-    "url": "/base/user/v1.0/users",
-    "type": 2,
-    "authCode": "getUser",
+    "url": "/base/message/sms/v1.0/messages/codes/{key}/status",
+    "authCode": null,
     "limitGap": 1,
-    "limitCycle": 86400,
-    "limitMax": 360,
-    "message": "获取Code接口每24小时调用次数为360次,请合理使用",
+    "limitCycle": null,
+    "limitMax": null,
+    "message": null,
     "remark": null,
-    "createdTime": "2019-09-05 09:36:07",
+    "createdTime": "2019-09-21 14:40:50",
+    "verify": false,
     "limit": true
   },
   "option": null
@@ -830,7 +822,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 
 请求方法：**POST**
 
-接口URL：**/base/auth/manage/v1.0/configs**
+接口URL：**/base/auth/v1.0/configs**
 
 请求参数如下：
 
@@ -839,13 +831,13 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 |String|name|是|接口名称|
 |String|method|是|请求方法(GET|POST|PUT|DELETE)|
 |String|url|是|接口URL|
-|Integer|type|是|授权类型:0.公开;1.私有;2.授权|
 |String|authCode|否|授权码,仅授权接口需要具有授权码|
-|Boolean|limit|是|是否限流,如配置为限流,则需配置对应限流参数|
 |Integer|limitGap|否|访问最小时间间隔(秒)|
 |Integer|limitCycle|否|限流周期(秒)|
 |Integer|limitMax|否|最多调用次数/限流周期|
 |String|remark|否|备注|
+|Boolean|verify|是|是否需要验证,如配置了authCode,则需进行鉴权|
+|Boolean|limit|是|是否限流,如配置为限流,则需配置对应限流参数|
 
 请求参数示例：
 
@@ -854,14 +846,14 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
   "name": "获取用户列表",
   "method": "GET",
   "url": "/base/user/v1.0/users",
-  "type": 2,
   "authCode": null,
-  "limit": true,
   "limitGap": 1,
-  "limitCycle": 86400,
-  "limitMax": 360,
-  "message": "获取Code接口每24小时调用次数为360次,请合理使用",
-  "remark": null
+  "limitCycle": null,
+  "limitMax": null,
+  "message": null,
+  "remark": null,
+  "verify": true,
+  "limit": true
 }
 ```
 
@@ -885,7 +877,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 
 请求方法：**PUT**
 
-接口URL：**/base/auth/manage/v1.0/configs**
+接口URL：**/base/auth/v1.0/configs**
 
 请求参数如下：
 
@@ -895,30 +887,30 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 |String|name|是|接口名称|
 |String|method|是|请求方法(GET|POST|PUT|DELETE)|
 |String|url|是|接口URL|
-|Integer|type|是|授权类型:0.公开;1.私有;2.授权|
 |String|authCode|否|授权码,仅授权接口需要具有授权码|
-|Boolean|limit|是|是否限流,如配置为限流,则需配置对应限流参数|
 |Integer|limitGap|否|访问最小时间间隔(秒)|
 |Integer|limitCycle|否|限流周期(秒)|
 |Integer|limitMax|否|最多调用次数/限流周期|
 |String|remark|否|备注|
+|Boolean|verify|是|是否需要验证,如配置了authCode,则需进行鉴权|
+|Boolean|limit|是|是否限流,如配置为限流,则需配置对应限流参数|
 
 请求参数示例：
 
 ```json
 {
-  "id": "7179f5e4c7f84879bdfb70de0999b067",
+  "id": "d7c405a9ce1d49dbab17f3d7a3e0fabf",
   "name": "获取用户列表",
   "method": "GET",
   "url": "/base/user/v1.0/users",
-  "type": 2,
-  "authCode": null,
-  "limit": true,
+  "authCode": "getUser",
   "limitGap": 1,
-  "limitCycle": 86400,
-  "limitMax": 360,
-  "message": "获取Code接口每24小时调用次数为360次,请合理使用",
-  "remark": null
+  "limitCycle": null,
+  "limitMax": null,
+  "message": null,
+  "remark": null,
+  "verify": true,
+  "limit": true
 }
 ```
 
@@ -942,7 +934,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 
 请求方法：**DELETE**
 
-接口URL：**/base/auth/manage/v1.0/configs**
+接口URL：**/base/auth/v1.0/configs**
 
 请求参数如下：
 
@@ -976,7 +968,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 
 请求方法：**GET**
 
-接口URL：**/base/auth/manage/v1.0/configs/logs**
+接口URL：**/base/auth/v1.0/configs/logs**
 
 请求参数如下：
 
@@ -989,7 +981,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/bc3e1a2256af4445a64
 请求示例：
 
 ```bash
-curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/logs?keyword=UPDATE" \
+curl "http://192.168.16.1:6200/base/auth/v1.0/configs/logs?keyword=UPDATE" \
  -H 'Accept: application/json' \
  -H 'Accept-Encoding: gzip, identity' \
  -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
@@ -1052,7 +1044,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/logs?keyword=UPDATE
 
 请求方法：**GET**
 
-接口URL：**/base/auth/manage/v1.0/configs/logs/{id}**
+接口URL：**/base/auth/v1.0/configs/logs/{id}**
 
 请求参数如下：
 
@@ -1077,7 +1069,7 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/logs?keyword=UPDATE
 请求示例：
 
 ```bash
-curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/logs/bc3e1a2256af4445a64420b92776411c" \
+curl "http://192.168.16.1:6200/base/auth/v1.0/configs/logs/bc3e1a2256af4445a64420b92776411c" \
  -H 'Accept: application/json' \
  -H 'Accept-Encoding: gzip, identity' \
  -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \
@@ -1128,12 +1120,12 @@ curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/logs/bc3e1a2256af44
 
 请求方法：**GET**
 
-接口URL：**/base/auth/manage/v1.0/configs/load**
+接口URL：**/base/auth/v1.0/configs/load**
 
 请求示例：
 
 ```bash
-curl "http://192.168.16.1:6200/base/auth/manage/v1.0/configs/load" \
+curl "http://192.168.16.1:6200/base/auth/v1.0/configs/load" \
  -H 'Accept: application/json' \
  -H 'Accept-Encoding: gzip, identity' \
  -H 'Authorization: eyJpZCI6IjUyZmFlYWI5OWUxMTQwNzBhOTliZDk2YTI0MmM3YWE2IiwidXNlcklkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ1c2VyTmFtZSI6bnVsbCwic2VjcmV0IjoiMWQyNWY3MDEwYzVhNDFhNGJiMGE2OTE0ZDA4OWZlNzQifQ==' \

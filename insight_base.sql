@@ -646,7 +646,6 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 
 (replace(uuid(), '-', ''), '获取计划任务列表', 'GET', '/base/message/v1.0/schedules', 'getSchedule', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取计划任务详情', 'GET', '/base/message/v1.0/schedules/{id}', 'getSchedule', 1, NULL, NULL, NULL, 1, 1, now()),
-(replace(uuid(), '-', ''), '新增计划任务', 'POST', '/base/message/v1.0/schedules', 'newSchedule', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '立即执行计划任务', 'PUT', '/base/message/v1.0/schedules', 'executeSchedule', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '删除计划任务', 'DELETE', '/base/message/v1.0/schedules', 'deleteSchedule', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '禁用计划任务', 'PUT', '/base/message/v1.0/schedules/disable', 'disableSchedule', 1, NULL, NULL, NULL, 1, 1, now()),
