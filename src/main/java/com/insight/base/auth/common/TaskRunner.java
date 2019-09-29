@@ -27,5 +27,7 @@ public class TaskRunner implements ApplicationRunner {
 
         String json = Json.toJson(configs);
         Redis.set("Config:Interface", json);
+        Redis.set("Config:DefaultHead", "head_default.png");
+        Redis.set("Config:FileHost", "https://images.insight.com/");
     }
 }

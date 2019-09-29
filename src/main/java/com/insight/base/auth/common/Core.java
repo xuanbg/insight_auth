@@ -244,12 +244,12 @@ public class Core {
         // 更新用户缓存
         String key = "User:" + token.getUserId();
         UserInfoDto info = Redis.get(key, UserInfoDto.class);
+        String host = Redis.get("Config:FileHost");
         String imgUrl = info.getHeadImg();
         if (imgUrl == null || imgUrl.isEmpty()) {
             String defaultHead = Redis.get("Config:DefaultHead");
-            info.setHeadImg(defaultHead);
+            info.setHeadImg(host + defaultHead);
         } else if (!imgUrl.contains("http://") && !imgUrl.contains("https://")) {
-            String host = Redis.get("Config:FileHost");
             info.setHeadImg(host + imgUrl);
         }
 

@@ -21,7 +21,7 @@ CREATE TABLE `ibl_operate_log` (
   KEY `idx_operate_log_dept_id` (`dept_id`) USING BTREE,
   KEY `idx_operate_log_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_operate_log_created_time` (`created_time`) USING BTREE
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='操作日志记录表';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='操作日志记录表';
 
 -- ----------------------------
 -- Table structure for ibi_interface
@@ -44,7 +44,7 @@ CREATE TABLE `ibi_interface` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `idx_interface_hash` (`method`,`url`) USING BTREE,
   KEY `idx_interface_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='接口配置表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='接口配置表';
 
 
 -- ----------------------------
@@ -71,7 +71,7 @@ CREATE TABLE `ibt_tenant` (
   KEY `idx_tenant_code` (`code`) USING BTREE,
   KEY `idx_tenant_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_tenant_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='租户表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='租户表';
 
 -- ----------------------------
 -- Table structure for ibt_tenant_app
@@ -84,7 +84,7 @@ CREATE TABLE `ibt_tenant_app` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_tenant_app_tenant_id` (`tenant_id`) USING BTREE,
   KEY `idx_tenant_app_app_id` (`app_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='租户-应用关系表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='租户-应用关系表';
 
 -- ----------------------------
 -- Table structure for ibt_tenant_user
@@ -97,7 +97,7 @@ CREATE TABLE `ibt_tenant_user` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_tenant_user_tenant_id` (`tenant_id`) USING BTREE,
   KEY `idx_tenant_user_user_id` (`user_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='租户-用户关系表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='租户-用户关系表';
 
 
 -- ----------------------------
@@ -120,7 +120,7 @@ CREATE TABLE `ibs_application` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_application_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_application_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='应用表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='应用表';
 
 -- ----------------------------
 -- Table structure for ibs_navigator
@@ -143,7 +143,7 @@ CREATE TABLE `ibs_navigator` (
   KEY `idx_navigator_parent_id` (`parent_id`) USING BTREE,
   KEY `idx_navigator_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_navigator_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='导航表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci COMMENT='导航表';
 
 -- ----------------------------
 -- Table structure for ibs_function
@@ -165,7 +165,7 @@ CREATE TABLE `ibs_function` (
   KEY `idx_function_nav_id` (`nav_id`) USING BTREE,
   KEY `idx_function_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_function_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='功能表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci COMMENT='功能表';
 
 
 -- ----------------------------
@@ -192,7 +192,7 @@ CREATE TABLE `ibo_organize` (
   KEY `idx_organize_parent_id` (`parent_id`) USING BTREE,
   KEY `idx_organize_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_organize_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='组织机构表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='组织机构表';
 
 -- ----------------------------
 -- Table structure for ibo_organize_member
@@ -205,7 +205,7 @@ CREATE TABLE `ibo_organize_member` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_organize_member_post_id` (`post_id`) USING BTREE,
   KEY `idx_organize_member_user_id` (`user_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='职位成员表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='职位成员表';
 
 
 -- ----------------------------
@@ -238,7 +238,7 @@ CREATE TABLE `ibu_user` (
   UNIQUE KEY `idx_user_union_id` (`union_id`) USING BTREE,
   KEY `idx_user_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_user_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='用户表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='用户表';
 
 
 -- ----------------------------
@@ -258,7 +258,7 @@ CREATE TABLE `ibu_group` (
   KEY `idx_group_tenant_id` (`tenant_id`) USING BTREE,
   KEY `idx_group_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_group_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='用户组表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='用户组表';
 
 -- ----------------------------
 -- Table structure for ibu_group_member
@@ -271,7 +271,7 @@ CREATE TABLE `ibu_group_member` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_group_member_group_id` (`group_id`) USING BTREE,
   KEY `idx_group_member_user_id` (`user_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='用户组成员表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='用户组成员表';
 
 
 -- ----------------------------
@@ -284,7 +284,7 @@ CREATE TABLE `ibr_config` (
   `name` varchar(32) NOT NULL COMMENT '名称',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_config_data_type` (`data_type`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='数据配置表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='数据配置表';
 
 -- ----------------------------
 -- Table structure for ibr_role
@@ -305,7 +305,7 @@ CREATE TABLE `ibr_role` (
   KEY `idx_role_app_id` (`app_id`) USING BTREE,
   KEY `idx_role_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_role_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='角色表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='角色表';
 
 -- ----------------------------
 -- Table structure for ibr_role_data_permit
@@ -321,7 +321,7 @@ CREATE TABLE `ibr_role_data_permit` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_data_permit_role_id` (`role_id`) USING BTREE,
   KEY `idx_role_data_permit_module_id` (`module_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='角色数据权限表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='角色数据权限表';
 
 -- ----------------------------
 -- Table structure for ibr_role_func_permit
@@ -335,7 +335,7 @@ CREATE TABLE `ibr_role_func_permit` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_func_permit_role_id` (`role_id`) USING BTREE,
   KEY `idx_role_func_permit_function_id` (`function_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='角色功能权限表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='角色功能权限表';
 
 -- ----------------------------
 -- Table structure for ibr_role_member
@@ -349,7 +349,7 @@ CREATE TABLE `ibr_role_member` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_member_role_id` (`role_id`) USING BTREE,
   KEY `idx_role_member_member_id` (`member_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT COMMENT='角色成员表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='角色成员表';
 
 
 -- ----------------------------
