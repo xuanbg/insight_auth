@@ -6,5 +6,5 @@ MAINTAINER Brian "brian.xan@gmail.com"
 
 ADD target/*.jar /usr/local/insight/app.jar
 
-EXPOSE 16020
+EXPOSE 6010
 ENTRYPOINT ["/usr/local/insight/start.sh"]
