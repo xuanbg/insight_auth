@@ -82,7 +82,8 @@ public interface ConfigMapper {
      * @return 操作日志列表
      */
     @Select("<script>select id, type, business, business_id, dept_id, creator, creator_id, created_time from ibl_operate_log " +
-            "where tenant_id = #{tenantId} <if test = 'key!=null'>and type = #{key} or business = #{key} or business_id = #{key} or " +
+            "where (tenant_id = #{tenantId} or tenant_id is null) " +
+            "<if test = 'key!=null'>and type = #{key} or business = #{key} or business_id = #{key} or " +
             "dept_id = #{key} or creator = #{key} or creator_id = #{key}</if>" +
             "order by created_time</script>")
     List<Log> getLogs(@Param("tenantId") String tenantId, @Param("key") String key);

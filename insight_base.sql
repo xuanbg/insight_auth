@@ -5,7 +5,7 @@
 DROP TABLE IF EXISTS `ibl_operate_log`;
 CREATE TABLE `ibl_operate_log` (
   `id` char(32) NOT NULL COMMENT 'UUID主键',
-  `tenant_id` char(32) NOT NULL COMMENT '租户ID',
+  `tenant_id` char(32) DEFAULT NULL COMMENT '租户ID',
   `type` varchar(16) NOT NULL COMMENT '类型',
   `business_id` char(32) DEFAULT NULL COMMENT '业务ID',
   `business` varchar(16) DEFAULT NULL COMMENT '业务名称',
@@ -292,8 +292,8 @@ CREATE TABLE `ibr_config` (
 DROP TABLE IF EXISTS `ibr_role`;
 CREATE TABLE `ibr_role` (
   `id` char(32) NOT NULL COMMENT '主键(UUID)',
-  `tenant_id` char(32) DEFAULT NULL COMMENT '租户ID,如为空则为角色模板',
-  `app_id` char(32) DEFAULT NULL COMMENT '应用ID,如不为空则该角色为应用专有',
+  `tenant_id` char(32) DEFAULT NULL COMMENT '租户ID,如为空且非内置则为角色模板',
+  `app_id` char(32) NOT NULL COMMENT '应用ID',
   `name` varchar(64) NOT NULL COMMENT '名称',
   `remark` varchar(256) DEFAULT NULL COMMENT '备注',
   `is_builtin` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否内置:0.非内置;1.内置',
@@ -454,7 +454,6 @@ INSERT ibs_application (`id`, `index`, `name`, `alias`, `token_life`, `creator`,
 ('9dd99dd9e6df467a8207d05ea5581125', 1, '因赛特多租户平台', 'MTP', 7200, '系统管理员', '00000000000000000000000000000000', now()),
 ('e46c0d4f85f24f759ad4d86b9505b1d4', 2, '因赛特用户管理系统', 'RMS', 7200, '系统管理员', '00000000000000000000000000000000', now());
 INSERT ibt_tenant_app (`id`, `tenant_id`, `app_id`) VALUES
-(replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', '9dd99dd9e6df467a8207d05ea5581125'),
 (replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', 'e46c0d4f85f24f759ad4d86b9505b1d4');
 
 -- ----------------------------
@@ -561,7 +560,7 @@ INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_code`, `icon_
 -- ----------------------------
 insert ibr_role (id, tenant_id, app_id, name, remark, is_builtin, creator, creator_id, `created_time`) VALUES
 (replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', 'e46c0d4f85f24f759ad4d86b9505b1d4', '系统管理员', '内置角色，角色成员为系统管理员组成员', 1, '系统管理员', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', '9dd99dd9e6df467a8207d05ea5581125', '平台管理员', '内置角色，角色成员为系统管理员组成员', 1, '系统管理员', '00000000000000000000000000000000', now());
+(replace(uuid(), '-', ''), NULL, '9dd99dd9e6df467a8207d05ea5581125', '平台管理员', '内置角色，角色成员为系统管理员组成员', 1, '系统管理员', '00000000000000000000000000000000', now());
 
 -- ----------------------------
 -- 初始化用户组:系统管理员
@@ -640,6 +639,7 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 (replace(uuid(), '-', ''), '删除场景', 'DELETE', '/base/message/v1.0/scenes', 'deleteScene', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '禁用场景', 'PUT', '/base/message/v1.0/scenes/disable', 'disableScene', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '启用场景', 'PUT', '/base/message/v1.0/scenes/enable', 'enableScene', 1, NULL, NULL, NULL, 1, 1, now()),
+
 (replace(uuid(), '-', ''), '获取场景配置列表', 'GET', '/base/message/v1.0/scenes/configs', 'getSceneTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '添加场景配置', 'POST', '/base/message/v1.0/scenes/configs', 'addSceneTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '移除场景配置', 'DELETE', '/base/message/v1.0/scenes/configs', 'removeSceneTemplate', 1, NULL, NULL, NULL, 1, 1, now()),

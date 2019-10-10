@@ -285,10 +285,6 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getNavigators(LoginInfo info) {
-        if (!core.containsApp(info.getTenantId(), info.getAppId())) {
-            return ReplyHelper.invalidParam();
-        }
-
         return ReplyHelper.success(core.getNavigators(info));
     }
 

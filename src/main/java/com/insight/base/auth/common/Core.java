@@ -182,12 +182,10 @@ public class Core {
         String deptId = login.getDeptId();
         String fingerprint = login.getFingerprint();
 
+        List<AuthDto> funs = mapper.getAuthInfos(appId, userId, tenantId, deptId);
+        List<String> list = funs.stream().filter(i -> i.getPermit() > 0).map(AuthDto::getAuthCode).collect(Collectors.toList());
         Token token = new Token(userId, appId, tenantId, deptId);
-        if (tenantId != null) {
-            List<AuthDto> funs = mapper.getAuthInfos(appId, userId, tenantId, deptId);
-            List<String> list = funs.stream().filter(i -> i.getPermit() > 0).map(AuthDto::getAuthCode).collect(Collectors.toList());
-            token.setPermitFuncs(list);
-        }
+        token.setPermitFuncs(list);
 
         String key = "UserToken:" + userId;
         Redis.set(key, appId, code);

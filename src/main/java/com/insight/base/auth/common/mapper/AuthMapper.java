@@ -61,11 +61,11 @@ public interface AuthMapper {
     @Select("SELECT * FROM (SELECT DISTINCT g.id,g.parent_id,g.`type`,g.`index`,g.`name`,g.module_info FROM ibs_navigator g " +
             "JOIN ibs_navigator m ON m.parent_id=g.id JOIN ibs_function f ON f.nav_id=m.id " +
             "JOIN (SELECT DISTINCT a.function_id FROM ibr_role_func_permit a JOIN ibv_user_roles r ON r.role_id=a.role_id " +
-            "WHERE user_id=#{userId} AND tenant_id=#{tenantId} AND (dept_id=#{deptId} OR dept_id IS NULL) " +
+            "WHERE user_id=#{userId} AND (tenant_id=#{tenantId} or tenant_id is null) AND (dept_id=#{deptId} OR dept_id IS NULL) " +
             "GROUP BY a.function_id HAVING min(a.permit)> 0) a ON a.function_id=f.id WHERE g.app_id=#{appId} UNION " +
             "SELECT m.id,m.parent_id,m.`type`,m.`index`,m.`name`,m.module_info FROM ibs_navigator m JOIN ibs_function f ON f.nav_id=m.id " +
             "JOIN (SELECT DISTINCT a.function_id FROM ibr_role_func_permit a JOIN ibv_user_roles r ON r.role_id=a.role_id " +
-            "WHERE user_id=#{userId} AND tenant_id=#{tenantId} AND (dept_id=#{deptId} OR dept_id IS NULL) GROUP BY a.function_id " +
+            "WHERE user_id=#{userId} AND (tenant_id=#{tenantId} or tenant_id is null) AND (dept_id=#{deptId} OR dept_id IS NULL) GROUP BY a.function_id " +
             "HAVING min(a.permit)> 0) a ON a.function_id=f.id WHERE m.app_id=#{appId}) l ORDER BY l.parent_id,l.`index`;")
     List<NavDto> getNavigators(@Param("tenantId") String tenantId, @Param("appId") String appId, @Param("userId") String userId, @Param("deptId") String deptId);
 
@@ -117,7 +117,7 @@ public interface AuthMapper {
     @Select("SELECT f.id,f.nav_id,f.auth_code,min(a.permit) permit " +
             "FROM ibs_function f JOIN ibs_navigator n ON n.id=f.nav_id AND n.app_id=#{appId} " +
             "JOIN ibr_role_func_permit a ON a.function_id=f.id JOIN ibv_user_roles r ON r.role_id=a.role_id " +
-            "AND r.tenant_id=#{tenantId} AND r.user_id=#{userId} AND (r.dept_id IS NULL || r.dept_id=#{deptId}) " +
+            "AND (r.tenant_id=#{tenantId} or r.tenant_id is null) AND r.user_id=#{userId} AND (r.dept_id IS NULL || r.dept_id=#{deptId}) " +
             "WHERE f.auth_code IS NOT NULL GROUP BY f.id,f.nav_id,f.auth_code")
     List<AuthDto> getAuthInfos(@Param("appId") String appId, @Param("userId") String userId, @Param("tenantId") String tenantId, @Param("deptId") String deptId);
 }
