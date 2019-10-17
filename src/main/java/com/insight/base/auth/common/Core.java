@@ -452,6 +452,11 @@ public class Core {
         user.setUnionId(unionId);
         user.setPassword(password);
         user.setHeadImg(head);
+        user.setBuiltin(false);
+        user.setInvalid(false);
+        user.setCreator(name);
+        user.setCreatorId(userId);
+        user.setCreatedTime(LocalDateTime.now());
 
         // 缓存用户ID到Redis
         Redis.set("ID:" + mobile, userId);
