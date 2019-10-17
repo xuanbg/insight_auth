@@ -16,6 +16,7 @@ import java.util.Enumeration;
  */
 @Configuration
 public class FeignClientConfig implements RequestInterceptor {
+    private static final String HEADERS = "fingerprint,requestId,loginInfo";
 
     /**
      * 应用配置
@@ -33,8 +34,10 @@ public class FeignClientConfig implements RequestInterceptor {
         Enumeration<String> headers = request.getHeaderNames();
         while (headers.hasMoreElements()) {
             String name = headers.nextElement();
-            String values = request.getHeader(name);
-            template.header(name, values);
+            if (HEADERS.contains(name)) {
+                String values = request.getHeader(name);
+                template.header(name, values);
+            }
         }
     }
 }
