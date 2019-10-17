@@ -651,6 +651,7 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 (replace(uuid(), '-', ''), '禁用计划任务', 'PUT', '/base/message/v1.0/schedules/disable', 'disableSchedule', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '启用计划任务', 'PUT', '/base/message/v1.0/schedules/enable', 'enableSchedule', 1, NULL, NULL, NULL, 1, 1, now()),
 
-(replace(uuid(), '-', ''), '发送短信', 'POST', '/base/message/v1.0/sms', 'sendMessage', 10, NULL, NULL, NULL, 1, 1, now()),
-(replace(uuid(), '-', ''), '发送短信验证码', 'POST', '/base/message/v1.0/sms/codes', NULL, 10, 86400, 30, '今日验证码次数已达上限,请合理使用短信验证码', 0, 1, now()),
-(replace(uuid(), '-', ''), '验证短信验证码', 'GET', '/base/message/v1.0/sms/codes/{key}/status', NULL, 1, NULL, NULL, NULL, 0, 1, now());
+(replace(uuid(), '-', ''), '发送短信验证码', 'POST', '/base/message/v1.0/codes', NULL, 10, 86400, 30, '今日验证码次数已达上限,请合理使用短信验证码', 0, 1, now()),
+(replace(uuid(), '-', ''), '验证短信验证码', 'GET', '/base/message/v1.0/codes/{key}/status', NULL, NULL, NULL, NULL, NULL, 0, 0, now()),
+(replace(uuid(), '-', ''), '发送送标准消息', 'POST', '/base/message/v1.0/messages', 'sendMessage', 10, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '发送自定义消息', 'POST', '/base/message/v1.0/customs', 'sendCustomMessage', 10, NULL, NULL, NULL, 1, 1, now());

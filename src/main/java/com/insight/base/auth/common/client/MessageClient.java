@@ -20,10 +20,10 @@ public interface MessageClient {
     /**
      * 同步发短信
      *
-     * @param message 短信对象
+     * @param message 标准信息DTO
      * @return Reply
      */
-    @PostMapping("/base/message/v1.0/codes")
+    @PostMapping("/base/message/v1.0/messages")
     Reply sendMessage(@RequestBody NormalMessage message);
 
     /**
@@ -32,6 +32,6 @@ public interface MessageClient {
      * @param key 验证参数,MD5(type + mobile + code)
      * @return Reply
      */
-    @GetMapping("/base/message/v1.0/codes/{key}/status?isCheck=true")
+    @GetMapping("/base/message/v1.0/codes/{key}/status?isCheck=false")
     Reply verifySmsCode(@PathVariable String key);
 }
