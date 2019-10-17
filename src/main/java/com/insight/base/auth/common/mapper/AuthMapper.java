@@ -96,26 +96,6 @@ public interface AuthMapper {
     List<FuncDto> getModuleFunctions(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("deptId") String deptId, @Param("moduleId") String moduleId);
 
     /**
-     * 根据ID查询用户数据
-     *
-     * @param userId 用户ID
-     * @return 用户实体
-     */
-    @Results({@Result(property = "builtin", column = "is_builtin"), @Result(property = "invalid", column = "is_invalid")})
-    @Select("SELECT * FROM ucb_user WHERE id=#{userId};")
-    User getUserWithId(String userId);
-
-    /**
-     * 查询指定租户是否绑定了指定的应用
-     *
-     * @param tenantId 租户ID
-     * @param appId    应用ID
-     * @return 数量
-     */
-    @Select("SELECT COUNT(*) FROM ibt_tenant_app WHERE tenant_id=#{tenantId} AND app_id=#{appId};")
-    Integer containsApp(@Param("tenantId") String tenantId, @Param("appId") String appId);
-
-    /**
      * 获取用户授权信息
      *
      * @param appId    应用ID

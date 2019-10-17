@@ -343,16 +343,6 @@ public class Core {
     }
 
     /**
-     * 获取用户信息
-     *
-     * @param userId 用户ID
-     * @return 用户对象实体
-     */
-    public User getUser(String userId) {
-        return mapper.getUserWithId(userId);
-    }
-
-    /**
      * 用户是否失效状态
      *
      * @return 用户是否失效状态

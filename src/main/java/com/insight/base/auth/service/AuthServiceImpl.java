@@ -9,7 +9,6 @@ import com.insight.util.*;
 import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.LoginInfo;
 import com.insight.util.pojo.Reply;
-import com.insight.util.pojo.User;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,12 +202,13 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.success(tokens);
         }
 
-        User user = core.getUser(userId);
-        if (user.getInvalid()) {
+        key = "User:" + userId;
+        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
+        if (isInvalid) {
             return ReplyHelper.forbid();
         }
 
-        String uid = user.getUnionId();
+        String uid = Redis.get(key, "unionId");
         if (uid != null && !uid.isEmpty()) {
             // 已绑定微信UnionID
             if (login.getReplace()) {
