@@ -49,6 +49,16 @@ public interface AuthMapper {
     Integer addUserOpenId(@Param("id") String id, @Param("userId") String userId, @Param("appId") String appId);
 
     /**
+     * 更新用户微信UnionID
+     *
+     * @param userId  用户ID
+     * @param unionId 微信UnionID
+     * @return 受影响的行数
+     */
+    @Update("update ibu_user set union_id = #{unionId} where id = #{userId};")
+    Integer updateUnionId(@Param("userId") String userId, @Param("unionId") String unionId);
+
+    /**
      * 获取用户可用的导航栏
      *
      * @param tenantId 租户ID

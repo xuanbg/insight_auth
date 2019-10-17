@@ -2,8 +2,6 @@ package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.Token;
-import com.insight.base.auth.common.client.MessageClient;
-import com.insight.base.auth.common.client.RabbitClient;
 import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.enums.TokenType;
@@ -27,17 +25,14 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class AuthServiceImpl implements AuthService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final MessageClient messageClient;
     private final Core core;
 
     /**
      * 构造函数
      *
-     * @param messageClient MessageClient
-     * @param core          Core
+     * @param core Core
      */
-    public AuthServiceImpl(MessageClient messageClient, Core core) {
-        this.messageClient = messageClient;
+    public AuthServiceImpl(Core core) {
         this.core = core;
     }
 
@@ -45,14 +40,18 @@ public class AuthServiceImpl implements AuthService {
      * 获取Code
      *
      * @param account 用户登录账号
-     * @param type    登录类型(0:密码登录、1:验证码登录)
+     * @param type    登录类型(0:密码登录、1:验证码登录,如用户不存在,则自动创建用户)
      * @return Reply
      */
     @Override
     public Reply getCode(String account, int type) {
         String userId = core.getUserId(account);
         if (userId == null) {
-            return ReplyHelper.notExist("账号或密码错误");
+            if (type == 0) {
+                return ReplyHelper.notExist("账号或密码错误");
+            } else {
+                userId = core.addUser(account, account, null, null);
+            }
         }
 
         String key = "User:" + userId;
@@ -66,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
         if (type == 0) {
             String password = Redis.get(key, "password");
             if (password == null || password.isEmpty()) {
-                return null;
+                return ReplyHelper.notExist("账号或密码错误");
             }
 
             code = core.getGeneralCode(userId, account, password);
@@ -128,7 +127,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 通过微信授权码获取Token
+     * 通过微信授权码获取Token,如用户不存在,则返回用户不存在的错误,同时返回微信用户信息
      *
      * @param login 用户登录数据
      * @return Reply
@@ -154,7 +153,7 @@ public class AuthServiceImpl implements AuthService {
             String key = "Wechat:" + Util.md5(unionId + weChatAppId);
             Redis.set(key, Json.toJson(weChatUser), 30, TimeUnit.MINUTES);
 
-            return ReplyHelper.success(weChatUser, false);
+            return ReplyHelper.notExist(weChatUser);
         }
 
         String key = "User:" + userId;
@@ -170,7 +169,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 通过微信UnionId获取Token
+     * 通过微信UnionId获取Token,如用户不存在,则自动创建用户
      *
      * @param login 用户登录数据
      * @return Reply
@@ -180,7 +179,7 @@ public class AuthServiceImpl implements AuthService {
         // 验证账号绑定的手机号
         String mobile = login.getAccount();
         String verifyKey = Util.md5(0 + mobile + login.getCode());
-        Reply reply = messageClient.verifySmsCode(verifyKey);
+        Reply reply = core.verifySmsCode(verifyKey);
         if (!reply.getSuccess()) {
             return ReplyHelper.invalidParam("短信验证码错误");
         }
@@ -194,19 +193,10 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.invalidParam("微信授权已过期，请重新登录");
         }
 
+        // 根据手机号获取用户,如用户不存在,则则自动创建用户
         String userId = core.getUserId(mobile);
         if (userId == null || userId.isEmpty()) {
-            String account = Generator.uuid();
-            String password = Util.md5(Generator.uuid());
-            User user = new User();
-            user.setName(weChatUser.getNickname());
-            user.setAccount(account);
-            user.setMobile(mobile);
-            user.setUnionId(unionId);
-            user.setPassword(password);
-            user.setHeadImg(weChatUser.getHeadimgurl());
-            RabbitClient.sendTopic(user);
-
+            core.addUser(weChatUser.getNickname(), mobile, unionId, weChatUser.getHeadimgurl());
             core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
             TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
 
@@ -214,22 +204,22 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = core.getUser(userId);
-        if (unionId.equals(user.getUnionId())) {
+        if (user.getInvalid()) {
+            return ReplyHelper.forbid();
+        }
+
+        String uid = user.getUnionId();
+        if (uid != null && !uid.isEmpty()) {
+            // 已绑定微信UnionID
             if (login.getReplace()) {
-                user.setUnionId(unionId);
-                key = "User:" + userId;
-                Redis.set(key, "User", Json.toJson(user));
+                Redis.deleteKey("ID:" + uid);
             } else {
                 return ReplyHelper.invalidParam("手机号 " + mobile + " 的用户已绑定其他微信号，请使用正确的微信号登录");
             }
         }
 
-        key = "User:" + userId;
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
-        if (isInvalid) {
-            return ReplyHelper.forbid();
-        }
-
+        // 绑定用户微信UnionID和OpenID
+        core.updateUnionId(userId, unionId);
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
         TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
 

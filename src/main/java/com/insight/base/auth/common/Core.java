@@ -1,6 +1,7 @@
 package com.insight.base.auth.common;
 
 import com.insight.base.auth.common.client.MessageClient;
+import com.insight.base.auth.common.client.RabbitClient;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.util.*;
@@ -149,7 +150,6 @@ public class Core {
 
         NormalMessage message = new NormalMessage();
         message.setSceneCode("0001");
-        message.setAppId("9dd99dd9e6df467a8207d05ea5581125");
         message.setReceivers(mobile);
         message.setParams(map);
         message.setBroadcast(false);
@@ -160,7 +160,7 @@ public class Core {
             }
 
             String key = Util.md5(mobile + Util.md5(smsCode));
-            logger.info("手机号[{}]的短信验证码为: {}", mobile, smsCode);
+            logger.info("账户[{}]的验证码为: {}", mobile, smsCode);
 
             return generateCode(userId, key, SMS_CODE_LEFT);
         } catch (Exception ex) {
@@ -406,14 +406,65 @@ public class Core {
     }
 
     /**
-     * 是否绑定了指定的应用
+     * 更新用户微信UnionID
      *
-     * @param tenantId 租户ID
-     * @param appId    应用ID
-     * @return 是否绑定了指定的应用
+     * @param userId  用户ID
+     * @param unionId 微信UnionID
      */
-    public Boolean containsApp(String tenantId, String appId) {
-        return mapper.containsApp(tenantId, appId) > 0;
+    public void updateUnionId(String userId, String unionId) {
+        Integer count = mapper.updateUnionId(userId, unionId);
+        if (count <= 0) {
+            logger.error("更新用户微信UnionID失败!");
+        }
+
+        String key = "User:" + userId;
+        Redis.set(key, "unionId", unionId);
+        Redis.set("ID:" + unionId, userId);
+    }
+
+    /**
+     * 验证短信验证码
+     *
+     * @param verifyKey 验证参数
+     * @return Reply
+     */
+    public Reply verifySmsCode(String verifyKey) {
+        return client.verifySmsCode(verifyKey);
+    }
+
+    /**
+     * 新增用户
+     *
+     * @param name    用户姓名
+     * @param mobile  用户手机号
+     * @param unionId 微信UnionID
+     * @param head    用户头像
+     */
+    public String addUser(String name, String mobile, String unionId, String head) {
+        String userId = Generator.uuid();
+        String account = Generator.uuid();
+        String password = Util.md5(Generator.uuid());
+        User user = new User();
+        user.setId(userId);
+        user.setName(name);
+        user.setAccount(account);
+        user.setMobile(mobile);
+        user.setUnionId(unionId);
+        user.setPassword(password);
+        user.setHeadImg(head);
+
+        // 缓存用户ID到Redis
+        Redis.set("ID:" + mobile, userId);
+        if (unionId != null && !unionId.isEmpty()) {
+            Redis.set("ID:" + unionId, userId);
+        }
+
+        String key = "User:" + userId;
+        Redis.set(key, Json.toMap(user));
+        Redis.set(key, "FailureCount", 0);
+
+        RabbitClient.sendTopic(user);
+        return userId;
     }
 
     /**
