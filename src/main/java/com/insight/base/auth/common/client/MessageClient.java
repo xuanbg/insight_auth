@@ -23,7 +23,7 @@ public interface MessageClient {
      * @param message 短信对象
      * @return Reply
      */
-    @PostMapping("/base/message/sms/v1.0/messages")
+    @PostMapping("/base/message/v1.0/codes")
     Reply sendMessage(@RequestBody NormalMessage message);
 
     /**
@@ -32,6 +32,6 @@ public interface MessageClient {
      * @param key 验证参数,MD5(type + mobile + code)
      * @return Reply
      */
-    @GetMapping("/base/message/sms/v1.0/messages/codes/{key}/status")
+    @GetMapping("/base/message/v1.0/codes/{key}/status?isCheck=true")
     Reply verifySmsCode(@PathVariable String key);
 }
