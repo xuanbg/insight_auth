@@ -389,10 +389,11 @@ public class Core {
      * @param appId  微信AppID
      */
     public void bindOpenId(String userId, String openId, String appId) {
-        Integer count = mapper.addUserOpenId(openId, userId, appId);
-        if (count <= 0) {
-            logger.error("绑定openId写入数据到数据库失败!");
-        }
+        Map<String, Map<String, String>> map = mapper.getOpenId(userId);
+        Map<String, String> ids = map == null ? new HashMap<>() : map.get("openId");
+
+        ids.put(openId, appId);
+        mapper.updateOpenId(userId, ids);
     }
 
     /**
@@ -402,10 +403,7 @@ public class Core {
      * @param unionId 微信UnionID
      */
     public void updateUnionId(String userId, String unionId) {
-        Integer count = mapper.updateUnionId(userId, unionId);
-        if (count <= 0) {
-            logger.error("更新用户微信UnionID失败!");
-        }
+        mapper.updateUnionId(userId, unionId);
 
         String key = "User:" + userId;
         Redis.set(key, "unionId", unionId);

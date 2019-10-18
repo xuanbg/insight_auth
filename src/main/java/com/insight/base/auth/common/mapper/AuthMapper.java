@@ -1,13 +1,13 @@
 package com.insight.base.auth.common.mapper;
 
 import com.insight.base.auth.common.dto.*;
-import com.insight.base.auth.common.dto.ModuleInfo;
 import com.insight.util.common.JsonTypeHandler;
 import com.insight.util.pojo.Application;
 import com.insight.util.pojo.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 宣炳刚
@@ -38,25 +38,32 @@ public interface AuthMapper {
     Application getApp(String appId);
 
     /**
+     * 获取微信OpenID
+     *
+     * @param userId 用户ID
+     * @return 微信OpenID
+     */
+    @Results({@Result(property = "openId", column = "open_id", javaType = Map.class, typeHandler = JsonTypeHandler.class)})
+    @Select("select open_id from ibu_user where id = #{userId};")
+    Map<String, Map<String, String>> getOpenId(String userId);
+
+    /**
      * 记录用户绑定的微信OpenID
      *
-     * @param id     微信OpenID
      * @param userId 用户ID
-     * @param appId  微信AppID
-     * @return 受影响的行数
+     * @param openId 微信OpenID
      */
-    @Insert("REPLACE ucb_user_openid (id,user_id,app_id) VALUES (#{id},#{userId},#{appId});")
-    Integer addUserOpenId(@Param("id") String id, @Param("userId") String userId, @Param("appId") String appId);
+    @Update("update ibu_user set open_id = #{openId, typeHandler = com.insight.util.common.JsonTypeHandler} where id = #{userId};")
+    void updateOpenId(@Param("userId") String userId, @Param("openId") Map openId);
 
     /**
      * 更新用户微信UnionID
      *
      * @param userId  用户ID
      * @param unionId 微信UnionID
-     * @return 受影响的行数
      */
     @Update("update ibu_user set union_id = #{unionId} where id = #{userId};")
-    Integer updateUnionId(@Param("userId") String userId, @Param("unionId") String unionId);
+    void updateUnionId(@Param("userId") String userId, @Param("unionId") String unionId);
 
     /**
      * 获取用户可用的导航栏
