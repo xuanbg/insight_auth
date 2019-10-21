@@ -448,7 +448,7 @@ INSERT ibo_organize (`id`, `tenant_id`, `type`, `index`, `code`, `name`, `alias`
 ('2564cd559cd340f0b81409723fd8632a', '2564cd559cd340f0b81409723fd8632a', 1, 0, 'TI-001', '因赛特软件有限公司', '因赛特', '因赛特软件', '系统管理员', '00000000000000000000000000000000', now());
 
 -- ----------------------------
--- 初始化应用:平台管理客户端
+-- 初始化应用:管理客户端
 -- ----------------------------
 INSERT ibs_application (`id`, `index`, `name`, `alias`, `token_life`, `creator`, `creator_id`, `created_time`) VALUES
 ('9dd99dd9e6df467a8207d05ea5581125', 1, '因赛特多租户平台', 'MTP', 7200, '系统管理员', '00000000000000000000000000000000', now()),
@@ -475,7 +475,7 @@ INSERT ibs_navigator(`id`, `parent_id`, `app_id`, `type`, `index`, `name`, `modu
 ('0e74cbb3f9d44bddbd3be3cc702d2a82', '4b3ac9336dd8496597e603fc7e8f5140', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 4, '角色权限', json_object("module", 'Roles', "file", 'Base.dll', "default", false, "icon", null), '系统管理员', '00000000000000000000000000000000', now());
 
 -- ----------------------------
--- 初始化应用:系统功能
+-- 初始化平台应用
 -- ----------------------------
 INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_code`, `icon_info`, `creator`, `creator_id`, `created_time`) VALUES
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 0, 1, '刷新', 'getTenant', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000', now()),
@@ -525,6 +525,9 @@ INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_code`, `icon_
 (replace(uuid(), '-', ''), 'bac908d2df4611e9b5650242ac110002', 1, 5, '禁用', 'disableTemplate', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), 'bac908d2df4611e9b5650242ac110002', 1, 6, '启用', 'enableTemplate', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000', now()),
 
+-- ----------------------------
+-- 初始化系统应用
+-- ----------------------------
 (replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 0, 1, '刷新', 'getOrganize', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", true), '系统管理员', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 0, 2, '新增', 'newOrganize', json_object("icon", null, "iconUrl", null, "beginGroup", true, "hideText", false), '系统管理员', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), '100ff6e2748f493586ea4e4cd3f7a4b1', 1, 3, '编辑', 'editOrganize', json_object("icon", null, "iconUrl", null, "beginGroup", false, "hideText", false), '系统管理员', '00000000000000000000000000000000', now()),
