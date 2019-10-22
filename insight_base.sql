@@ -651,7 +651,7 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 (replace(uuid(), '-', ''), '获取日志列表', 'GET', '/base/message/v1.0/scenes/logs', 'getSceneLog', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取日志详情', 'GET', '/base/message/v1.0/scenes/logs/{id}', 'getSceneLog', 1, NULL, NULL, NULL, 1, 1, now()),
 
-(replace(uuid(), '-', ''), '获取场景配置列表', 'GET', '/base/message/v1.0/scenes/configs', 'getSceneTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '获取场景配置列表', 'GET', '/base/message/v1.0/scenes/{id}/configs', 'getSceneTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '添加场景配置', 'POST', '/base/message/v1.0/scenes/configs', 'addSceneTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '移除场景配置', 'DELETE', '/base/message/v1.0/scenes/configs', 'removeSceneTemplate', 1, NULL, NULL, NULL, 1, 1, now()),
 
