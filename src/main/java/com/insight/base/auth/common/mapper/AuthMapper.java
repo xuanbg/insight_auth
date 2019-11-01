@@ -23,7 +23,6 @@ public interface AuthMapper {
      * @param key 关键词(ID/账号/手机号/E-mail/微信unionId)
      * @return 用户实体
      */
-    @Results({@Result(property = "builtin", column = "is_builtin"), @Result(property = "invalid", column = "is_invalid")})
     @Select("select * from ibu_user WHERE id =#{key} or account=#{key} or mobile=#{key} or email=#{key} or union_id=#{key} limit 1;")
     User getUser(String key);
 
@@ -33,7 +32,6 @@ public interface AuthMapper {
      * @param appId 应用ID
      * @return 应用信息
      */
-    @Results({@Result(property = "signinOne", column = "is_signin_one"), @Result(property = "autoRefresh", column = "is_auto_refresh")})
     @Select("SELECT * FROM ibs_application WHERE id=#{appId};")
     Application getApp(String appId);
 

@@ -16,5 +16,4 @@ private Core core;
     @Test
     public void contextLoads() {
     }
-
 }
