@@ -405,8 +405,7 @@ public class Core {
     public void updateUnionId(String userId, String unionId) {
         mapper.updateUnionId(userId, unionId);
 
-        String key = "User:" + userId;
-        Redis.set(key, "unionId", unionId);
+        Redis.set("User:" + userId, "unionId", unionId);
         Redis.set("ID:" + unionId, userId);
     }
 
@@ -430,15 +429,11 @@ public class Core {
      */
     public String addUser(String name, String mobile, String unionId, String head) {
         String userId = Generator.uuid();
-        String account = Generator.uuid();
-        String password = Util.md5(Generator.uuid());
         User user = new User();
         user.setId(userId);
         user.setName(name);
-        user.setAccount(account);
         user.setMobile(mobile);
         user.setUnionId(unionId);
-        user.setPassword(password);
         user.setHeadImg(head);
         user.setBuiltin(false);
         user.setInvalid(false);

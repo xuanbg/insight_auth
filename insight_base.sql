@@ -692,4 +692,15 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 (replace(uuid(), '-', ''), '发送自定义消息', 'POST', '/base/message/v1.0/customs', 'sendCustomMessage', 10, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取用户消息列表', 'GET', '/base/message/v1.0/messages', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取用户消息详情', 'GET', '/base/message/v1.0/messages/{id}', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
-(replace(uuid(), '-', ''), '删除用户消息', 'DELETE', '/base/message/v1.0/messages', NULL, 1, NULL, NULL, NULL, 1, 1, now());
+(replace(uuid(), '-', ''), '删除用户消息', 'DELETE', '/base/message/v1.0/messages', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+
+(replace(uuid(), '-', ''), '获取用户详情', 'GET', '/base/user/v1.0/users/myself', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '注册用户', 'POST', '/base/user/v1.0/users', NULL, 1, NULL, NULL, NULL, 0, 1, now()),
+(replace(uuid(), '-', ''), '更新用户昵称', 'PUT', '/base/user/v1.0/users/name', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '更新用户手机号', 'PUT', '/base/user/v1.0/users/mobile', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '更新用户Email', 'PUT', '/base/user/v1.0/users/email', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '更新用户头像', 'PUT', '/base/user/v1.0/users/head', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '更新用户备注', 'PUT', '/base/user/v1.0/users/remark', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '修改密码', 'PUT', '/base/user/v1.0/users/password', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '重置密码', 'POST', '/base/user/v1.0/users/password', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '设置支付密码', 'POST', '/base/user/v1.0/users/password/pay', NULL, 1, NULL, NULL, NULL, 1, 1, now());
