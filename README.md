@@ -1050,7 +1050,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/logs?keyword=UPDATE" \
 
 |类型|字段|是否必需|字段说明|
 |----|----|----|----|
-|String|id|是|接口配置ID|
+|String|id|是|日志ID|
 
 接口返回数据类型：
 
