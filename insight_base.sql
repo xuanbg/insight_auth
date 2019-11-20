@@ -111,7 +111,7 @@ CREATE TABLE `ibs_application` (
   `alias` varchar(64) NOT NULL COMMENT '应用简称',
   `icon` varchar(128) DEFAULT NULL COMMENT '应用图标',
   `domain` varchar(128) DEFAULT NULL COMMENT '应用域名',
-  `permit_life` int(10) unsigned NOT NULL DEFAULT '300000' COMMENT '令牌生命周期(毫秒)',
+  `permit_life` int(10) unsigned NOT NULL DEFAULT '300000' COMMENT '授权码生命周期(毫秒)',
   `token_life` int(10) unsigned NOT NULL DEFAULT '7200000' COMMENT '令牌生命周期(毫秒)',
   `is_signin_one` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否单点登录:0.允许多点;1.单点登录',
   `is_auto_refresh` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否自动刷新:0.手动刷新;1.自动刷新',
