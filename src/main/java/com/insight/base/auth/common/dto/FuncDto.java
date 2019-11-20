@@ -40,7 +40,7 @@ public class FuncDto implements Serializable {
     /**
      * 授权码
      */
-    private String authCode;
+    private String authCodes;
 
     /**
      * 功能图标信息
@@ -92,12 +92,12 @@ public class FuncDto implements Serializable {
         this.name = name;
     }
 
-    public String getAuthCode() {
-        return authCode;
+    public String getAuthCodes() {
+        return authCodes;
     }
 
-    public void setAuthCode(String authCode) {
-        this.authCode = authCode;
+    public void setAuthCodes(String authCodes) {
+        this.authCodes = authCodes;
     }
 
     public IconInfo getIconInfo() {

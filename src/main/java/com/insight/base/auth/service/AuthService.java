@@ -46,6 +46,14 @@ public interface AuthService {
     Reply getTokenWithUserInfo(LoginDto login);
 
     /**
+     * 获取用户授权码
+     *
+     * @param info 用户登录信息
+     * @return Reply
+     */
+    Reply getPermits(LoginInfo info);
+
+    /**
      * 刷新访问令牌过期时间
      *
      * @param fingerprint 用户特征串

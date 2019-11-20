@@ -107,6 +107,19 @@ public class AuthController {
     }
 
     /**
+     * 获取用户授权码
+     *
+     * @param loginInfo 用户信息
+     * @return Reply
+     */
+    @GetMapping("/v1.0/tokens/permits")
+    public Reply getPermits(@RequestHeader("loginInfo") String loginInfo) {
+        LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
+
+        return service.getPermits(info);
+    }
+
+    /**
      * 刷新Token，延长过期时间至2小时后
      *
      * @param fingerprint 用户特征串

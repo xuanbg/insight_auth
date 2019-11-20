@@ -94,7 +94,7 @@ public interface AuthMapper {
      * @return Function对象集合
      */
     @Results({@Result(property = "iconInfo", column = "icon_info", javaType = IconInfo.class, typeHandler = JsonTypeHandler.class)})
-    @Select("SELECT f.id,f.nav_id,f.`type`,f.`index`,f.`name`,f.auth_code,f.icon_info,a.permit FROM ibs_function f " +
+    @Select("SELECT f.id,f.nav_id,f.`type`,f.`index`,f.`name`,f.auth_codes,f.icon_info,a.permit FROM ibs_function f " +
             "LEFT JOIN (SELECT a.function_id,min(a.permit) AS permit FROM ibr_role_func_permit a JOIN ibv_user_roles r " +
             "ON r.role_id=a.role_id AND r.user_id=#{userId} AND r.tenant_id=#{tenantId} AND (r.dept_id=#{deptId} OR r.dept_id IS NULL) " +
             "GROUP BY a.function_id) a ON a.function_id=f.id WHERE f.nav_id = #{moduleId} ORDER BY f.`index`;")
@@ -109,10 +109,13 @@ public interface AuthMapper {
      * @param deptId   登录部门ID
      * @return 授权信息集合
      */
-    @Select("SELECT f.id,f.nav_id,f.auth_code,min(a.permit) permit " +
-            "FROM ibs_function f JOIN ibs_navigator n ON n.id=f.nav_id AND n.app_id=#{appId} " +
-            "JOIN ibr_role_func_permit a ON a.function_id=f.id JOIN ibv_user_roles r ON r.role_id=a.role_id " +
-            "AND (r.tenant_id=#{tenantId} or r.tenant_id is null) AND r.user_id=#{userId} AND (r.dept_id IS NULL || r.dept_id=#{deptId}) " +
-            "WHERE f.auth_code IS NOT NULL GROUP BY f.id,f.nav_id,f.auth_code")
-    List<AuthDto> getAuthInfos(@Param("appId") String appId, @Param("userId") String userId, @Param("tenantId") String tenantId, @Param("deptId") String deptId);
+    @Select("<script>select substring_index(substring_index(f.auth_codes, ',', h.help_topic_id + 1), ',', - 1) as auth_code " +
+            "from ibs_function f join ibs_navigator n on n.id = f.nav_id and n.app_id = #{appId} " +
+            "join ibr_role_func_permit p on p.function_id = f.id join ibv_user_roles r on r.role_id = p.role_id and r.user_id = #{userId} " +
+            "<if test = 'tenantId != null'>and r.tenant_id = #{tenantId} </if>" +
+            "<if test = 'tenantId == null'>and r.tenant_id is null </if>" +
+            "and (r.dept_id is null or r.dept_id = #{deptId}) " +
+            "join mysql.help_topic h on h.help_topic_id &lt; (length(f.auth_codes) - length(replace(f.auth_codes, ',', '')) + 1)" +
+            "group by n.app_id, f.nav_id, auth_code having min(p.permit) > 0</script>")
+    List<String> getAuthInfos(@Param("appId") String appId, @Param("userId") String userId, @Param("tenantId") String tenantId, @Param("deptId") String deptId);
 }

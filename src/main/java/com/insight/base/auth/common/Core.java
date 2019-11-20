@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @author 宣炳刚
@@ -182,10 +181,10 @@ public class Core {
         String deptId = login.getDeptId();
         String fingerprint = login.getFingerprint();
 
-        List<AuthDto> funs = mapper.getAuthInfos(appId, userId, tenantId, deptId);
-        List<String> list = funs.stream().filter(i -> i.getPermit() > 0).map(AuthDto::getAuthCode).collect(Collectors.toList());
+        List<String> list = getPermits(appId, userId, tenantId, deptId);
         Token token = new Token(userId, appId, tenantId, deptId);
         token.setPermitFuncs(list);
+        token.setPermitTime(LocalDateTime.now());
 
         String key = "UserToken:" + userId;
         Redis.set(key, appId, code);
@@ -206,6 +205,19 @@ public class Core {
         token.refresh();
 
         return initPackage(token, tokenId, fingerprint, appId);
+    }
+
+    /**
+     * 获取用户授权码
+     *
+     * @param appId    应用ID
+     * @param userId   用户ID
+     * @param tenantId 租户ID
+     * @param deptId   登录部门ID
+     * @return 用户授权码集合
+     */
+    public List<String> getPermits(String appId, String userId, String tenantId, String deptId) {
+        return mapper.getAuthInfos(appId, userId, tenantId, deptId);
     }
 
     /**
@@ -390,7 +402,7 @@ public class Core {
      */
     public void bindOpenId(String userId, String openId, String appId) {
         Map<String, Map<String, String>> map = mapper.getOpenId(userId);
-        Map<String, String> ids = map == null ? new HashMap<>() : map.get("openId");
+        Map<String, String> ids = map == null ? new HashMap<>(16) : map.get("openId");
 
         ids.put(openId, appId);
         mapper.updateOpenId(userId, ids);

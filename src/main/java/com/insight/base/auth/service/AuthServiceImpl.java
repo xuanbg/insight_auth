@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -224,6 +225,19 @@ public class AuthServiceImpl implements AuthService {
         TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
 
         return ReplyHelper.success(tokens);
+    }
+
+    /**
+     * 获取用户授权码
+     *
+     * @param info 用户登录信息
+     * @return Reply
+     */
+    @Override
+    public Reply getPermits(LoginInfo info) {
+        List<String> list = core.getPermits(info.getAppId(), info.getUserId(), info.getTenantId(), info.getDeptId());
+
+        return ReplyHelper.success(list);
     }
 
     /**
