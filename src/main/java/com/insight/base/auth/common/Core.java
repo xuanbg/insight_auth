@@ -249,7 +249,7 @@ public class Core {
         // 缓存令牌数据
         String hashKey = tokenDto.getAccessToken() + fingerprint;
         token.setHash(Util.md5(hashKey));
-        Redis.set("Token:" + code, Json.toJson(token), life, TimeUnit.MILLISECONDS);
+        Redis.set("Token:" + code, Json.toJson(token), life * 12, TimeUnit.MILLISECONDS);
 
         // 更新用户缓存
         String key = "User:" + token.getUserId();
