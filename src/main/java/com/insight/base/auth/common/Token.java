@@ -51,8 +51,8 @@ public class Token extends TokenInfo {
 
         setSecretKey(Generator.uuid());
         setRefreshKey(Generator.uuid());
-        setExpiryTime(LocalDateTime.now().plusSeconds(getLife() / 1000));
-        setFailureTime(LocalDateTime.now().plusSeconds(getLife() * 12 / 1000));
+        setExpiryTime(LocalDateTime.now().plusSeconds(TIME_OUT + (getLife() / 1000)));
+        setFailureTime(LocalDateTime.now().plusSeconds(TIME_OUT + (getLife() * 12 / 1000)));
     }
 
     /**
@@ -116,8 +116,8 @@ public class Token extends TokenInfo {
      **/
     @JsonIgnore
     void refresh() {
-        setExpiryTime(LocalDateTime.now().plusSeconds(getLife() / 1000));
-        setFailureTime(LocalDateTime.now().plusSeconds(getLife() * 12 / 1000));
+        setExpiryTime(LocalDateTime.now().plusSeconds(TIME_OUT + (getLife() / 1000)));
+        setFailureTime(LocalDateTime.now().plusSeconds(TIME_OUT + (getLife() * 12 / 1000)));
         setSecretKey(Generator.uuid());
     }
 }

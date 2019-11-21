@@ -239,12 +239,12 @@ public class Core {
         refreshToken.setId(code);
         refreshToken.setSecret(token.getRefreshKey());
 
-        long life = token.getLife() * 12;
+        long life = token.getLife();
         TokenDto tokenDto = new TokenDto();
         tokenDto.setAccessToken(accessToken.toString());
         tokenDto.setRefreshToken(refreshToken.toString());
-        tokenDto.setExpire(token.getLife());
-        tokenDto.setFailure(life);
+        tokenDto.setExpire(life);
+        tokenDto.setFailure(life * 12);
 
         // 缓存令牌数据
         String hashKey = tokenDto.getAccessToken() + fingerprint;
