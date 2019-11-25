@@ -84,6 +84,10 @@ public class ManageServiceImpl implements ManageService {
         String id = Generator.uuid();
         dto.setId(id);
         dto.setCreatedTime(LocalDateTime.now());
+        if (dto.getLogResult() == null){
+            dto.setLogResult(false);
+        }
+
         mapper.addConfig(dto);
         writeLog(info, OperateType.INSERT, id, dto);
 

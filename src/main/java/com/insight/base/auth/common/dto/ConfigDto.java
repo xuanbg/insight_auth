@@ -56,6 +56,11 @@ public class ConfigDto implements Serializable {
      */
     private Boolean isLimit;
 
+    /**
+     * 是否通过日志输出返回值
+     */
+    private Boolean isLogResult;
+
     public String getMethod() {
         return method;
     }
@@ -126,6 +131,14 @@ public class ConfigDto implements Serializable {
 
     public void setLimit(Boolean limit) {
         isLimit = limit;
+    }
+
+    public Boolean getLogResult() {
+        return isLogResult;
+    }
+
+    public void setLogResult(Boolean logResult) {
+        isLogResult = logResult;
     }
 
     @Override

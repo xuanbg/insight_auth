@@ -77,6 +77,11 @@ public class InterfaceConfig {
     private Boolean isLimit;
 
     /**
+     * 是否通过日志输出返回值
+     */
+    private Boolean isLogResult;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdTime;
@@ -175,6 +180,14 @@ public class InterfaceConfig {
 
     public void setLimit(Boolean limit) {
         isLimit = limit;
+    }
+
+    public Boolean getLogResult() {
+        return isLogResult;
+    }
+
+    public void setLogResult(Boolean logResult) {
+        isLogResult = logResult;
     }
 
     public LocalDateTime getCreatedTime() {

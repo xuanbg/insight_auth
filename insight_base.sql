@@ -40,6 +40,7 @@ CREATE TABLE `ibi_interface` (
   `remark` varchar(1024) DEFAULT NULL COMMENT '描述',
   `is_verify` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否验证Token:0.公开接口,不需要验证Token;1.私有接口,需要验证Token',
   `is_limit` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否限流:0.不限流;1.限流',
+  `is_log_result` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否日志输出返回值',
   `created_time` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `idx_interface_hash` (`method`,`url`) USING BTREE,

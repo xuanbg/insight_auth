@@ -43,8 +43,8 @@ public interface ConfigMapper {
      *
      * @param config 接口配置
      */
-    @Insert("insert ibi_interface(id, name, method, url, auth_code, limit_gap, limit_cycle, limit_max, message, remark, is_verify, is_limit, created_time) values " +
-            "(#{id}, #{name}, #{method}, #{url}, #{authCode}, #{limitGap}, #{limitCycle}, #{limitMax}, #{message}, #{remark}, #{isVerify}, #{isLimit}, #{createdTime});")
+    @Insert("insert ibi_interface(id, name, method, url, auth_code, limit_gap, limit_cycle, limit_max, message, remark, is_verify, is_limit, is_log_result, created_time) values " +
+            "(#{id}, #{name}, #{method}, #{url}, #{authCode}, #{limitGap}, #{limitCycle}, #{limitMax}, #{message}, #{remark}, #{isVerify}, #{isLimit}, #{isLogResult}, #{createdTime});")
     void addConfig(InterfaceConfig config);
 
     /**
@@ -55,7 +55,7 @@ public interface ConfigMapper {
     @Update("update ibi_interface set " +
             "name = #{name}, method = #{method}, url = #{url}, auth_code = #{authCode}, " +
             "limit_gap = #{limitGap}, limit_cycle = #{limitCycle}, limit_max = #{limitMax}, message = #{message}, " +
-            "remark = #{remark}, is_verify = #{isVerify}, is_limit = #{isLimit} where id = #{id};")
+            "remark = #{remark}, is_verify = #{isVerify}, is_limit = #{isLimit}, is_log_result = #{isLogResult} where id = #{id};")
     void editConfig(InterfaceConfig config);
 
     /**
@@ -71,7 +71,7 @@ public interface ConfigMapper {
      *
      * @return 接口配置表
      */
-    @Select("select method, url, auth_code, limit_gap, limit_cycle, limit_max, message, is_verify, is_limit from ibi_interface;")
+    @Select("select method, url, auth_code, limit_gap, limit_cycle, limit_max, message, is_verify, is_limit, is_log_result from ibi_interface;")
     List<ConfigDto> loadConfigs();
 
     /**
