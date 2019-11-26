@@ -176,16 +176,35 @@ public class Core {
      * @return 令牌数据包
      */
     public TokenDto creatorToken(String code, LoginDto login, String userId) {
-        String appId = login.getAppId();
-        String tenantId = login.getTenantId();
-        String deptId = login.getDeptId();
         String fingerprint = login.getFingerprint();
+        String appId = login.getAppId();
+        boolean isAutoTenant = Boolean.parseBoolean(Redis.get("App:" + appId, "AutoTenant"));
 
+        // 当应用设置为自动加载租户,租户ID当前为空且唯一时,自动加载用户的租户ID
+        String tenantId = login.getTenantId();
+        if (isAutoTenant && (tenantId == null || tenantId.isEmpty())){
+            List<String> tenantIds = mapper.getTenantIds(userId);
+            if (tenantIds != null && tenantIds.size() == 1){
+                tenantId = tenantIds.get(0);
+            }
+        }
+
+        // 当租户ID不为空,登录部门ID当前为空且唯一时,自动加载用户的登录部门ID
+        String deptId = login.getDeptId();
+        if (tenantId != null && !tenantId.isEmpty() && (deptId == null || deptId.isEmpty())){
+            List<String> deptIds = mapper.getDeptIds(userId);
+            if (deptIds != null && deptIds.size() == 1){
+                deptId = deptIds.get(0);
+            }
+        }
+
+        // 加载用户授权码
         List<String> list = getPermits(appId, userId, tenantId, deptId);
         Token token = new Token(userId, appId, tenantId, deptId);
         token.setPermitFuncs(list);
         token.setPermitTime(LocalDateTime.now());
 
+        // 缓存用户Token
         String key = "UserToken:" + userId;
         Redis.set(key, appId, code);
 

@@ -73,13 +73,14 @@ public class Token extends TokenInfo {
             setLife(app.getTokenLife());
             setSignInOne(app.getSigninOne());
             setAutoRefresh(app.getAutoRefresh());
-        }
 
-        String key = "App:" + appId;
-        Redis.set(key, "PermitLife", getPermitLife());
-        Redis.set(key, "TokenLife", getLife());
-        Redis.set(key, "SignInType", getSignInOne());
-        Redis.set(key, "RefreshType", getAutoRefresh());
+            String key = "App:" + appId;
+            Redis.set(key, "PermitLife", getPermitLife());
+            Redis.set(key, "TokenLife", getLife());
+            Redis.set(key, "SignInType", getSignInOne());
+            Redis.set(key, "RefreshType", getAutoRefresh());
+            Redis.set(key, "AutoTenant", app.getAutoTenant());
+        }
     }
 
     /**

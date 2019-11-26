@@ -116,6 +116,7 @@ CREATE TABLE `ibs_application` (
   `token_life` int(10) unsigned NOT NULL DEFAULT '7200000' COMMENT '令牌生命周期(毫秒)',
   `is_signin_one` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否单点登录:0.允许多点;1.单点登录',
   `is_auto_refresh` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否自动刷新:0.手动刷新;1.自动刷新',
+  `is_auto_tenant` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否自动加载租户:0.手动加载;1.自动加载',
   `creator` varchar(64) NOT NULL COMMENT '创建人',
   `creator_id` char(32) NOT NULL COMMENT '创建用户ID',
   `created_time` datetime NOT NULL COMMENT '创建时间',

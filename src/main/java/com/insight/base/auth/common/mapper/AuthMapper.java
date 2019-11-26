@@ -23,8 +23,26 @@ public interface AuthMapper {
      * @param key 关键词(ID/账号/手机号/E-mail/微信unionId)
      * @return 用户实体
      */
-    @Select("select * from ibu_user WHERE id =#{key} or account=#{key} or mobile=#{key} or email=#{key} or union_id=#{key} limit 1;")
+    @Select("select * from ibu_user WHERE id = #{key} or account = #{key} or mobile = #{key} or email = #{key} or union_id = #{key} limit 1;")
     User getUser(String key);
+
+    /**
+     * 获取用户的租户ID集合
+     *
+     * @param userId 用户ID
+     * @return 租户ID集合
+     */
+    @Select("select tenant_id from ibt_tenant_user where user_id = #{userId};")
+    List<String> getTenantIds(String userId);
+
+    /**
+     * 获取用户的部门ID集合
+     *
+     * @param userId 用户ID
+     * @return 部门ID集合
+     */
+    @Select("select o.parent_id from ibo_organize o join ibo_organize_member m on m.post_id = o.id where m.user_id = #{userId};")
+    List<String> getDeptIds(String userId);
 
     /**
      * 查询指定ID的应用信息
