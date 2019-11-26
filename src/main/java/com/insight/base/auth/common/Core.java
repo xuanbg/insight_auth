@@ -270,7 +270,7 @@ public class Core {
         token.setHash(Util.md5(hashKey));
         Redis.set("Token:" + code, Json.toJson(token), life * 12, TimeUnit.MILLISECONDS);
 
-        // 更新用户缓存
+        // 构造用户信息
         String key = "User:" + token.getUserId();
         UserInfoDto info = Redis.get(key, UserInfoDto.class);
         String host = Redis.get("Config:FileHost");
@@ -283,6 +283,7 @@ public class Core {
         }
 
         info.setTenantId(token.getTenantId());
+        info.setDeptId(token.getDeptId());
         tokenDto.setUserInfo(info);
 
         return tokenDto;

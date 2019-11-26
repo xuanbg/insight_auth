@@ -118,7 +118,6 @@ public class Token extends TokenInfo {
     @JsonIgnore
     void refresh() {
         setExpiryTime(LocalDateTime.now().plusSeconds(TIME_OUT + (getLife() / 1000)));
-        setFailureTime(LocalDateTime.now().plusSeconds(TIME_OUT + (getLife() * 12 / 1000)));
         setSecretKey(Generator.uuid());
     }
 }
