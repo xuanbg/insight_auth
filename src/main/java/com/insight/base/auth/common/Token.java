@@ -1,11 +1,11 @@
 package com.insight.base.auth.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.insight.base.auth.common.enums.TokenType;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.util.Generator;
 import com.insight.util.Redis;
 import com.insight.util.common.ApplicationContextHolder;
+import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.Application;
 import com.insight.util.pojo.TokenInfo;
 
@@ -79,32 +79,14 @@ public class Token extends TokenInfo {
     }
 
     /**
-     * 验证密钥
+     * 验证刷新密钥
      *
-     * @param key     密钥
-     * @param type    验证类型(1:验证AccessToken、2:验证RefreshToken)
-     * @param tokenId 令牌ID
-     * @param userId  用户ID
+     * @param token 用户令牌
      * @return 是否通过验证
      */
     @JsonIgnore
-    public Boolean verify(String key, TokenType type, String tokenId, String userId) {
-        if (key == null || key.isEmpty()) {
-            return false;
-        }
-
-        // 单点登录时验证令牌ID
-        if (getSignInOne()) {
-            String appId = getAppId();
-            String id = Redis.get("User:" + userId, appId);
-            if (!tokenId.equals(id)) {
-                return false;
-            }
-        }
-
-        String secret = type == TokenType.AccessToken ? getHash() : getRefreshKey();
-
-        return key.equals(secret);
+    public boolean verifyRefreshKey(AccessToken token) {
+        return token != null && token.getSecret().equals(getRefreshKey());
     }
 }
 

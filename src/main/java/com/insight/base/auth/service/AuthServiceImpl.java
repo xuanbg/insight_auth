@@ -4,7 +4,6 @@ import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.Token;
 import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenDto;
-import com.insight.base.auth.common.enums.TokenType;
 import com.insight.util.*;
 import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.LoginInfo;
@@ -249,12 +248,10 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply refreshToken(String fingerprint, AccessToken accessToken) {
-        String tokenId = accessToken.getId();
-        String secret = accessToken.getSecret();
-
         // 验证令牌
+        String tokenId = accessToken.getId();
         Token token = core.getToken(tokenId);
-        if (token == null || !token.verify(secret, TokenType.RefreshToken, tokenId, token.getUserId())) {
+        if (token == null || !token.verifyRefreshKey(accessToken)) {
             return ReplyHelper.invalidToken();
         }
 
