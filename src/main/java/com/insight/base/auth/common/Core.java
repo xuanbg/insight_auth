@@ -13,12 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static com.insight.util.pojo.TokenInfo.TIME_OUT;
 
 /**
  * @author 宣炳刚
@@ -182,18 +185,18 @@ public class Core {
 
         // 当应用设置为自动加载租户,租户ID当前为空且唯一时,自动加载用户的租户ID
         String tenantId = login.getTenantId();
-        if (isAutoTenant && (tenantId == null || tenantId.isEmpty())){
+        if (isAutoTenant && (tenantId == null || tenantId.isEmpty())) {
             List<String> tenantIds = mapper.getTenantIds(userId);
-            if (tenantIds != null && tenantIds.size() == 1){
+            if (tenantIds != null && tenantIds.size() == 1) {
                 tenantId = tenantIds.get(0);
             }
         }
 
         // 当租户ID不为空,登录部门ID当前为空且唯一时,自动加载用户的登录部门ID
         String deptId = login.getDeptId();
-        if (tenantId != null && !tenantId.isEmpty() && (deptId == null || deptId.isEmpty())){
+        if (tenantId != null && !tenantId.isEmpty() && (deptId == null || deptId.isEmpty())) {
             List<String> deptIds = mapper.getDeptIds(userId);
-            if (deptIds != null && deptIds.size() == 1){
+            if (deptIds != null && deptIds.size() == 1) {
                 deptId = deptIds.get(0);
             }
         }
@@ -221,7 +224,7 @@ public class Core {
      */
     public TokenDto refreshToken(Token token, String tokenId, String fingerprint) {
         String appId = token.getAppId();
-        token.refresh();
+        token.setSecretKey(Generator.uuid());
 
         return initPackage(token, tokenId, fingerprint, appId);
     }
@@ -258,17 +261,28 @@ public class Core {
         refreshToken.setId(code);
         refreshToken.setSecret(token.getRefreshKey());
 
-        long life = token.getLife();
         TokenDto tokenDto = new TokenDto();
         tokenDto.setAccessToken(accessToken.toString());
         tokenDto.setRefreshToken(refreshToken.toString());
+
+        // 设置令牌失效时间
+        long life = token.getLife();
+        long failure = life * 12;
+        LocalDateTime now = LocalDateTime.now();
+        if (token.getFailureTime().isAfter(now)) {
+            Duration duration = Duration.between(now, token.getFailureTime());
+            failure = duration.toMillis();
+        }
+
+        token.setExpiryTime(now.plusSeconds(TIME_OUT + (life / 1000)));
+        token.setFailureTime(now.plusSeconds(TIME_OUT + (failure / 1000)));
         tokenDto.setExpire(life);
-        tokenDto.setFailure(life * 12);
+        tokenDto.setFailure(failure);
 
         // 缓存令牌数据
         String hashKey = tokenDto.getAccessToken() + fingerprint;
         token.setHash(Util.md5(hashKey));
-        Redis.set("Token:" + code, Json.toJson(token), life * 12, TimeUnit.MILLISECONDS);
+        Redis.set("Token:" + code, token.toString(), failure + (TIME_OUT * 2000), TimeUnit.MILLISECONDS);
 
         // 构造用户信息
         String key = "User:" + token.getUserId();

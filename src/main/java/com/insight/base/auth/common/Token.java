@@ -9,8 +9,6 @@ import com.insight.util.common.ApplicationContextHolder;
 import com.insight.util.pojo.Application;
 import com.insight.util.pojo.TokenInfo;
 
-import java.time.LocalDateTime;
-
 /**
  * @author 宣炳刚
  * @date 2018/1/4
@@ -22,7 +20,6 @@ public class Token extends TokenInfo {
      * 构造方法
      */
     public Token() {
-
     }
 
     /**
@@ -51,8 +48,6 @@ public class Token extends TokenInfo {
 
         setSecretKey(Generator.uuid());
         setRefreshKey(Generator.uuid());
-        setExpiryTime(LocalDateTime.now().plusSeconds(TIME_OUT + (getLife() / 1000)));
-        setFailureTime(LocalDateTime.now().plusSeconds(TIME_OUT + (getLife() * 12 / 1000)));
     }
 
     /**
@@ -110,15 +105,6 @@ public class Token extends TokenInfo {
         String secret = type == TokenType.AccessToken ? getHash() : getRefreshKey();
 
         return key.equals(secret);
-    }
-
-    /**
-     * 刷新令牌关键数据
-     **/
-    @JsonIgnore
-    void refresh() {
-        setExpiryTime(LocalDateTime.now().plusSeconds(TIME_OUT + (getLife() / 1000)));
-        setSecretKey(Generator.uuid());
     }
 }
 
