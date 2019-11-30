@@ -269,7 +269,8 @@ public class Core {
         long life = token.getLife();
         long failure = life * 12;
         LocalDateTime now = LocalDateTime.now();
-        if (token.getFailureTime().isAfter(now)) {
+        LocalDateTime failureTime = token.getFailureTime();
+        if (failureTime != null && failureTime.isAfter(now)) {
             Duration duration = Duration.between(now, token.getFailureTime());
             failure = duration.toMillis();
         }
