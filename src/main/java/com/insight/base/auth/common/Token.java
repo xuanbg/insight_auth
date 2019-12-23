@@ -75,6 +75,8 @@ public class Token extends TokenInfo {
             Redis.set(key, "SignInType", getSignInOne());
             Redis.set(key, "RefreshType", getAutoRefresh());
             Redis.set(key, "AutoTenant", app.getAutoTenant());
+
+            mapper.getApps(appId).forEach(i -> Redis.set(key, i.getTenantId(), i.getExpireDate()));
         }
     }
 

@@ -122,7 +122,13 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.forbid();
         }
 
-        return ReplyHelper.success(core.creatorToken(code, login, userId));
+        // 验证应用是否过期
+        if (core.appIsExpired(login, userId)) {
+            return ReplyHelper.fail("应用已过期,请续租");
+        }
+
+        TokenDto tokens = core.creatorToken(code, login, userId);
+        return ReplyHelper.success(tokens);
     }
 
     /**
@@ -192,34 +198,32 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.invalidParam("微信授权已过期，请重新登录");
         }
 
-        // 根据手机号获取用户,如用户不存在,则则自动创建用户
+        // 根据手机号获取用户
         String userId = core.getUserId(mobile);
-        if (userId == null || userId.isEmpty()) {
-            core.addUser(weChatUser.getNickname(), mobile, unionId, weChatUser.getHeadimgurl());
-            core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
-            TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
-
-            return ReplyHelper.success(tokens);
-        }
-
-        key = "User:" + userId;
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
-        if (isInvalid) {
-            return ReplyHelper.forbid();
-        }
-
-        String uid = Redis.get(key, "unionId");
-        if (uid != null && !uid.isEmpty()) {
-            // 已绑定微信UnionID
-            if (login.getReplace()) {
-                Redis.deleteKey("ID:" + uid);
-            } else {
-                return ReplyHelper.invalidParam("手机号 " + mobile + " 的用户已绑定其他微信号，请使用正确的微信号登录");
+        if (userId != null && !userId.isEmpty()) {
+            key = "User:" + userId;
+            boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
+            if (isInvalid) {
+                return ReplyHelper.forbid();
             }
+
+            String uid = Redis.get(key, "unionId");
+            if (uid != null && !uid.isEmpty()) {
+                if (login.getReplace()) {
+                    Redis.deleteKey("ID:" + uid);
+                } else {
+                    return ReplyHelper.invalidParam("手机号 " + mobile + " 的用户已绑定其他微信号，请使用正确的微信号登录");
+                }
+            }
+
+            // 更新用户微信UnionID
+            core.updateUnionId(userId, unionId);
+        } else {
+            // 用户不存在,自动创建用户
+            core.addUser(weChatUser.getNickname(), mobile, unionId, weChatUser.getHeadimgurl());
         }
 
-        // 绑定用户微信UnionID和OpenID
-        core.updateUnionId(userId, unionId);
+        // 绑定用户微信OpenID,创建令牌
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
         TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
 
@@ -262,7 +266,8 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.forbid();
         }
 
-        return ReplyHelper.success(core.refreshToken(token, tokenId, fingerprint));
+        TokenDto tokens = core.refreshToken(token, tokenId, fingerprint);
+        return ReplyHelper.success(tokens);
     }
 
     /**

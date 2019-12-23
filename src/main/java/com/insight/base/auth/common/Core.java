@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -171,6 +172,45 @@ public class Core {
     }
 
     /**
+     * 应用是否过期
+     *
+     * @param login 登录信息
+     * @return 租户ID是否为空
+     */
+    public boolean appIsExpired(LoginDto login, String userId) {
+        String appId = login.getAppId();
+        boolean isAutoTenant = Boolean.parseBoolean(Redis.get("App:" + appId, "AutoTenant"));
+
+        // 当应用设置为自动加载租户,租户ID当前为空且唯一时,自动加载用户的租户ID
+        String tenantId = login.getTenantId();
+        if (isAutoTenant && (tenantId == null || tenantId.isEmpty())) {
+            List<String> tenantIds = mapper.getTenantIds(userId);
+            if (tenantIds != null && tenantIds.size() == 1) {
+                tenantId = tenantIds.get(0);
+                login.setTenantId(tenantId);
+            }
+        }
+
+        // 当租户ID不为空,登录部门ID当前为空且唯一时,自动加载用户的登录部门ID
+        String deptId = login.getDeptId();
+        if (tenantId != null && !tenantId.isEmpty() && (deptId == null || deptId.isEmpty())) {
+            List<String> deptIds = mapper.getDeptIds(userId);
+            if (deptIds != null && deptIds.size() == 1) {
+                login.setDeptId(deptIds.get(0));
+            }
+        }
+
+        if(tenantId == null || tenantId.isEmpty()){
+            return false;
+        }
+
+        String date = Redis.get("App:" + appId, tenantId);
+        LocalDate expire = LocalDate.parse(date);
+
+        return !expire.isAfter(LocalDate.now());
+    }
+
+    /**
      * 生成令牌数据包
      *
      * @param code   Code
@@ -181,25 +221,8 @@ public class Core {
     public TokenDto creatorToken(String code, LoginDto login, String userId) {
         String fingerprint = login.getFingerprint();
         String appId = login.getAppId();
-        boolean isAutoTenant = Boolean.parseBoolean(Redis.get("App:" + appId, "AutoTenant"));
-
-        // 当应用设置为自动加载租户,租户ID当前为空且唯一时,自动加载用户的租户ID
         String tenantId = login.getTenantId();
-        if (isAutoTenant && (tenantId == null || tenantId.isEmpty())) {
-            List<String> tenantIds = mapper.getTenantIds(userId);
-            if (tenantIds != null && tenantIds.size() == 1) {
-                tenantId = tenantIds.get(0);
-            }
-        }
-
-        // 当租户ID不为空,登录部门ID当前为空且唯一时,自动加载用户的登录部门ID
         String deptId = login.getDeptId();
-        if (tenantId != null && !tenantId.isEmpty() && (deptId == null || deptId.isEmpty())) {
-            List<String> deptIds = mapper.getDeptIds(userId);
-            if (deptIds != null && deptIds.size() == 1) {
-                deptId = deptIds.get(0);
-            }
-        }
 
         // 加载用户授权码
         List<String> list = getPermits(appId, userId, tenantId, deptId);

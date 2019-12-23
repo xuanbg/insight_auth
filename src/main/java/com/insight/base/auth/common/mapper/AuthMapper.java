@@ -1,6 +1,10 @@
 package com.insight.base.auth.common.mapper;
 
-import com.insight.base.auth.common.dto.*;
+import com.insight.base.auth.common.dto.FuncDto;
+import com.insight.base.auth.common.dto.IconInfo;
+import com.insight.base.auth.common.dto.ModuleInfo;
+import com.insight.base.auth.common.dto.NavDto;
+import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.util.common.JsonTypeHandler;
 import com.insight.util.pojo.Application;
 import com.insight.util.pojo.User;
@@ -50,8 +54,17 @@ public interface AuthMapper {
      * @param appId 应用ID
      * @return 应用信息
      */
-    @Select("SELECT * FROM ibs_application WHERE id=#{appId};")
+    @Select("SELECT * FROM ibs_application WHERE id = #{appId};")
     Application getApp(String appId);
+
+    /**
+     * 查询指定应用ID的应用信息
+     *
+     * @param appId 应用ID
+     * @return 应用信息
+     */
+    @Select("SELECT * FROM ibt_tenant_app WHERE app_id = #{appId};")
+    List<TenantApp> getApps(String appId);
 
     /**
      * 获取微信OpenID

@@ -59,7 +59,6 @@ CREATE TABLE `ibt_tenant` (
   `alias` varchar(8) DEFAULT NULL COMMENT '别名',
   `company_info` json DEFAULT NULL COMMENT '企业信息',
   `remark` varchar(1024) DEFAULT NULL COMMENT '描述',
-  `expire_date` date DEFAULT NULL COMMENT '过期日期',
   `status` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '租户状态:0.待审核;1.已通过;2.未通过',
   `is_invalid` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否失效:0.正常;1.失效',
   `auditor` varchar(64) DEFAULT NULL COMMENT '审核人',
@@ -82,6 +81,7 @@ CREATE TABLE `ibt_tenant_app` (
   `id` char(32) NOT NULL COMMENT '主键(UUID)',
   `tenant_id` char(32) NOT NULL COMMENT '租户ID',
   `app_id` char(32) NOT NULL COMMENT '应用ID',
+  `expire_date` date DEFAULT NULL COMMENT '过期日期',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_tenant_app_tenant_id` (`tenant_id`) USING BTREE,
   KEY `idx_tenant_app_app_id` (`app_id`) USING BTREE
@@ -408,8 +408,8 @@ INSERT ibu_user (`id`, `name`, `account`, `is_builtin`, `creator`, `creator_id`,
 -- ----------------------------
 -- 初始化租户:因赛特软件
 -- ----------------------------
-INSERT ibt_tenant (`id`, `code`, `name`, `expire_date`, `status`, `auditor`, `auditor_id`, `audited_time`, `creator`, `creator_id`, `created_time`) VALUES 
-('2564cd559cd340f0b81409723fd8632a', 'TI-00001', '因赛特软件', '2800-01-01', 1, '系统', '00000000000000000000000000000000', now(), '系统', '00000000000000000000000000000000', now());
+INSERT ibt_tenant (`id`, `code`, `name`, `status`, `auditor`, `auditor_id`, `audited_time`, `creator`, `creator_id`, `created_time`) VALUES 
+('2564cd559cd340f0b81409723fd8632a', 'TI-00001', '因赛特软件', 1, '系统', '00000000000000000000000000000000', now(), '系统', '00000000000000000000000000000000', now());
 INSERT ibt_tenant_user (`id`, `tenant_id`, `user_id`) select replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', id from ibu_user;
 
 -- ----------------------------
@@ -424,8 +424,8 @@ INSERT ibo_organize (`id`, `tenant_id`, `type`, `index`, `code`, `name`, `alias`
 INSERT ibs_application (`id`, `index`, `name`, `alias`, `permit_life`, `token_life`, `creator`, `creator_id`, `created_time`) VALUES
 ('9dd99dd9e6df467a8207d05ea5581125', 1, '因赛特多租户平台', 'MTP', 300000, 7200000, '系统', '00000000000000000000000000000000', now()),
 ('e46c0d4f85f24f759ad4d86b9505b1d4', 2, '因赛特用户管理系统', 'RMS', 300000, 7200000, '系统', '00000000000000000000000000000000', now());
-INSERT ibt_tenant_app (`id`, `tenant_id`, `app_id`) VALUES
-(replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', 'e46c0d4f85f24f759ad4d86b9505b1d4');
+INSERT ibt_tenant_app (`id`, `tenant_id`, `app_id`, `expire_date`) VALUES
+(replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', 'e46c0d4f85f24f759ad4d86b9505b1d4', '2800-01-01');
 
 -- ----------------------------
 -- 初始化应用:功能导航
