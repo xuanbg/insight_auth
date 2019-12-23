@@ -21,7 +21,7 @@ public class TopicExchangeConfig {
      * @return TopicExchange
      */
     @Bean
-    public TopicExchange userExchange() {
+    public TopicExchange exchange() {
         return new TopicExchange("amq.topic");
     }
 
@@ -32,15 +32,15 @@ public class TopicExchangeConfig {
      */
     @Bean
     public Queue userQueue() {
-        return new Queue("auth.user");
+        return new Queue("insight.user");
     }
 
     /**
-     * 默认绑定
+     * 默认用户绑定
      * @return Binding
      */
     @Bean
-    public Binding binding(){
-        return BindingBuilder.bind(userQueue()).to(userExchange()).with("auth.addUser");
+    public Binding userBinding(){
+        return BindingBuilder.bind(userQueue()).to(exchange()).with("auth.addUser");
     }
 }
