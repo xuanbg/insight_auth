@@ -649,6 +649,18 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 (replace(uuid(), '-', ''), '获取角色日志列表', 'GET', '/base/role/v1.0/roles/logs', 'getRoleLog', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取角色日志详情', 'GET', '/base/role/v1.0/roles/logs/{id}', 'getRoleLog', 1, NULL, NULL, NULL, 1, 1, now()),
 
+-- 组织机构接口配置
+(replace(uuid(), '-', ''), '获取组织机构列表', 'GET', '/base/organize/v1.0/organizes', 'getOrganize', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '获取组织机构详情', 'GET', '/base/organize/v1.0/organizes/{id}', 'getOrganize', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '新增组织机构', 'POST', '/base/organize/v1.0/organizes', 'newOrganize', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '编辑组织机构', 'PUT', '/base/organize/v1.0/organizes', 'editOrganize', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '删除组织机构', 'DELETE', '/base/organize/v1.0/organizes', 'deleteOrganize', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '获取组织机构用户列表', 'GET', '/base/organize/v1.0/organizes/{id}/users', 'getOrganize', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '添加组织机构成员', 'POST', '/base/organize/v1.0/organizes/{id}/members', 'addOrganizeMember', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '移除组织机构成员', 'DELETE', '/base/organize/v1.0/organizes/{id}/members', 'removeOrganizeMember', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '获取组织机构日志列表', 'GET', '/base/organize/v1.0/organizes/logs', 'getOrganizeLog', 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '获取组织机构日志详情', 'GET', '/base/organize/v1.0/organizes/logs/{id}', 'getOrganizeLog', 1, NULL, NULL, NULL, 1, 1, now()),
+
 -- 租户接口配置
 (replace(uuid(), '-', ''), '获取租户列表', 'GET', '/base/tenant/v1.0/tenants', 'getTenant', 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取租户详情', 'GET', '/base/tenant/v1.0/tenants/{id}', 'getTenant', 1, NULL, NULL, NULL, 1, 1, now()),
