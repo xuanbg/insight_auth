@@ -1,5 +1,7 @@
 package com.insight.base.auth.common.dto;
 
+import com.insight.util.Json;
+
 import java.io.Serializable;
 
 /**
@@ -9,10 +11,6 @@ import java.io.Serializable;
  */
 public class ModuleInfo implements Serializable {
     private static final long serialVersionUID = -1L;
-    /**
-     * 图标
-     */
-    private String icon;
 
     /**
      * 图标路径
@@ -33,14 +31,6 @@ public class ModuleInfo implements Serializable {
      * 是否启动模块
      */
     private Boolean isDefault;
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
 
     public String getIconUrl() {
         return iconUrl;
@@ -72,5 +62,10 @@ public class ModuleInfo implements Serializable {
 
     public void setDefault(Boolean aDefault) {
         isDefault = aDefault;
+    }
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
     }
 }

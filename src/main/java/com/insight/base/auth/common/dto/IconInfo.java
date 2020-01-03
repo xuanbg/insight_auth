@@ -1,16 +1,13 @@
 package com.insight.base.auth.common.dto;
 
+import com.insight.util.Json;
+
 /**
  * @author 宣炳刚
  * @date 2017/9/15
  * @remark 图标信息
  */
 public class IconInfo {
-
-    /**
-     * 图标
-     */
-    private String icon;
 
     /**
      * 图标路径
@@ -26,14 +23,6 @@ public class IconInfo {
      * 是否隐藏文字
      */
     private Boolean isHideText;
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
 
     public String getIconUrl() {
         return iconUrl;
@@ -57,5 +46,10 @@ public class IconInfo {
 
     public void setHideText(Boolean hideText) {
         isHideText = hideText;
+    }
+
+    @Override
+    public String toString() {
+        return Json.toJson(this);
     }
 }

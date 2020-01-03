@@ -18,12 +18,12 @@ public class FuncDto implements Serializable {
     private String id;
 
     /**
-     * 上级节点ID
+     * 导航ID
      */
     private String navId;
 
     /**
-     * 节点类型
+     * 功能类型 0:全局功能;1:数据项功能;2:其他功能
      */
     private Integer type;
 
