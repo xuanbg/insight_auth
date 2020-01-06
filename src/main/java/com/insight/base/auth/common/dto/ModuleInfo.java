@@ -30,7 +30,7 @@ public class ModuleInfo implements Serializable {
     /**
      * 是否启动模块
      */
-    private Boolean isDefault;
+    private Boolean isAutoLoad;
 
     public String getIconUrl() {
         return iconUrl;
@@ -57,11 +57,11 @@ public class ModuleInfo implements Serializable {
     }
 
     public Boolean getDefault() {
-        return isDefault;
+        return isAutoLoad;
     }
 
     public void setDefault(Boolean aDefault) {
-        isDefault = aDefault;
+        isAutoLoad = aDefault;
     }
 
     @Override
