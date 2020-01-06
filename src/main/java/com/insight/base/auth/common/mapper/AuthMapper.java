@@ -113,7 +113,7 @@ public interface AuthMapper {
             "join (select distinct a.function_id from ibr_role_func_permit a join ibv_user_roles r on r.role_id = a.role_id " +
             "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) and (dept_id is null or dept_id = #{deptId}) group by a.function_id " +
             "having min(a.permit)> 0) a on a.function_id = f.id where m.app_id = #{appId}) l order by l.parent_id, l.`index`;")
-    List<NavDto> getNavigators(@Param("tenantId") String tenantId, @Param("appId") String appId, @Param("userId") String userId, @Param("deptId") String deptId);
+    List<NavDto> getNavigators(@Param("tenantId") String tenantId, @Param("deptId") String deptId, @Param("userId") String userId, @Param("appId") String appId);
 
     /**
      * 获取指定模块的全部可用功能集合及对指定用户的授权情况
@@ -129,7 +129,7 @@ public interface AuthMapper {
             "left join (select a.function_id, min(a.permit) as permit from ibr_role_func_permit a join ibv_user_roles r " +
             "on r.role_id = a.role_id and r.user_id = #{userId} and (r.tenant_id is null or r.tenant_id = #{tenantId}) and (r.dept_id is null or r.dept_id = #{deptId}) " +
             "group by a.function_id) a on a.function_id = f.id where f.nav_id = #{moduleId} order by f.`index`;")
-    List<FuncDto> getModuleFunctions(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("deptId") String deptId, @Param("moduleId") String moduleId);
+    List<FuncDto> getModuleFunctions(@Param("tenantId") String tenantId, @Param("deptId") String deptId, @Param("userId") String userId, @Param("moduleId") String moduleId);
 
     /**
      * 获取用户授权信息
@@ -148,5 +148,5 @@ public interface AuthMapper {
             "and (r.dept_id is null or r.dept_id = #{deptId}) " +
             "join mysql.help_topic h on h.help_topic_id &lt; (length(f.auth_codes) - length(replace(f.auth_codes, ',', '')) + 1)" +
             "group by n.app_id, f.nav_id, auth_code having min(p.permit) > 0</script>")
-    List<String> getAuthInfos(@Param("appId") String appId, @Param("userId") String userId, @Param("tenantId") String tenantId, @Param("deptId") String deptId);
+    List<String> getAuthInfos(@Param("tenantId") String tenantId, @Param("deptId") String deptId, @Param("userId") String userId, @Param("appId") String appId);
 }

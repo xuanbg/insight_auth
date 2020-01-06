@@ -262,7 +262,7 @@ public class Core {
      * @return 用户授权码集合
      */
     public List<String> getPermits(String appId, String userId, String tenantId, String deptId) {
-        return mapper.getAuthInfos(appId, userId, tenantId, deptId);
+        return mapper.getAuthInfos(tenantId, deptId, userId, appId);
     }
 
     /**
@@ -532,7 +532,7 @@ public class Core {
      * @return 导航数据
      */
     public List<NavDto> getNavigators(LoginInfo info) {
-        return mapper.getNavigators(info.getTenantId(), info.getAppId(), info.getUserId(), info.getDeptId());
+        return mapper.getNavigators(info.getTenantId(), info.getDeptId(), info.getUserId(), info.getAppId());
     }
 
     /**
