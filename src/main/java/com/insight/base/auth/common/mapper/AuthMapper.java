@@ -104,15 +104,15 @@ public interface AuthMapper {
      * @return Navigation对象集合
      */
     @Results({@Result(property = "moduleInfo", column = "module_info", javaType = ModuleInfo.class, typeHandler = JsonTypeHandler.class)})
-    @Select("SELECT * FROM (SELECT DISTINCT g.id,g.parent_id,g.`type`,g.`index`,g.`name`,g.module_info FROM ibs_navigator g " +
-            "JOIN ibs_navigator m ON m.parent_id=g.id JOIN ibs_function f ON f.nav_id=m.id " +
-            "JOIN (SELECT DISTINCT a.function_id FROM ibr_role_func_permit a JOIN ibv_user_roles r ON r.role_id=a.role_id " +
-            "WHERE user_id=#{userId} AND (tenant_id=#{tenantId} or tenant_id is null) AND (dept_id=#{deptId} OR dept_id IS NULL) " +
-            "GROUP BY a.function_id HAVING min(a.permit)> 0) a ON a.function_id=f.id WHERE g.app_id=#{appId} UNION " +
-            "SELECT m.id,m.parent_id,m.`type`,m.`index`,m.`name`,m.module_info FROM ibs_navigator m JOIN ibs_function f ON f.nav_id=m.id " +
-            "JOIN (SELECT DISTINCT a.function_id FROM ibr_role_func_permit a JOIN ibv_user_roles r ON r.role_id=a.role_id " +
-            "WHERE user_id=#{userId} AND (tenant_id=#{tenantId} or tenant_id is null) AND (dept_id=#{deptId} OR dept_id IS NULL) GROUP BY a.function_id " +
-            "HAVING min(a.permit)> 0) a ON a.function_id=f.id WHERE m.app_id=#{appId}) l ORDER BY l.parent_id,l.`index`;")
+    @Select("select * from (select distinct g.id, g.parent_id, g.`type`, g.`index`, g.`name`, g.module_info from ibs_navigator g " +
+            "join ibs_navigator m on m.parent_id = g.id join ibs_function f on f.nav_id = m.id " +
+            "join (select distinct a.function_id from ibr_role_func_permit a join ibv_user_roles r on r.role_id = a.role_id " +
+            "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) and (dept_id is null or dept_id = #{deptId}) " +
+            "group by a.function_id having min(a.permit)> 0) a on a.function_id = f.id where g.app_id = #{appId} union " +
+            "select m.id, m.parent_id, m.`type`, m.`index`, m.`name`, m.module_info from ibs_navigator m join ibs_function f on f.nav_id = m.id " +
+            "join (select distinct a.function_id from ibr_role_func_permit a join ibv_user_roles r on r.role_id = a.role_id " +
+            "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) and (dept_id is null or dept_id = #{deptId}) group by a.function_id " +
+            "having min(a.permit)> 0) a on a.function_id = f.id where m.app_id = #{appId}) l order by l.parent_id, l.`index`;")
     List<NavDto> getNavigators(@Param("tenantId") String tenantId, @Param("appId") String appId, @Param("userId") String userId, @Param("deptId") String deptId);
 
     /**
@@ -125,10 +125,10 @@ public interface AuthMapper {
      * @return Function对象集合
      */
     @Results({@Result(property = "iconInfo", column = "icon_info", javaType = IconInfo.class, typeHandler = JsonTypeHandler.class)})
-    @Select("SELECT f.id,f.nav_id,f.`type`,f.`index`,f.`name`,f.auth_codes,f.icon_info,a.permit FROM ibs_function f " +
-            "LEFT JOIN (SELECT a.function_id,min(a.permit) AS permit FROM ibr_role_func_permit a JOIN ibv_user_roles r " +
-            "ON r.role_id=a.role_id AND r.user_id=#{userId} AND r.tenant_id=#{tenantId} AND (r.dept_id=#{deptId} OR r.dept_id IS NULL) " +
-            "GROUP BY a.function_id) a ON a.function_id=f.id WHERE f.nav_id = #{moduleId} ORDER BY f.`index`;")
+    @Select("select f.id, f.nav_id, f.`type`, f.`index`, f.`name`, f.auth_codes, f.icon_info, a.permit from ibs_function f " +
+            "left join (select a.function_id, min(a.permit) as permit from ibr_role_func_permit a join ibv_user_roles r " +
+            "on r.role_id = a.role_id and r.user_id = #{userId} and (r.tenant_id is null or r.tenant_id = #{tenantId}) and (r.dept_id is null or r.dept_id = #{deptId}) " +
+            "group by a.function_id) a on a.function_id = f.id where f.nav_id = #{moduleId} order by f.`index`;")
     List<FuncDto> getModuleFunctions(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("deptId") String deptId, @Param("moduleId") String moduleId);
 
     /**
