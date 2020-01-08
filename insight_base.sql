@@ -461,9 +461,9 @@ INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_codes`, `icon
 
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 0, 1, '刷新', 'getApp', json_object("iconUrl", "icons/refresh.png", "beginGroup", true, "hideText", true), '系统', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 0, 2, '新增应用', 'newApp', json_object("iconUrl", "icons/newapp.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 3, '编辑', 'editApp', json_object("iconUrl", "icons/editapp.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 4, '删除', 'deleteApp', json_object("iconUrl", "icons/deleteapp.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 5, '新增导航', 'newNav', json_object("iconUrl", "icons/new.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
+(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 3, '编辑', 'editApp', json_object("iconUrl", "icons/edit.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
+(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 4, '删除', 'deleteApp', json_object("iconUrl", "icons/delete.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
+(replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 5, '新增导航', 'newNav', json_object("iconUrl", "icons/newnav.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 6, '编辑', 'editNav', json_object("iconUrl", "icons/edit.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 7, '删除', 'deleteNav', json_object("iconUrl", "icons/delete.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 1, 8, '新增功能', 'newFun', json_object("iconUrl", "icons/new.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
