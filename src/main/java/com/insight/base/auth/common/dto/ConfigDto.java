@@ -47,6 +47,11 @@ public class ConfigDto implements Serializable {
     private String message;
 
     /**
+     * 是否需要一次性Token
+     */
+    private Boolean needToken;
+
+    /**
      * 是否验证Token
      */
     private Boolean isVerify;
@@ -115,6 +120,14 @@ public class ConfigDto implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Boolean getNeedToken() {
+        return needToken;
+    }
+
+    public void setNeedToken(Boolean needToken) {
+        this.needToken = needToken;
     }
 
     public Boolean getVerify() {

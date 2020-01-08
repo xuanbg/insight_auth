@@ -38,6 +38,7 @@ CREATE TABLE `ibi_interface` (
   `limit_max` int(10) unsigned DEFAULT NULL COMMENT '限制次数/限流周期,NULL表示不进行周期性限流',
   `message` varchar(32) DEFAULT NULL COMMENT '限流消息',
   `remark` varchar(1024) DEFAULT NULL COMMENT '描述',
+  `need_token` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否需要一次性Token:0.不需要;1.需要',
   `is_verify` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否验证Token:0.公开接口,不需要验证Token;1.私有接口,需要验证Token',
   `is_limit` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否限流:0.不限流;1.限流',
   `is_log_result` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否日志输出返回值',
