@@ -1,6 +1,7 @@
 package com.insight.base.auth.common.dto;
 
 import com.insight.util.Json;
+import com.insight.util.pojo.ModuleInfo;
 
 import java.io.Serializable;
 import java.util.List;

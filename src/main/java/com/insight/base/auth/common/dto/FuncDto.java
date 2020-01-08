@@ -1,6 +1,7 @@
 package com.insight.base.auth.common.dto;
 
 import com.insight.util.Json;
+import com.insight.util.pojo.FuncInfo;
 
 import java.io.Serializable;
 
@@ -45,7 +46,7 @@ public class FuncDto implements Serializable {
     /**
      * 功能图标信息
      */
-    private IconInfo iconInfo;
+    private FuncInfo funcInfo;
 
     /**
      * 是否授权(true:已授权,false:已拒绝,null:未授权)
@@ -100,12 +101,12 @@ public class FuncDto implements Serializable {
         this.authCodes = authCodes;
     }
 
-    public IconInfo getIconInfo() {
-        return iconInfo;
+    public FuncInfo getFuncInfo() {
+        return funcInfo;
     }
 
-    public void setIconInfo(IconInfo iconInfo) {
-        this.iconInfo = iconInfo;
+    public void setFuncInfo(FuncInfo funcInfo) {
+        this.funcInfo = funcInfo;
     }
 
     public Boolean getPermit() {

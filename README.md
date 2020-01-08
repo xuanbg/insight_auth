@@ -489,47 +489,30 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/navigators" \
   "message": "请求成功",
   "data": [
     {
-      "id": "8c95d6e097f340d6a8d93a3b5631ba39",
+      "id": "5e4a994ccd2611e9bbd40242ac110008",
       "parentId": null,
       "type": 1,
-      "index": 1,
-      "name": "运营中心",
+      "index": 2,
+      "name": "系统设置",
       "moduleInfo": {
-        "icon": null,
-        "iconUrl": null,
+        "iconUrl": "icons/system.png",
         "module": null,
         "file": null,
-        "default": null
+        "autoLoad": null
       },
       "functions": null
     },
     {
-      "id": "711aad8daf654bcdb3a126d70191c15c",
-      "parentId": "8c95d6e097f340d6a8d93a3b5631ba39",
+      "id": "717895ca14de11ea9ae00242ac110005",
+      "parentId": "5e4a994ccd2611e9bbd40242ac110008",
       "type": 2,
       "index": 1,
-      "name": "租户管理",
+      "name": "角色权限",
       "moduleInfo": {
-        "icon": null,
-        "iconUrl": null,
-        "module": "Tenants",
-        "file": "Base.dll",
-        "default": true
-      },
-      "functions": null
-    },
-    {
-      "id": "a65a562582bb489ea729bb0838bbeff8",
-      "parentId": "8c95d6e097f340d6a8d93a3b5631ba39",
-      "type": 2,
-      "index": 2,
-      "name": "应用管理",
-      "moduleInfo": {
-        "icon": null,
-        "iconUrl": null,
-        "module": "Apps",
-        "file": "Base.dll",
-        "default": false
+        "iconUrl": "icons/role.png",
+        "module": "Roles",
+        "file": "System.dll",
+        "autoLoad": false
       },
       "functions": null
     }
@@ -564,7 +547,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/navigators" \
 |Integer|index|索引,排序用|
 |String|name|功能名称|
 |String|authCode|授权码|
-|[IconInfo](#IconInfo)|iconInfo|功能图标信息|
+|[FuncInfo](#FuncInfo)|funcInfo|功能图标信息|
 |Boolean|permit|是否授权(true:已授权,false:已拒绝,null:未授权)|
 
 请求示例：
@@ -586,94 +569,34 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/navigators/711aad8daf654bcdb3a126d
   "message": "请求成功",
   "data": [
     {
-      "id": "bfb02029cb0411e9bbd40242ac110008",
+      "id": "8ce53af6306111eaa03a0242ac110004",
       "navId": "711aad8daf654bcdb3a126d70191c15c",
       "type": 0,
       "index": 1,
       "name": "刷新",
-      "authCode": "getTenants",
-      "iconInfo": {
-        "icon": null,
-        "iconUrl": null,
+      "authCodes": "getTenant",
+      "funcInfo": {
+        "method": "refresh",
+        "iconUrl": "icons/refresh.png",
         "beginGroup": true,
         "hideText": true
       },
-      "permit": null
+      "permit": true
     },
     {
-      "id": "bfb02084cb0411e9bbd40242ac110008",
+      "id": "8ce53d39306111eaa03a0242ac110004",
       "navId": "711aad8daf654bcdb3a126d70191c15c",
       "type": 0,
       "index": 2,
       "name": "新增租户",
-      "authCode": "newTenant",
-      "iconInfo": {
-        "icon": null,
-        "iconUrl": null,
+      "authCodes": "newTenant",
+      "funcInfo": {
+        "method": "new",
+        "iconUrl": "icons/new.png",
         "beginGroup": true,
         "hideText": false
       },
-      "permit": null
-    },
-    {
-      "id": "bfb020cfcb0411e9bbd40242ac110008",
-      "navId": "711aad8daf654bcdb3a126d70191c15c",
-      "type": 1,
-      "index": 3,
-      "name": "编辑",
-      "authCode": "editTenant",
-      "iconInfo": {
-        "icon": null,
-        "iconUrl": null,
-        "beginGroup": false,
-        "hideText": false
-      },
-      "permit": null
-    },
-    {
-      "id": "bfb021b2cb0411e9bbd40242ac110008",
-      "navId": "711aad8daf654bcdb3a126d70191c15c",
-      "type": 1,
-      "index": 4,
-      "name": "删除",
-      "authCode": "deleteTenant",
-      "iconInfo": {
-        "icon": null,
-        "iconUrl": null,
-        "beginGroup": false,
-        "hideText": false
-      },
-      "permit": null
-    },
-    {
-      "id": "bfb021fecb0411e9bbd40242ac110008",
-      "navId": "711aad8daf654bcdb3a126d70191c15c",
-      "type": 1,
-      "index": 5,
-      "name": "绑定应用",
-      "authCode": "bindApp",
-      "iconInfo": {
-        "icon": null,
-        "iconUrl": null,
-        "beginGroup": true,
-        "hideText": false
-      },
-      "permit": null
-    },
-    {
-      "id": "bfb02282cb0411e9bbd40242ac110008",
-      "navId": "711aad8daf654bcdb3a126d70191c15c",
-      "type": 1,
-      "index": 6,
-      "name": "续租",
-      "authCode": "extend",
-      "iconInfo": {
-        "icon": null,
-        "iconUrl": null,
-        "beginGroup": false,
-        "hideText": false
-      },
-      "permit": null
+      "permit": true
     }
   ],
   "option": null
@@ -1201,11 +1124,10 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/load" \
 
 |类型|字段|字段说明|
 |----|----|----|
-|String|icon|图标|
-|String|iconUrl|图标路径|
 |String|module|模块名称|
+|String|iconUrl|图标路径|
 |String|file|模块文件|
-|Boolean|isDefault|是否启动模块|
+|Boolean|isAutoLoad|是否自动启动模块|
 
 [回目录](#目录)
 
@@ -1219,16 +1141,16 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/load" \
 |Integer|index|索引,排序用|
 |String|name|功能名称|
 |String|authCode|授权码|
-|[IconInfo](#IconInfo)|iconInfo|功能图标信息|
+|[FuncInfo](#FuncInfo)|funcInfo|功能图标信息|
 |Boolean|permit|是否授权(true:已授权,false:已拒绝,null:未授权)|
 
 [回目录](#目录)
 
-### IconInfo
+### FuncInfo
 
 |类型|字段|字段说明|
 |----|----|----|
-|String|icon|图标|
+|String|method|方法名称|
 |String|iconUrl|图标路径|
 |Boolean|isBeginGroup|是否开始分组|
 |Boolean|isHideText|是否隐藏文字|

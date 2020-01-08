@@ -1,12 +1,12 @@
 package com.insight.base.auth.common.mapper;
 
 import com.insight.base.auth.common.dto.FuncDto;
-import com.insight.base.auth.common.dto.IconInfo;
-import com.insight.base.auth.common.dto.ModuleInfo;
 import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.util.common.JsonTypeHandler;
 import com.insight.util.pojo.Application;
+import com.insight.util.pojo.FuncInfo;
+import com.insight.util.pojo.ModuleInfo;
 import com.insight.util.pojo.User;
 import org.apache.ibatis.annotations.*;
 
@@ -124,8 +124,8 @@ public interface AuthMapper {
      * @param moduleId 模块ID
      * @return Function对象集合
      */
-    @Results({@Result(property = "iconInfo", column = "icon_info", javaType = IconInfo.class, typeHandler = JsonTypeHandler.class)})
-    @Select("select f.id, f.nav_id, f.`type`, f.`index`, f.`name`, f.auth_codes, f.icon_info, a.permit from ibs_function f " +
+    @Results({@Result(property = "funcInfo", column = "func_info", javaType = FuncInfo.class, typeHandler = JsonTypeHandler.class)})
+    @Select("select f.id, f.nav_id, f.`type`, f.`index`, f.`name`, f.auth_codes, f.func_info, a.permit from ibs_function f " +
             "left join (select a.function_id, min(a.permit) as permit from ibr_role_func_permit a join ibv_user_roles r " +
             "on r.role_id = a.role_id and r.user_id = #{userId} and (r.tenant_id is null or r.tenant_id = #{tenantId}) and (r.dept_id is null or r.dept_id = #{deptId}) " +
             "group by a.function_id) a on a.function_id = f.id where f.nav_id = #{moduleId} order by f.`index`;")
