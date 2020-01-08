@@ -65,6 +65,11 @@ public class InterfaceConfig {
     private String remark;
 
     /**
+     * 是否需要一次性Token
+     */
+    private Boolean needToken;
+
+    /**
      * 是否验证Token
      */
     @NotNull(message = "接口验证设置不能为空")
@@ -164,6 +169,14 @@ public class InterfaceConfig {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public Boolean getNeedToken() {
+        return needToken;
+    }
+
+    public void setNeedToken(Boolean needToken) {
+        this.needToken = needToken;
     }
 
     public Boolean getVerify() {

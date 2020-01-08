@@ -83,11 +83,15 @@ public class ManageServiceImpl implements ManageService {
     public Reply newConfig(LoginInfo info, InterfaceConfig dto) {
         String id = Generator.uuid();
         dto.setId(id);
-        dto.setCreatedTime(LocalDateTime.now());
+        if (dto.getNeedToken() == null){
+            dto.setNeedToken(false);
+        }
+
         if (dto.getLogResult() == null){
             dto.setLogResult(false);
         }
 
+        dto.setCreatedTime(LocalDateTime.now());
         mapper.addConfig(dto);
         writeLog(info, OperateType.INSERT, id, dto);
 
