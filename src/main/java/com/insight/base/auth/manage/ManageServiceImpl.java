@@ -2,7 +2,6 @@ package com.insight.base.auth.manage;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.insight.base.auth.common.dto.ConfigDto;
 import com.insight.base.auth.common.dto.ConfigListDto;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.mapper.ConfigMapper;
@@ -10,10 +9,7 @@ import com.insight.util.Generator;
 import com.insight.util.Json;
 import com.insight.util.Redis;
 import com.insight.util.ReplyHelper;
-import com.insight.util.pojo.Log;
-import com.insight.util.pojo.LoginInfo;
-import com.insight.util.pojo.OperateType;
-import com.insight.util.pojo.Reply;
+import com.insight.util.pojo.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -186,7 +182,7 @@ public class ManageServiceImpl implements ManageService {
      */
     @Override
     public Reply loadConfigs() {
-        List<ConfigDto> configs = mapper.loadConfigs();
+        List<InterfaceDto> configs = mapper.loadConfigs();
         if (configs == null || configs.isEmpty()) {
             return ReplyHelper.fail("读取数据失败,请重新加载");
         }

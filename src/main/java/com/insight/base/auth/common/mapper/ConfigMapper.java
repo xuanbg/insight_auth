@@ -1,9 +1,9 @@
 package com.insight.base.auth.common.mapper;
 
-import com.insight.base.auth.common.dto.ConfigDto;
 import com.insight.base.auth.common.dto.ConfigListDto;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.util.common.JsonTypeHandler;
+import com.insight.util.pojo.InterfaceDto;
 import com.insight.util.pojo.Log;
 import org.apache.ibatis.annotations.*;
 
@@ -71,7 +71,7 @@ public interface ConfigMapper {
      * @return 接口配置表
      */
     @Select("select method, url, auth_code, limit_gap, limit_cycle, limit_max, message, need_token, is_verify, is_limit, is_log_result from ibi_interface;")
-    List<ConfigDto> loadConfigs();
+    List<InterfaceDto> loadConfigs();
 
     /**
      * 获取操作日志列表
