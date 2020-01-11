@@ -36,6 +36,23 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
+     * 获取提交数据用临时Token
+     *
+     * @param key 接口Hash: MD5(userId:method:url)
+     * @return Reply
+     */
+    @Override
+    public Reply getSubmitToken(String key) {
+        String id = Redis.get("SubmitToken:" + key);
+        if (id == null || id.isEmpty()) {
+            id = Generator.uuid();
+            Redis.set("SubmitToken:" + key, id, 1, TimeUnit.HOURS);
+        }
+
+        return ReplyHelper.success(id);
+    }
+
+    /**
      * 获取Code
      *
      * @param account 用户登录账号

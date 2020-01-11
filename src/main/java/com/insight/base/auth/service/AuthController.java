@@ -31,6 +31,17 @@ public class AuthController {
     }
 
     /**
+     * 获取提交数据用临时Token
+     *
+     * @param key 接口Hash
+     * @return Reply
+     */
+    @GetMapping("/v1.0/tokens")
+    public Reply getSubmitToken(@RequestParam String key) {
+        return service.getSubmitToken(key);
+    }
+
+    /**
      * 获取Code
      *
      * @param account 用户登录账号

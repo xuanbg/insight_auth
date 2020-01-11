@@ -13,6 +13,14 @@ import com.insight.util.pojo.Reply;
 public interface AuthService {
 
     /**
+     * 获取提交数据用临时Token
+     *
+     * @param key 接口Hash
+     * @return Reply
+     */
+    Reply getSubmitToken(String key);
+
+    /**
      * 获取Code
      *
      * @param account 用户登录账号
