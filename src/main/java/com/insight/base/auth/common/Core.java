@@ -5,6 +5,7 @@ import com.insight.base.auth.common.client.RabbitClient;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.util.*;
+import com.insight.util.common.ApplicationContextHolder;
 import com.insight.util.encrypt.Encryptor;
 import com.insight.util.pojo.*;
 import com.insight.utils.wechat.WeChatHelper;
@@ -179,9 +180,21 @@ public class Core {
      */
     public boolean appIsExpired(LoginDto login, String userId) {
         String appId = login.getAppId();
-        boolean isAutoTenant = Boolean.parseBoolean(Redis.get("App:" + appId, "AutoTenant"));
+        String key = "App:" + appId;
+        if (!Redis.hasKey(key)) {
+            AuthMapper mapper = ApplicationContextHolder.getContext().getBean(AuthMapper.class);
+            Application app = mapper.getApp(appId);
+            Redis.set(key, "PermitLife", app.getPermitLife());
+            Redis.set(key, "TokenLife", app.getTokenLife());
+            Redis.set(key, "SignInType", app.getSigninOne());
+            Redis.set(key, "RefreshType", app.getAutoRefresh());
+            Redis.set(key, "AutoTenant", app.getAutoTenant());
+
+            mapper.getApps(appId).forEach(i -> Redis.set(key, i.getTenantId(), i.getExpireDate()));
+        }
 
         // 当应用设置为自动加载租户,租户ID当前为空且唯一时,自动加载用户的租户ID
+        boolean isAutoTenant = Boolean.parseBoolean(Redis.get("App:" + appId, "AutoTenant"));
         String tenantId = login.getTenantId();
         if (isAutoTenant && (tenantId == null || tenantId.isEmpty())) {
             List<String> tenantIds = mapper.getTenantIds(userId);
@@ -200,7 +213,7 @@ public class Core {
             }
         }
 
-        if(tenantId == null || tenantId.isEmpty()){
+        if (tenantId == null || tenantId.isEmpty()) {
             return false;
         }
 

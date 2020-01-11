@@ -1,12 +1,9 @@
 package com.insight.base.auth.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.util.Generator;
 import com.insight.util.Redis;
-import com.insight.util.common.ApplicationContextHolder;
 import com.insight.util.pojo.AccessToken;
-import com.insight.util.pojo.Application;
 import com.insight.util.pojo.TokenInfo;
 
 /**
@@ -32,52 +29,16 @@ public class Token extends TokenInfo {
      */
     Token(String userId, String appId, String tenantId, String deptId) {
         String key = "App:" + appId;
-        if (Redis.hasKey(key)) {
-            setPermitLife(Long.valueOf(Redis.get(key, "PermitLife")));
-            setLife(Long.valueOf(Redis.get(key, "TokenLife")));
-            setSignInOne(Boolean.valueOf(Redis.get(key, "SignInType")));
-            setAutoRefresh(Boolean.valueOf(Redis.get(key, "RefreshType")));
-        } else {
-            initAppInfo(appId);
-        }
-
         setUserId(userId);
         setAppId(appId);
         setTenantId(tenantId);
         setDeptId(deptId);
-
+        setPermitLife(Long.valueOf(Redis.get(key, "PermitLife")));
+        setLife(Long.valueOf(Redis.get(key, "TokenLife")));
+        setSignInOne(Boolean.valueOf(Redis.get(key, "SignInType")));
+        setAutoRefresh(Boolean.valueOf(Redis.get(key, "RefreshType")));
         setSecretKey(Generator.uuid());
         setRefreshKey(Generator.uuid());
-    }
-
-    /**
-     * 加载应用信息到Redis
-     *
-     * @param appId 应用ID
-     */
-    private void initAppInfo(String appId) {
-        AuthMapper mapper = ApplicationContextHolder.getContext().getBean(AuthMapper.class);
-        Application app = mapper.getApp(appId);
-        if (app == null) {
-            setPermitLife(Long.valueOf("300000"));
-            setLife(Long.valueOf("7200000"));
-            setSignInOne(false);
-            setAutoRefresh(false);
-        } else {
-            setPermitLife(app.getPermitLife());
-            setLife(app.getTokenLife());
-            setSignInOne(app.getSigninOne());
-            setAutoRefresh(app.getAutoRefresh());
-
-            String key = "App:" + appId;
-            Redis.set(key, "PermitLife", getPermitLife());
-            Redis.set(key, "TokenLife", getLife());
-            Redis.set(key, "SignInType", getSignInOne());
-            Redis.set(key, "RefreshType", getAutoRefresh());
-            Redis.set(key, "AutoTenant", app.getAutoTenant());
-
-            mapper.getApps(appId).forEach(i -> Redis.set(key, i.getTenantId(), i.getExpireDate()));
-        }
     }
 
     /**

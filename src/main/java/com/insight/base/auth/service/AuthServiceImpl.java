@@ -184,6 +184,11 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.forbid();
         }
 
+        // 验证应用是否过期
+        if (core.appIsExpired(login, userId)) {
+            return ReplyHelper.fail("应用已过期,请续租");
+        }
+
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
         TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
 
@@ -238,6 +243,11 @@ public class AuthServiceImpl implements AuthService {
         } else {
             // 用户不存在,自动创建用户
             core.addUser(weChatUser.getNickname(), mobile, unionId, weChatUser.getHeadimgurl());
+        }
+
+        // 验证应用是否过期
+        if (core.appIsExpired(login, userId)) {
+            return ReplyHelper.fail("应用已过期,请续租");
         }
 
         // 绑定用户微信OpenID,创建令牌
