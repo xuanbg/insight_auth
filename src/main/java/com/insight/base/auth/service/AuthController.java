@@ -161,6 +161,18 @@ public class AuthController {
     }
 
     /**
+     * 获取用户可选登录部门
+     *
+     * @param account 登录账号
+     * @return Reply
+     */
+    @GetMapping("/v1.0/departments")
+    public Reply getDepartments(@RequestParam String account) {
+
+        return service.getDepartments(account);
+    }
+
+    /**
      * 获取用户导航栏
      *
      * @param loginInfo 用户信息

@@ -558,4 +558,14 @@ public class Core {
     public List<FuncDto> getModuleFunctions(LoginInfo info, String moduleId) {
         return mapper.getModuleFunctions(info.getTenantId(), info.getDeptId(), info.getUserId(), moduleId);
     }
+
+    /**
+     * 获取用户可选登录部门
+     *
+     * @param account 登录账号
+     * @return 用户可选登录部门集合
+     */
+    public List<LoginDepDto> getDepartments(String account) {
+        return mapper.getDepartments(account);
+    }
 }

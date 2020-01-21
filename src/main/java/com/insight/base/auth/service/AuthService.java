@@ -79,6 +79,14 @@ public interface AuthService {
     Reply deleteToken(String tokenId);
 
     /**
+     * 获取用户可选登录部门
+     *
+     * @param account 登录账号
+     * @return Reply
+     */
+    Reply getDepartments(String account);
+
+    /**
      * 获取用户导航栏
      *
      * @param info 用户登录信息

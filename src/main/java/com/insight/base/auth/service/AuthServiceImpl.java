@@ -2,6 +2,7 @@ package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.Token;
+import com.insight.base.auth.common.dto.LoginDepDto;
 import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.util.*;
@@ -308,6 +309,19 @@ public class AuthServiceImpl implements AuthService {
         core.deleteToken(tokenId);
 
         return ReplyHelper.success();
+    }
+
+    /**
+     * 获取用户可选登录部门
+     *
+     * @param account 登录账号
+     * @return Reply
+     */
+    @Override
+    public Reply getDepartments(String account) {
+        List<LoginDepDto> list = core.getDepartments(account);
+
+        return ReplyHelper.success(list);
     }
 
     /**

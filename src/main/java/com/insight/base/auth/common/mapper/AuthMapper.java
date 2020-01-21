@@ -1,6 +1,7 @@
 package com.insight.base.auth.common.mapper;
 
 import com.insight.base.auth.common.dto.FuncDto;
+import com.insight.base.auth.common.dto.LoginDepDto;
 import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.util.common.JsonTypeHandler;
@@ -149,4 +150,14 @@ public interface AuthMapper {
             "join mysql.help_topic h on h.help_topic_id &lt; (length(f.auth_codes) - length(replace(f.auth_codes, ',', '')) + 1)" +
             "group by n.app_id, f.nav_id, auth_code having min(p.permit) > 0</script>")
     List<String> getAuthInfos(@Param("tenantId") String tenantId, @Param("deptId") String deptId, @Param("userId") String userId, @Param("appId") String appId);
+
+    /**
+     * 获取用户可选登录部门
+     * @param account 登录账号
+     * @return 用户可选登录部门集合
+     */
+    @Select("with d as (select distinct d.id, d.tenant_id as parent_id, d.type as node_type, d.`index`, d.`code`, d.full_name as `name` from ibu_user u " +
+            "join ibo_organize_member m on m.user_id = u.id join ibo_organize p on p.id = m.post_id join ibo_organize d on d.id = p.parent_id where u.account = #{account}) " +
+            "select distinct t.id, null as parent_id, 0 as node_type, 0 as `index`, t.`code`, t.`name` from ibt_tenant t join d on d.parent_id = t.id union select * from d")
+    List<LoginDepDto> getDepartments(String account);
 }

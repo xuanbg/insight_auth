@@ -678,6 +678,7 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 (replace(uuid(), '-', ''), '刷新Token', 'PUT', '/base/auth/v1.0/tokens', NULL, 10, 3600, 10, '刷新Token接口每小时调用次数为10次,请合理使用', 0, 1, now()),
 (replace(uuid(), '-', ''), '用户账号离线', 'DELETE', '/base/auth/v1.0/tokens', NULL, 10, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取提交数据用临时Token', 'GET', '/base/auth/v1.0/tokens', NULL, NULL, 300, 30, '获取临时Token接口每5分钟调用次数为30次,请合理使用', 1, 1, now()),
+(replace(uuid(), '-', ''), '获取用户可登录部门', 'GET', '/base/auth/v1.0/departments', NULL, 1, NULL, NULL, NULL, 0, 1, now()),
 (replace(uuid(), '-', ''), '获取用户导航栏', 'GET', '/base/auth/v1.0/navigators', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取模块功能', 'GET', '/base/auth/v1.0/navigators/{id}/functions', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
 
