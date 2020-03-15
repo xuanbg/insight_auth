@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @date 2019-08-31
  * @remark 消息中心Feign客户端
  */
-@FeignClient(name = "base-message", configuration = FeignClientConfig.class)
+@FeignClient(name = "common-message", configuration = FeignClientConfig.class)
 public interface MessageClient {
 
     /**
