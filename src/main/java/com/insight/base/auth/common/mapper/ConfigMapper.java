@@ -26,7 +26,7 @@ public interface ConfigMapper {
     @Select("<script>select id, name, method, url, auth_code, is_verify, is_limit from ibi_interface " +
             "<if test = 'key!=null'>where name like concat('%',#{key},'%') or " +
             "url like concat('%',#{key},'%') or auth_code = #{key}</if>" +
-            "order by created_time desc</script>")
+            "order by created_time</script>")
     List<ConfigListDto> getConfigs(@Param("key") String key);
 
     /**
