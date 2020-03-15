@@ -1,6 +1,5 @@
 package com.insight.base.auth.common.mapper;
 
-import com.insight.base.auth.common.dto.ConfigListDto;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.util.common.JsonTypeHandler;
 import com.insight.util.pojo.InterfaceDto;
@@ -23,11 +22,10 @@ public interface ConfigMapper {
      * @param key 查询关键词
      * @return 接口配置表
      */
-    @Select("<script>select id, name, method, url, auth_code, is_verify, is_limit from ibi_interface " +
-            "<if test = 'key!=null'>where name like concat('%',#{key},'%') or " +
-            "url like concat('%',#{key},'%') or auth_code = #{key}</if>" +
+    @Select("<script>select * from ibi_interface " +
+            "<if test = 'key!=null'>where name like concat('%',#{key},'%') or url like concat('%',#{key},'%') or auth_code = #{key}</if>" +
             "order by created_time</script>")
-    List<ConfigListDto> getConfigs(@Param("key") String key);
+    List<InterfaceConfig> getConfigs(@Param("key") String key);
 
     /**
      * 获取接口配置详情
