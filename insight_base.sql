@@ -445,7 +445,7 @@ INSERT ibs_navigator(`id`, `parent_id`, `app_id`, `type`, `index`, `name`, `modu
 ('31baf92c337311eaa03a0242ac110004', '2920d9ed337211eaa03a0242ac110004', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 2, '分期规则', json_object("module", 'Rules', "file", 'Report.dll', "autoLoad", false, "iconUrl", "icons/rule.png"), '系统', '00000000000000000000000000000000', now()),
 ('31baf963337311eaa03a0242ac110004', '2920d9ed337211eaa03a0242ac110004', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 3, '模板设计', json_object("module", 'Designs', "file", 'Report.dll', "autoLoad", false, "iconUrl", "icons/design.png"), '系统', '00000000000000000000000000000000', now()),
 ('33a6d46b337211eaa03a0242ac110004', NULL, 'e46c0d4f85f24f759ad4d86b9505b1d4', 1, 2, '基础数据', json_object("iconUrl", "icons/basedata.png"), '系统', '00000000000000000000000000000000', now()),
-('60dfc306337311eaa03a0242ac110004', '33a6d46b337211eaa03a0242ac110004', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 1, '行政区划', json_object("module", 'Regions', "file", 'Data.dll', "autoLoad", false, "iconUrl", "icons/region.png"), '系统', '00000000000000000000000000000000', now()),
+('60dfc306337311eaa03a0242ac110004', '33a6d46b337211eaa03a0242ac110004', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 1, '行政区划', json_object("module", 'Areas', "file", 'Data.dll', "autoLoad", false, "iconUrl", "icons/area.png"), '系统', '00000000000000000000000000000000', now()),
 ('60dfc370337311eaa03a0242ac110004', '33a6d46b337211eaa03a0242ac110004', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 2, '数据字典', json_object("module", 'Dicts', "file", 'Data.dll', "autoLoad", false, "iconUrl", "icons/dict.png"), '系统', '00000000000000000000000000000000', now()),
 ('4b3ac9336dd8496597e603fc7e8f5140', NULL, 'e46c0d4f85f24f759ad4d86b9505b1d4', 1, 3, '系统设置', json_object("iconUrl", "icons/setting.png"), '系统', '00000000000000000000000000000000', now()),
 ('cdf0ffb178b741b287d1f155d0165112', '4b3ac9336dd8496597e603fc7e8f5140', 'e46c0d4f85f24f759ad4d86b9505b1d4', 2, 1, '用户', json_object("module", 'Users', "file", 'Base.dll', "autoLoad", false, "iconUrl", "icons/user.png"), '系统', '00000000000000000000000000000000', now()),
@@ -477,8 +477,8 @@ INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_codes`, `func
 (replace(uuid(), '-', ''), 'a65a562582bb489ea729bb0838bbeff8', 0, 11, '查看日志', 'getAppLog', json_object("method", "log", "iconUrl", "icons/log.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
 
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 0, 1, '刷新', 'getTenant', json_object("method", "refresh", "iconUrl", "icons/refresh.png", "beginGroup", true, "hideText", true), '系统', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 0, 2, '新增租户', 'newTenant', json_object("method", "newItem", "iconUrl", "icons/new.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 1, 3, '编辑', 'editTenant', json_object("method", "editItem", "iconUrl", "icons/edit.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
+(replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 0, 2, '新增租户', 'newTenant,getArea', json_object("method", "newItem", "iconUrl", "icons/new.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
+(replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 1, 3, '编辑', 'editTenant,getArea', json_object("method", "editItem", "iconUrl", "icons/edit.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 1, 4, '删除', 'deleteTenant', json_object("method", "deleteItem", "iconUrl", "icons/delete.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 1, 5, '审核', 'auditTenant', json_object("method", "audit", "iconUrl", "icons/audit.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), '711aad8daf654bcdb3a126d70191c15c', 1, 6, '禁用', 'disableTenant', json_object("method", "disable", "iconUrl", "icons/disable.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
@@ -562,11 +562,11 @@ INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_codes`, `func
 -- ----------------------------
 -- 初始化基础数据
 -- ----------------------------
-(replace(uuid(), '-', ''), '60dfc306337311eaa03a0242ac110004', 0, 1, '刷新', 'getRegion', json_object("method", "refresh", "iconUrl", "icons/refresh.png", "beginGroup", true, "hideText", true), '系统', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), '60dfc306337311eaa03a0242ac110004', 0, 2, '新增区域', 'newRegion', json_object("method", "newItem", "iconUrl", "icons/new.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), '60dfc306337311eaa03a0242ac110004', 1, 3, '编辑', 'editRegion', json_object("method", "editItem", "iconUrl", "icons/edit.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), '60dfc306337311eaa03a0242ac110004', 1, 4, '删除', 'deleteRegion', json_object("method", "deleteItem", "iconUrl", "icons/delete.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), '60dfc306337311eaa03a0242ac110004', 0, 5, '查看日志', 'getRegionLog', json_object("method", "log", "iconUrl", "icons/log.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
+(replace(uuid(), '-', ''), '60dfc306337311eaa03a0242ac110004', 0, 1, '刷新', 'getArea', json_object("method", "refresh", "iconUrl", "icons/refresh.png", "beginGroup", true, "hideText", true), '系统', '00000000000000000000000000000000', now()),
+(replace(uuid(), '-', ''), '60dfc306337311eaa03a0242ac110004', 0, 2, '新增区域', 'newArea', json_object("method", "newItem", "iconUrl", "icons/new.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
+(replace(uuid(), '-', ''), '60dfc306337311eaa03a0242ac110004', 1, 3, '编辑', 'editArea', json_object("method", "editItem", "iconUrl", "icons/edit.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
+(replace(uuid(), '-', ''), '60dfc306337311eaa03a0242ac110004', 1, 4, '删除', 'deleteArea', json_object("method", "deleteItem", "iconUrl", "icons/delete.png", "beginGroup", false, "hideText", false), '系统', '00000000000000000000000000000000', now()),
+(replace(uuid(), '-', ''), '60dfc306337311eaa03a0242ac110004', 0, 5, '查看日志', 'getAreaLog', json_object("method", "log", "iconUrl", "icons/log.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
 
 (replace(uuid(), '-', ''), '60dfc370337311eaa03a0242ac110004', 0, 1, '刷新', 'getDict', json_object("method", "refresh", "iconUrl", "icons/refresh.png", "beginGroup", true, "hideText", true), '系统', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), '60dfc370337311eaa03a0242ac110004', 0, 2, '新增字典', 'newDict', json_object("method", "newDict", "iconUrl", "icons/newdict.png", "beginGroup", true, "hideText", false), '系统', '00000000000000000000000000000000', now()),
@@ -830,4 +830,7 @@ INSERT `ibi_interface`(`id`, `name`, `method`, `url`, `auth_code`, `limit_gap`, 
 (replace(uuid(), '-', ''), '发送自定义消息', 'POST', '/common/message/v1.0/customs', 'sendCustomMessage', 10, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取用户消息列表', 'GET', '/common/message/v1.0/messages', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
 (replace(uuid(), '-', ''), '获取用户消息详情', 'GET', '/common/message/v1.0/messages/{id}', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
-(replace(uuid(), '-', ''), '删除用户消息', 'DELETE', '/common/message/v1.0/messages', NULL, 1, NULL, NULL, NULL, 1, 1, now());
+(replace(uuid(), '-', ''), '删除用户消息', 'DELETE', '/common/message/v1.0/messages', NULL, 1, NULL, NULL, NULL, 1, 1, now()),
+
+(replace(uuid(), '-', ''), '查询全部省级行政区划', 'GET', '/common/basedata/area/v1.0/areas/provinces', "getArea", 1, NULL, NULL, NULL, 1, 1, now()),
+(replace(uuid(), '-', ''), '查询指定行政区划的下级区划', 'GET', '/common/basedata/area/v1.0/areas/{is}/subs', "getArea", 1, NULL, NULL, NULL, 1, 1, now());
