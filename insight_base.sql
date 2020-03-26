@@ -407,15 +407,15 @@ INSERT ibu_user (`id`, `name`, `account`, `is_builtin`, `creator`, `creator_id`,
 -- ----------------------------
 -- 初始化租户:因赛特软件
 -- ----------------------------
-INSERT ibt_tenant (`id`, `code`, `name`, `status`, `auditor`, `auditor_id`, `audited_time`, `creator`, `creator_id`, `created_time`) VALUES 
-('2564cd559cd340f0b81409723fd8632a', 'TI-00001', '因赛特软件', 1, '系统', '00000000000000000000000000000000', now(), '系统', '00000000000000000000000000000000', now());
+INSERT ibt_tenant (`id`, `code`, `name`, `alias`, `status`, `auditor`, `auditor_id`, `audited_time`, `creator`, `creator_id`, `created_time`) VALUES 
+('2564cd559cd340f0b81409723fd8632a', 'TI-00001', '因赛特软件', 'Insight', 1, '系统', '00000000000000000000000000000000', now(), '系统', '00000000000000000000000000000000', now());
 INSERT ibt_tenant_user (`id`, `tenant_id`, `user_id`) select replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', id from ibu_user;
 
 -- ----------------------------
 -- 初始化组织机构:因赛特软件
 -- ----------------------------
 INSERT ibo_organize (`id`, `tenant_id`, `type`, `index`, `code`, `name`, `alias`, `full_name`, `creator`, `creator_id`, `created_time`) VALUES 
-('2564cd559cd340f0b81409723fd8632a', '2564cd559cd340f0b81409723fd8632a', 0, 1, 'TI-001', '因赛特软件有限公司', '因赛特', '因赛特软件', '系统', '00000000000000000000000000000000', now());
+('2564cd559cd340f0b81409723fd8632a', '2564cd559cd340f0b81409723fd8632a', 0, 1, 'TI-001', '因赛特软件有限公司', 'Insight', '因赛特软件', '系统', '00000000000000000000000000000000', now());
 
 -- ----------------------------
 -- 初始化应用:管理客户端
