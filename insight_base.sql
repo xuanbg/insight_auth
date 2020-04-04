@@ -10,7 +10,6 @@ CREATE TABLE `ibl_operate_log` (
   `business_id` char(32) DEFAULT NULL COMMENT '业务ID',
   `business` varchar(16) DEFAULT NULL COMMENT '业务名称',
   `content` json DEFAULT NULL COMMENT '日志内容',
-  `dept_id` char(32) DEFAULT NULL COMMENT '创建人部门ID',
   `creator` varchar(32) NOT NULL COMMENT '创建人,系统自动为系统',
   `creator_id` char(32) NOT NULL COMMENT '创建人ID,系统自动为32个0',
   `created_time` datetime NOT NULL COMMENT '创建时间',
@@ -18,7 +17,6 @@ CREATE TABLE `ibl_operate_log` (
   KEY `idx_operate_log_tenant_id` (`tenant_id`) USING BTREE,
   KEY `idx_operate_log_type` (`type`) USING BTREE,
   KEY `idx_operate_log_business_id` (`business_id`) USING BTREE,
-  KEY `idx_operate_log_dept_id` (`dept_id`) USING BTREE,
   KEY `idx_operate_log_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_operate_log_created_time` (`created_time`) USING BTREE
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='操作日志记录表';
@@ -279,18 +277,6 @@ CREATE TABLE `ibu_group_member` (
 
 
 -- ----------------------------
--- Table structure for ibr_config
--- ----------------------------
-DROP TABLE IF EXISTS `ibr_config`;
-CREATE TABLE `ibr_config` (
-  `id` char(32) NOT NULL COMMENT '主键(UUID)',
-  `data_type` int(3) unsigned NOT NULL COMMENT '类型:0.无归属;1.仅本人;2.仅本部门;3.部门所有;4.机构所有',
-  `name` varchar(32) NOT NULL COMMENT '名称',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_config_data_type` (`data_type`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='数据配置表';
-
--- ----------------------------
 -- Table structure for ibr_role
 -- ----------------------------
 DROP TABLE IF EXISTS `ibr_role`;
@@ -310,22 +296,6 @@ CREATE TABLE `ibr_role` (
   KEY `idx_role_creator_id` (`creator_id`) USING BTREE,
   KEY `idx_role_created_time` (`created_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='角色表';
-
--- ----------------------------
--- Table structure for ibr_role_data_permit
--- ----------------------------
-DROP TABLE IF EXISTS `ibr_role_data_permit`;
-CREATE TABLE `ibr_role_data_permit` (
-  `id` char(32) NOT NULL COMMENT '主键(UUID)',
-  `role_id` char(32) NOT NULL COMMENT '角色ID',
-  `module_id` char(32) NOT NULL COMMENT '业务模块ID',
-  `mode` int(3) unsigned NOT NULL COMMENT '授权模式:0.相对模式;1.用户模式;2.部门模式',
-  `owner_id` char(32) NOT NULL COMMENT '数据所有者ID,相对模式下为模式ID',
-  `permit` bit(1) NOT NULL DEFAULT b'0' COMMENT '授权类型:0.只读;1.读写',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_role_data_permit_role_id` (`role_id`) USING BTREE,
-  KEY `idx_role_data_permit_module_id` (`module_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='角色数据权限表';
 
 -- ----------------------------
 -- Table structure for ibr_role_func_permit
@@ -363,8 +333,7 @@ DROP VIEW IF EXISTS ibv_user_roles;
 CREATE VIEW ibv_user_roles AS select
 r.tenant_id,
 m.role_id,
-m.member_id as user_id,
-NULL as dept_id 
+m.member_id as user_id
 from ibr_role r
 	join ibr_role_member m on m.role_id = r.id 
 where
@@ -372,31 +341,19 @@ where
 union select
 	r.tenant_id,
 	m.role_id,
-	g.user_id,
-	NULL as dept_id 
+	g.user_id
 from ibr_role r
 	join ibr_role_member m on m.role_id = r.id and m.type = 2
 	join ibu_group_member g on g.group_id = m.member_id 
 union select
 	r.tenant_id,
 	m.role_id,
-	p.user_id,
-	o.parent_id as dept_id 
+	p.user_id
 from ibr_role r
 	join ibr_role_member m on m.role_id = r.id and m.type = 3
 	join ibo_organize_member p on p.post_id = m.member_id
 	join ibo_organize o on o.id = p.post_id;
 
-
--- ----------------------------
--- 初始化基础数据:数据权限定义
--- ----------------------------
-INSERT `ibr_config` VALUES 
-('a2e67d9878b011e8bad87cd30aeb75e4', 0, '无归属'),
-('a2e67dd478b011e8bad87cd30aeb75e4', 1, '本人'),
-('a2e67deb78b011e8bad87cd30aeb75e4', 2, '本部门'),
-('a2e67dfb78b011e8bad87cd30aeb75e4', 3, '部门所有'),
-('a2e67e0778b011e8bad87cd30aeb75e4', 4, '机构所有');
 
 -- ----------------------------
 -- 初始化用户:系统管理员
@@ -620,7 +577,7 @@ INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_codes`, `func
 insert ibr_role (id, tenant_id, app_id, name, remark, is_builtin, creator, creator_id, `created_time`) values
 (replace(uuid(), '-', ''), NULL, '9dd99dd9e6df467a8207d05ea5581125', '平台管理员', '内置角色，角色成员为系统管理员', 0, '系统', '00000000000000000000000000000000', now()),
 (replace(uuid(), '-', ''), NULL, 'e46c0d4f85f24f759ad4d86b9505b1d4', '系统管理员', '系统管理员角色模板', 1, '系统', '00000000000000000000000000000000', now()),
-(replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', 'e46c0d4f85f24f759ad4d86b9505b1d4', '系统管理员', NULL, 1, '系统', '00000000000000000000000000000000', now());
+(replace(uuid(), '-', ''), '2564cd559cd340f0b81409723fd8632a', 'e46c0d4f85f24f759ad4d86b9505b1d4', '系统管理员', NULL, 0, '系统', '00000000000000000000000000000000', now());
 
 -- ----------------------------
 -- 初始化用户组:系统管理员
@@ -638,19 +595,19 @@ select replace(uuid(), '-', ''), g.id, u.id from ibu_user u, ibu_group g;
 -- 初始化角色成员:平台管理员
 -- ----------------------------
 insert ibr_role_member(id, `type`, role_id, member_id)
-select replace(uuid(), '-', ''), 1, (select id from ibr_role where name = '平台管理员'), id from ibu_user;
+select replace(uuid(), '-', ''), 1, (select id from ibr_role where app_id = '9dd99dd9e6df467a8207d05ea5581125'), id from ibu_user;
 
 -- ----------------------------
 -- 初始化角色成员:系统管理员
 -- ----------------------------
 insert ibr_role_member(id, `type`, role_id, member_id)
-select replace(uuid(), '-', ''), 2, (select id from ibr_role where is_builtin = 0), id from ibu_group;
+select replace(uuid(), '-', ''), 2, (select id from ibr_role where tenant_id = '2564cd559cd340f0b81409723fd8632a'), id from ibu_group;
 
 -- ----------------------------
 -- 初始化功能权限
 -- ---------------------------- 
 ALTER TABLE `ibr_role_func_permit` 
-MODIFY COLUMN `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键(UUID)' FIRST;
+MODIFY COLUMN `id` char(36) NOT NULL COMMENT '主键(UUID)' FIRST;
 INSERT `ibr_role_func_permit`(`id`, `role_id`, `function_id`, `permit`) 
 select uuid(), r.id, f.id, 1
 from ibr_role r
@@ -658,7 +615,7 @@ join ibs_navigator n on n.app_id = r.app_id
 join ibs_function f on f.nav_id = n.id;
 update ibr_role_func_permit set id = replace(id, '-', '');
 ALTER TABLE `ibr_role_func_permit` 
-MODIFY COLUMN `id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '主键(UUID)' FIRST;
+MODIFY COLUMN `id` char(32) NOT NULL COMMENT '主键(UUID)' FIRST;
 
 -- ----------------------------
 -- 初始化接口配置

@@ -78,10 +78,10 @@ public interface ConfigMapper {
      * @param key      查询关键词
      * @return 操作日志列表
      */
-    @Select("<script>select id, type, business, business_id, dept_id, creator, creator_id, created_time from ibl_operate_log " +
+    @Select("<script>select id, type, business, business_id, creator, creator_id, created_time from ibl_operate_log " +
             "where (tenant_id = #{tenantId} or tenant_id is null) " +
             "<if test = 'key!=null'>and type = #{key} or business = #{key} or business_id = #{key} or " +
-            "dept_id = #{key} or creator = #{key} or creator_id = #{key}</if>" +
+            "creator = #{key} or creator_id = #{key}</if>" +
             "order by created_time</script>")
     List<Log> getLogs(@Param("tenantId") String tenantId, @Param("key") String key);
 
@@ -100,8 +100,8 @@ public interface ConfigMapper {
      *
      * @param log 日志DTO
      */
-    @Insert("insert ibl_operate_log(id, tenant_id, type, business, business_id, content, dept_id, creator, creator_id, created_time) values " +
+    @Insert("insert ibl_operate_log(id, tenant_id, type, business, business_id, content, creator, creator_id, created_time) values " +
             "(#{id}, #{tenantId}, #{type}, #{business}, #{businessId}, #{content, typeHandler = com.insight.util.common.JsonTypeHandler}, " +
-            "#{deptId}, #{creator}, #{creatorId}, #{createdTime});")
+            "#{creator}, #{creatorId}, #{createdTime});")
     void addLog(Log log);
 }

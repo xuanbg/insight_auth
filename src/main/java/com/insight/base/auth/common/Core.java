@@ -204,15 +204,6 @@ public class Core {
             }
         }
 
-        // 当租户ID不为空,登录部门ID当前为空且唯一时,自动加载用户的登录部门ID
-        String deptId = login.getDeptId();
-        if (tenantId != null && !tenantId.isEmpty() && (deptId == null || deptId.isEmpty())) {
-            List<String> deptIds = mapper.getDeptIds(userId);
-            if (deptIds != null && deptIds.size() == 1) {
-                login.setDeptId(deptIds.get(0));
-            }
-        }
-
         if (tenantId == null || tenantId.isEmpty()) {
             return false;
         }

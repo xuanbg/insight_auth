@@ -114,7 +114,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
 |----|----|----|----|
 |String|appId|是|应用ID|
 |String|tenantId|否|租户ID|
-|String|deptId|否|登录部门ID|
 |String|account|是|登录账号/手机号/邮箱|
 |String|signature|是|签名:MD5(MD5(account\|mobile + MD5(password\|smsCode)) + Code)|
 |String|deviceId|否|用户设备ID|
@@ -155,8 +154,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
     "userInfo": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
-      "deptId": null,
-      "code": null,
       "name": "系统管理员",
       "account": "admin",
       "mobile": null,
@@ -186,7 +183,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
 |----|----|----|----|
 |String|appId|是|应用ID|
 |String|tenantId|否|租户ID|
-|String|deptId|否|登录部门ID|
 |String|weChatAppId|是|微信appId|
 |String|code|是|微信授权码|
 |String|deviceId|否|用户设备ID|
@@ -226,8 +222,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
     "userInfo": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
-      "deptId": null,
-      "code": null,
       "name": "系统管理员",
       "account": "admin",
       "mobile": null,
@@ -284,7 +278,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
 |----|----|----|----|
 |String|appId|是|应用ID|
 |String|tenantId|否|租户ID|
-|String|deptId|否|登录部门ID|
 |String|weChatAppId|是|微信appId|
 |String|unionId|是|微信用户唯一ID|
 |String|isReplace|否|是否更新微信号|
@@ -325,8 +318,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/codes?account=admin" \
     "userInfo": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
-      "deptId": null,
-      "code": null,
       "name": "系统管理员",
       "account": "admin",
       "mobile": null,
@@ -408,8 +399,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/status" \
     "userInfo": {
       "id": "00000000000000000000000000000000",
       "tenantId": null,
-      "deptId": null,
-      "code": null,
       "name": "系统管理员",
       "account": "admin",
       "mobile": null,
@@ -887,7 +876,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/c0592bb8dc3a11e9bc200242ac
 
 ### 获取日志列表
 
-通过关键词查询接口配置数据变更记录。查询关键词作用于操作类型、业务名称、业务ID、部门ID、操作人ID和操作人姓名。该接口支持分页，如不传分页参数，则返回最近添加的20条数据。
+通过关键词查询接口配置数据变更记录。查询关键词作用于操作类型、业务名称、业务ID、操作人ID和操作人姓名。该接口支持分页，如不传分页参数，则返回最近添加的20条数据。
 
 请求方法：**GET**
 
@@ -919,7 +908,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/logs?keyword=UPDATE" \
 |String|type|操作类型|
 |String|business|业务名称|
 |String|businessId|业务ID|
-|String|deptId|创建人登录部门ID|
 |String|creator|创建人|
 |String|creatorId|创建人ID|
 |Date|createdTime|创建时间|
@@ -938,7 +926,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/logs?keyword=UPDATE" \
       "business": "接口配置管理",
       "businessId": "c097f07552ca47c190f76803f9e89fb1",
       "content": null,
-      "deptId": null,
       "creator": "系统管理员",
       "creatorId": "00000000000000000000000000000000",
       "createdTime": "2019-09-13 17:11:36"
@@ -949,7 +936,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/logs?keyword=UPDATE" \
       "business": "接口配置管理",
       "businessId": "c097f07552ca47c190f76803f9e89fb1",
       "content": null,
-      "deptId": null,
       "creator": "系统管理员",
       "creatorId": "00000000000000000000000000000000",
       "createdTime": "2019-09-13 17:12:59"
@@ -984,7 +970,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/logs?keyword=UPDATE" \
 |String|business|业务名称|
 |String|businessId|业务ID|
 |Object|content|日志内容|
-|String|deptId|创建人登录部门ID|
 |String|creator|创建人|
 |String|creatorId|创建人ID|
 |Date|createdTime|创建时间|
@@ -1026,7 +1011,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/logs/bc3e1a2256af4445a6442
       "limitCycle": 86400,
       "createdTime": null
     },
-    "deptId": null,
     "creator": "系统管理员",
     "creatorId": "00000000000000000000000000000000",
     "createdTime": "2019-09-13 17:10:38"
@@ -1091,8 +1075,6 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/load" \
 |----|----|----|
 |String|id|用户ID|
 |String|tenantId|用户当前登录租户ID|
-|String|deptId|用户当前登录部门ID|
-|String|code|用户编码|
 |String|name|用户姓名|
 |String|account|用户登录账号|
 |String|mobile|用户绑定手机号|

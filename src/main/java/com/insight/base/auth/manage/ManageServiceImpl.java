@@ -210,7 +210,6 @@ public class ManageServiceImpl implements ManageService {
             log.setBusiness("接口配置管理");
             log.setBusinessId(id);
             log.setContent(content);
-            log.setDeptId(info.getDeptId());
             log.setCreator(info.getUserName());
             log.setCreatorId(info.getUserId());
             log.setCreatedTime(LocalDateTime.now());

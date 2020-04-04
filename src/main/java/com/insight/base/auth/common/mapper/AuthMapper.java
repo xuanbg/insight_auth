@@ -37,15 +37,6 @@ public interface AuthMapper {
     List<String> getTenantIds(String userId);
 
     /**
-     * 获取用户的部门ID集合
-     *
-     * @param userId 用户ID
-     * @return 部门ID集合
-     */
-    @Select("select o.parent_id from ibo_organize o join ibo_organize_member m on m.post_id = o.id where m.user_id = #{userId};")
-    List<String> getDeptIds(String userId);
-
-    /**
      * 查询指定ID的应用信息
      *
      * @param appId 应用ID
