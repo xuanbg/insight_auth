@@ -2,12 +2,12 @@ package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.Token;
-import com.insight.base.auth.common.dto.LoginDepDto;
 import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.util.*;
 import com.insight.util.pojo.AccessToken;
 import com.insight.util.pojo.LoginInfo;
+import com.insight.util.pojo.MemberDto;
 import com.insight.util.pojo.Reply;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
@@ -266,7 +266,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getPermits(LoginInfo info) {
-        List<String> list = core.getPermits(info.getAppId(), info.getUserId(), info.getTenantId(), info.getDeptId());
+        List<String> list = core.getPermits(info.getAppId(), info.getUserId(), info.getTenantId());
 
         return ReplyHelper.success(list);
     }
@@ -319,7 +319,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getDepartments(String account) {
-        List<LoginDepDto> list = core.getDepartments(account);
+        List<MemberDto> list = core.getDepartments(account);
 
         return ReplyHelper.success(list);
     }

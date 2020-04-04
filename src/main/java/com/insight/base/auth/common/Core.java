@@ -235,11 +235,10 @@ public class Core {
         String fingerprint = login.getFingerprint();
         String appId = login.getAppId();
         String tenantId = login.getTenantId();
-        String deptId = login.getDeptId();
 
         // 加载用户授权码
-        List<String> list = getPermits(appId, userId, tenantId, deptId);
-        Token token = new Token(userId, appId, tenantId, deptId);
+        List<String> list = getPermits(appId, userId, tenantId);
+        Token token = new Token(userId, appId, tenantId);
         token.setPermitFuncs(list);
         token.setPermitTime(LocalDateTime.now());
 
@@ -271,11 +270,10 @@ public class Core {
      * @param appId    应用ID
      * @param userId   用户ID
      * @param tenantId 租户ID
-     * @param deptId   登录部门ID
      * @return 用户授权码集合
      */
-    public List<String> getPermits(String appId, String userId, String tenantId, String deptId) {
-        return mapper.getAuthInfos(tenantId, deptId, userId, appId);
+    public List<String> getPermits(String appId, String userId, String tenantId) {
+        return mapper.getAuthInfos(tenantId, userId, appId);
     }
 
     /**
@@ -334,7 +332,6 @@ public class Core {
         }
 
         info.setTenantId(token.getTenantId());
-        info.setDeptId(token.getDeptId());
         tokenDto.setUserInfo(info);
 
         return tokenDto;
@@ -545,7 +542,7 @@ public class Core {
      * @return 导航数据
      */
     public List<NavDto> getNavigators(LoginInfo info) {
-        return mapper.getNavigators(info.getTenantId(), info.getDeptId(), info.getUserId(), info.getAppId());
+        return mapper.getNavigators(info.getTenantId(), info.getUserId(), info.getAppId());
     }
 
     /**
@@ -556,7 +553,7 @@ public class Core {
      * @return 模块功能数据
      */
     public List<FuncDto> getModuleFunctions(LoginInfo info, String moduleId) {
-        return mapper.getModuleFunctions(info.getTenantId(), info.getDeptId(), info.getUserId(), moduleId);
+        return mapper.getModuleFunctions(info.getTenantId(), info.getUserId(), moduleId);
     }
 
     /**
@@ -565,7 +562,7 @@ public class Core {
      * @param account 登录账号
      * @return 用户可选登录部门集合
      */
-    public List<LoginDepDto> getDepartments(String account) {
+    public List<MemberDto> getDepartments(String account) {
         return mapper.getDepartments(account);
     }
 }

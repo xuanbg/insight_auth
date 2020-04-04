@@ -24,11 +24,6 @@ public class UserInfoDto implements Serializable {
     private String tenantId;
 
     /**
-     * 登录部门ID
-     */
-    private String deptId;
-
-    /**
      * 用户编码
      */
     private String code;
@@ -82,14 +77,6 @@ public class UserInfoDto implements Serializable {
 
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
-    }
-
-    public String getDeptId() {
-        return deptId;
-    }
-
-    public void setDeptId(String deptId) {
-        this.deptId = deptId;
     }
 
     public String getCode() {

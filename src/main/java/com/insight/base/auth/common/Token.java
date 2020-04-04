@@ -25,14 +25,12 @@ public class Token extends TokenInfo {
      * @param userId   用户ID
      * @param appId    应用ID
      * @param tenantId 租户ID
-     * @param deptId   登录部门ID
      */
-    Token(String userId, String appId, String tenantId, String deptId) {
+    Token(String userId, String appId, String tenantId) {
         String key = "App:" + appId;
         setUserId(userId);
         setAppId(appId);
         setTenantId(tenantId);
-        setDeptId(deptId);
         setPermitLife(Long.valueOf(Redis.get(key, "PermitLife")));
         setLife(Long.valueOf(Redis.get(key, "TokenLife")));
         setSignInOne(Boolean.valueOf(Redis.get(key, "SignInType")));

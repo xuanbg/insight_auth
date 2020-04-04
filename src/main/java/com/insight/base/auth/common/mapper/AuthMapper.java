@@ -1,14 +1,10 @@
 package com.insight.base.auth.common.mapper;
 
 import com.insight.base.auth.common.dto.FuncDto;
-import com.insight.base.auth.common.dto.LoginDepDto;
 import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.util.common.JsonTypeHandler;
-import com.insight.util.pojo.Application;
-import com.insight.util.pojo.FuncInfo;
-import com.insight.util.pojo.ModuleInfo;
-import com.insight.util.pojo.User;
+import com.insight.util.pojo.*;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -101,36 +97,34 @@ public interface AuthMapper {
      * @param tenantId 租户ID
      * @param appId    应用程序ID
      * @param userId   用户ID
-     * @param deptId   登录部门ID
      * @return Navigation对象集合
      */
     @Results({@Result(property = "moduleInfo", column = "module_info", javaType = ModuleInfo.class, typeHandler = JsonTypeHandler.class)})
     @Select("select * from (select distinct g.id, g.parent_id, g.`type`, g.`index`, g.`name`, g.module_info from ibs_navigator g " +
             "join ibs_navigator m on m.parent_id = g.id join ibs_function f on f.nav_id = m.id " +
             "join (select distinct a.function_id from ibr_role_func_permit a join ibv_user_roles r on r.role_id = a.role_id " +
-            "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) and (dept_id is null or dept_id = #{deptId}) " +
+            "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) " +
             "group by a.function_id having min(a.permit)> 0) a on a.function_id = f.id where g.app_id = #{appId} union " +
             "select m.id, m.parent_id, m.`type`, m.`index`, m.`name`, m.module_info from ibs_navigator m join ibs_function f on f.nav_id = m.id " +
             "join (select distinct a.function_id from ibr_role_func_permit a join ibv_user_roles r on r.role_id = a.role_id " +
-            "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) and (dept_id is null or dept_id = #{deptId}) group by a.function_id " +
+            "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) group by a.function_id " +
             "having min(a.permit)> 0) a on a.function_id = f.id where m.app_id = #{appId}) l order by l.parent_id, l.`index`;")
-    List<NavDto> getNavigators(@Param("tenantId") String tenantId, @Param("deptId") String deptId, @Param("userId") String userId, @Param("appId") String appId);
+    List<NavDto> getNavigators(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("appId") String appId);
 
     /**
      * 获取指定模块的全部可用功能集合及对指定用户的授权情况
      *
      * @param tenantId 租户ID
      * @param userId   用户ID
-     * @param deptId   登录部门ID
      * @param moduleId 模块ID
      * @return Function对象集合
      */
     @Results({@Result(property = "funcInfo", column = "func_info", javaType = FuncInfo.class, typeHandler = JsonTypeHandler.class)})
     @Select("select f.id, f.nav_id, f.`type`, f.`index`, f.`name`, f.auth_codes, f.func_info, a.permit from ibs_function f " +
             "left join (select a.function_id, min(a.permit) as permit from ibr_role_func_permit a join ibv_user_roles r " +
-            "on r.role_id = a.role_id and r.user_id = #{userId} and (r.tenant_id is null or r.tenant_id = #{tenantId}) and (r.dept_id is null or r.dept_id = #{deptId}) " +
+            "on r.role_id = a.role_id and r.user_id = #{userId} and (r.tenant_id is null or r.tenant_id = #{tenantId}) " +
             "group by a.function_id) a on a.function_id = f.id where f.nav_id = #{moduleId} order by f.`index`;")
-    List<FuncDto> getModuleFunctions(@Param("tenantId") String tenantId, @Param("deptId") String deptId, @Param("userId") String userId, @Param("moduleId") String moduleId);
+    List<FuncDto> getModuleFunctions(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("moduleId") String moduleId);
 
     /**
      * 获取用户授权信息
@@ -138,7 +132,6 @@ public interface AuthMapper {
      * @param appId    应用ID
      * @param userId   用户ID
      * @param tenantId 租户ID
-     * @param deptId   登录部门ID
      * @return 授权信息集合
      */
     @Select("<script>select substring_index(substring_index(f.auth_codes, ',', h.help_topic_id + 1), ',', - 1) as auth_code " +
@@ -146,18 +139,15 @@ public interface AuthMapper {
             "join ibr_role_func_permit p on p.function_id = f.id join ibv_user_roles r on r.role_id = p.role_id and r.user_id = #{userId} " +
             "<if test = 'tenantId != null'>and r.tenant_id = #{tenantId} </if>" +
             "<if test = 'tenantId == null'>and r.tenant_id is null </if>" +
-            "and (r.dept_id is null or r.dept_id = #{deptId}) " +
             "join mysql.help_topic h on h.help_topic_id &lt; (length(f.auth_codes) - length(replace(f.auth_codes, ',', '')) + 1)" +
             "group by n.app_id, f.nav_id, auth_code having min(p.permit) > 0</script>")
-    List<String> getAuthInfos(@Param("tenantId") String tenantId, @Param("deptId") String deptId, @Param("userId") String userId, @Param("appId") String appId);
+    List<String> getAuthInfos(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("appId") String appId);
 
     /**
      * 获取用户可选登录部门
      * @param account 登录账号
      * @return 用户可选登录部门集合
      */
-    @Select("with d as (select distinct d.id, d.tenant_id as parent_id, d.type as node_type, d.`index`, d.`code`, d.full_name as `name` from ibu_user u " +
-            "join ibo_organize_member m on m.user_id = u.id join ibo_organize p on p.id = m.post_id join ibo_organize d on d.id = p.parent_id where u.account = #{account}) " +
-            "select distinct t.id, null as parent_id, 0 as node_type, 0 as `index`, t.`code`, t.`name` from ibt_tenant t join d on d.parent_id = t.id union select * from d")
-    List<LoginDepDto> getDepartments(String account);
+    @Select("SELECT t.id, t.`name` FROM ibu_user u join ibt_tenant_user r on r.user_id = u.id JOIN ibt_tenant t ON t.id = r.tenant_id WHERE u.account = #{account});")
+    List<MemberDto> getDepartments(String account);
 }
