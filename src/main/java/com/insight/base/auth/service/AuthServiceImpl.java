@@ -4,11 +4,11 @@ import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.Token;
 import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenDto;
-import com.insight.util.*;
-import com.insight.util.pojo.AccessToken;
-import com.insight.util.pojo.LoginInfo;
-import com.insight.util.pojo.MemberDto;
-import com.insight.util.pojo.Reply;
+import com.insight.utils.*;
+import com.insight.utils.pojo.AccessToken;
+import com.insight.utils.pojo.LoginInfo;
+import com.insight.utils.pojo.MemberDto;
+import com.insight.utils.pojo.Reply;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
     public Reply getSubmitToken(String key) {
         String id = Redis.get("SubmitToken:" + key);
         if (id == null || id.isEmpty()) {
-            id = Generator.uuid();
+            id = Util.uuid();
             Redis.set("SubmitToken:" + key, id, 1, TimeUnit.HOURS);
         }
 
@@ -191,7 +191,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
-        TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
+        TokenDto tokens = core.creatorToken(Util.uuid(), login, userId);
 
         return ReplyHelper.success(tokens);
     }
@@ -253,7 +253,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 绑定用户微信OpenID,创建令牌
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
-        TokenDto tokens = core.creatorToken(Generator.uuid(), login, userId);
+        TokenDto tokens = core.creatorToken(Util.uuid(), login, userId);
 
         return ReplyHelper.success(tokens);
     }

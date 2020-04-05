@@ -1,9 +1,9 @@
 package com.insight.base.auth.common.mapper;
 
 import com.insight.base.auth.common.entity.InterfaceConfig;
-import com.insight.util.common.JsonTypeHandler;
-import com.insight.util.pojo.InterfaceDto;
-import com.insight.util.pojo.Log;
+import com.insight.utils.common.JsonTypeHandler;
+import com.insight.utils.pojo.InterfaceDto;
+import com.insight.utils.pojo.Log;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -100,7 +100,7 @@ public interface ConfigMapper {
      * @param log 日志DTO
      */
     @Insert("insert ibl_operate_log(id, tenant_id, type, business, business_id, content, creator, creator_id, created_time) values " +
-            "(#{id}, #{tenantId}, #{type}, #{business}, #{businessId}, #{content, typeHandler = com.insight.util.common.JsonTypeHandler}, " +
+            "(#{id}, #{tenantId}, #{type}, #{business}, #{businessId}, #{content, typeHandler = com.insight.utils.common.JsonTypeHandler}, " +
             "#{creator}, #{creatorId}, #{createdTime});")
     void addLog(Log log);
 }

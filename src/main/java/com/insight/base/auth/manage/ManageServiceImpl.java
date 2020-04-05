@@ -4,11 +4,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.insight.base.auth.common.entity.InterfaceConfig;
 import com.insight.base.auth.common.mapper.ConfigMapper;
-import com.insight.util.Generator;
-import com.insight.util.Json;
-import com.insight.util.Redis;
-import com.insight.util.ReplyHelper;
-import com.insight.util.pojo.*;
+import com.insight.utils.*;
+import com.insight.utils.pojo.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -76,7 +73,7 @@ public class ManageServiceImpl implements ManageService {
      */
     @Override
     public Reply newConfig(LoginInfo info, InterfaceConfig dto) {
-        String id = Generator.uuid();
+        String id = Util.uuid();
         dto.setId(id);
         if (dto.getNeedToken() == null){
             dto.setNeedToken(false);
@@ -204,7 +201,7 @@ public class ManageServiceImpl implements ManageService {
         ExecutorService threadPool = Executors.newCachedThreadPool();
         threadPool.submit(() -> {
             Log log = new Log();
-            log.setId(Generator.uuid());
+            log.setId(Util.uuid());
             log.setTenantId(info.getTenantId());
             log.setType(type);
             log.setBusiness("接口配置管理");

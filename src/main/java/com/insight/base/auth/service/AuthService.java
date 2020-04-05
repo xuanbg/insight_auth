@@ -1,9 +1,9 @@
 package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.dto.LoginDto;
-import com.insight.util.pojo.AccessToken;
-import com.insight.util.pojo.LoginInfo;
-import com.insight.util.pojo.Reply;
+import com.insight.utils.pojo.AccessToken;
+import com.insight.utils.pojo.LoginInfo;
+import com.insight.utils.pojo.Reply;
 
 /**
  * @author 宣炳刚

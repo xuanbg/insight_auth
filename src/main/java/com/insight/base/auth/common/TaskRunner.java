@@ -1,10 +1,10 @@
 package com.insight.base.auth.common;
 
 import com.insight.base.auth.common.mapper.ConfigMapper;
-import com.insight.util.Json;
-import com.insight.util.Redis;
-import com.insight.util.common.ApplicationContextHolder;
-import com.insight.util.pojo.InterfaceDto;
+import com.insight.utils.Json;
+import com.insight.utils.Redis;
+import com.insight.utils.common.ApplicationContextHolder;
+import com.insight.utils.pojo.InterfaceDto;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 

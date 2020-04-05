@@ -2,7 +2,7 @@ package com.insight.base.auth.common.client;
 
 import com.insight.base.auth.common.config.FeignClientConfig;
 import com.insight.base.auth.common.dto.NormalMessage;
-import com.insight.util.pojo.Reply;
+import com.insight.utils.pojo.Reply;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -1,10 +1,10 @@
 package com.insight.base.auth.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.insight.util.Generator;
-import com.insight.util.Redis;
-import com.insight.util.pojo.AccessToken;
-import com.insight.util.pojo.TokenInfo;
+import com.insight.utils.Redis;
+import com.insight.utils.Util;
+import com.insight.utils.pojo.AccessToken;
+import com.insight.utils.pojo.TokenInfo;
 
 /**
  * @author 宣炳刚
@@ -35,8 +35,8 @@ public class Token extends TokenInfo {
         setLife(Long.valueOf(Redis.get(key, "TokenLife")));
         setSignInOne(Boolean.valueOf(Redis.get(key, "SignInType")));
         setAutoRefresh(Boolean.valueOf(Redis.get(key, "RefreshType")));
-        setSecretKey(Generator.uuid());
-        setRefreshKey(Generator.uuid());
+        setSecretKey(Util.uuid());
+        setRefreshKey(Util.uuid());
     }
 
     /**

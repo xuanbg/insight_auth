@@ -1,6 +1,6 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.util.Json;
+import com.insight.utils.Json;
 
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;

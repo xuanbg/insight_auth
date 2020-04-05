@@ -48,59 +48,6 @@ CREATE TABLE `ibi_interface` (
 
 
 -- ----------------------------
--- Table structure for ibt_tenant
--- ----------------------------
-DROP TABLE IF EXISTS `ibt_tenant`;
-CREATE TABLE `ibt_tenant` (
-  `id` char(32) NOT NULL COMMENT 'UUID主键',
-  `code` char(8) NOT NULL COMMENT '租户编号',
-  `name` varchar(64) NOT NULL COMMENT '名称',
-  `alias` varchar(8) DEFAULT NULL COMMENT '别名',
-  `company_info` json DEFAULT NULL COMMENT '企业信息',
-  `remark` varchar(1024) DEFAULT NULL COMMENT '描述',
-  `status` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '租户状态:0.待审核;1.已通过;2.未通过',
-  `is_invalid` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否失效:0.正常;1.失效',
-  `auditor` varchar(64) DEFAULT NULL COMMENT '审核人',
-  `auditor_id` char(32) DEFAULT NULL COMMENT '审核人ID',
-  `audited_time` datetime NULL DEFAULT NULL COMMENT '审核时间',
-  `creator` varchar(64) NOT NULL COMMENT '创建人',
-  `creator_id` char(32) NOT NULL COMMENT '创建人ID',
-  `created_time` datetime NOT NULL COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_tenant_code` (`code`) USING BTREE,
-  KEY `idx_tenant_creator_id` (`creator_id`) USING BTREE,
-  KEY `idx_tenant_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='租户表';
-
--- ----------------------------
--- Table structure for ibt_tenant_app
--- ----------------------------
-DROP TABLE IF EXISTS `ibt_tenant_app`;
-CREATE TABLE `ibt_tenant_app` (
-  `id` char(32) NOT NULL COMMENT '主键(UUID)',
-  `tenant_id` char(32) NOT NULL COMMENT '租户ID',
-  `app_id` char(32) NOT NULL COMMENT '应用ID',
-  `expire_date` date DEFAULT NULL COMMENT '过期日期',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_tenant_app_tenant_id` (`tenant_id`) USING BTREE,
-  KEY `idx_tenant_app_app_id` (`app_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='租户-应用关系表';
-
--- ----------------------------
--- Table structure for ibt_tenant_user
--- ----------------------------
-DROP TABLE IF EXISTS `ibt_tenant_user`;
-CREATE TABLE `ibt_tenant_user` (
-  `id` char(32) NOT NULL COMMENT 'UUID主键',
-  `tenant_id` char(32) NOT NULL COMMENT '租户ID',
-  `user_id` char(32) NOT NULL COMMENT '应用ID',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_tenant_user_tenant_id` (`tenant_id`) USING BTREE,
-  KEY `idx_tenant_user_user_id` (`user_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='租户-用户关系表';
-
-
--- ----------------------------
 -- Table structure for ibs_application
 -- ----------------------------
 DROP TABLE IF EXISTS `ibs_application`;
@@ -111,11 +58,10 @@ CREATE TABLE `ibs_application` (
   `alias` varchar(64) NOT NULL COMMENT '应用简称',
   `icon` varchar(128) DEFAULT NULL COMMENT '应用图标',
   `domain` varchar(128) DEFAULT NULL COMMENT '应用域名',
-  `permit_life` int(10) unsigned NOT NULL DEFAULT '300000' COMMENT '授权码生命周期(毫秒)',
+  `permit_life` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '授权码生命周期(毫秒)',
   `token_life` int(10) unsigned NOT NULL DEFAULT '7200000' COMMENT '令牌生命周期(毫秒)',
   `is_signin_one` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否单点登录:0.允许多点;1.单点登录',
   `is_auto_refresh` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否自动刷新:0.手动刷新;1.自动刷新',
-  `is_auto_tenant` bit(1) DEFAULT NULL COMMENT '是否自动加载租户:null.不需要授权;0.手动加载;1.自动加载',
   `creator` varchar(64) NOT NULL COMMENT '创建人',
   `creator_id` char(32) NOT NULL COMMENT '创建用户ID',
   `created_time` datetime NOT NULL COMMENT '创建时间',
@@ -169,6 +115,127 @@ CREATE TABLE `ibs_function` (
 
 
 -- ----------------------------
+-- Table structure for ibu_user
+-- ----------------------------
+DROP TABLE IF EXISTS `ibu_user`;
+CREATE TABLE `ibu_user` (
+  `id` char(32) NOT NULL COMMENT '主键(UUID)',
+  `code` varchar(16) DEFAULT NULL COMMENT '用户编码',
+  `name` varchar(64) NOT NULL COMMENT '名称',
+  `account` varchar(64) NOT NULL COMMENT '登录账号',
+  `mobile` varchar(32) DEFAULT NULL COMMENT '手机号',
+  `email` varchar(64) DEFAULT NULL COMMENT '电子邮箱',
+  `union_id` varchar(128) DEFAULT NULL COMMENT '微信UnionID',
+  `open_id` json DEFAULT NULL COMMENT '微信OpenID',
+  `password` varchar(256) NOT NULL DEFAULT 'e10adc3949ba59abbe56e057f20f883e' COMMENT '密码(RSA加密)',
+  `pay_password` char(32) DEFAULT NULL COMMENT '支付密码(MD5)',
+  `head_img` varchar(256) DEFAULT NULL COMMENT '用户头像',
+  `remark` varchar(256) DEFAULT NULL COMMENT '备注',
+  `is_builtin` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否内置:0.非内置;1.内置',
+  `is_invalid` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否失效:0.有效;1.失效',
+  `creator` varchar(64) NOT NULL COMMENT '创建人',
+  `creator_id` char(32) NOT NULL COMMENT '创建人ID',
+  `created_time` datetime NOT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_user_code` (`code`) USING BTREE,
+  UNIQUE KEY `idx_user_account` (`account`) USING BTREE,
+  UNIQUE KEY `idx_user_mobile` (`mobile`) USING BTREE,
+  UNIQUE KEY `idx_user_email` (`email`) USING BTREE,
+  UNIQUE KEY `idx_user_union_id` (`union_id`) USING BTREE,
+  KEY `idx_user_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_user_created_time` (`created_time`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='用户表';
+
+
+-- ----------------------------
+-- Table structure for ibt_tenant
+-- ----------------------------
+DROP TABLE IF EXISTS `ibt_tenant`;
+CREATE TABLE `ibt_tenant` (
+  `id` char(32) NOT NULL COMMENT 'UUID主键',
+  `code` char(8) NOT NULL COMMENT '租户编号',
+  `name` varchar(64) NOT NULL COMMENT '名称',
+  `alias` varchar(8) DEFAULT NULL COMMENT '别名',
+  `company_info` json DEFAULT NULL COMMENT '企业信息',
+  `remark` varchar(1024) DEFAULT NULL COMMENT '描述',
+  `status` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '租户状态:0.待审核;1.已通过;2.未通过',
+  `is_invalid` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否失效:0.正常;1.失效',
+  `auditor` varchar(64) DEFAULT NULL COMMENT '审核人',
+  `auditor_id` char(32) DEFAULT NULL COMMENT '审核人ID',
+  `audited_time` datetime NULL DEFAULT NULL COMMENT '审核时间',
+  `creator` varchar(64) NOT NULL COMMENT '创建人',
+  `creator_id` char(32) NOT NULL COMMENT '创建人ID',
+  `created_time` datetime NOT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_tenant_code` (`code`) USING BTREE,
+  KEY `idx_tenant_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_tenant_created_time` (`created_time`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='租户表';
+
+-- ----------------------------
+-- Table structure for ibt_tenant_app
+-- ----------------------------
+DROP TABLE IF EXISTS `ibt_tenant_app`;
+CREATE TABLE `ibt_tenant_app` (
+  `id` char(32) NOT NULL COMMENT '主键(UUID)',
+  `tenant_id` char(32) NOT NULL COMMENT '租户ID',
+  `app_id` char(32) NOT NULL COMMENT '应用ID',
+  `expire_date` date DEFAULT NULL COMMENT '过期日期',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_tenant_app_tenant_id` (`tenant_id`) USING BTREE,
+  KEY `idx_tenant_app_app_id` (`app_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='租户-应用关系表';
+
+-- ----------------------------
+-- Table structure for ibt_tenant_user
+-- ----------------------------
+DROP TABLE IF EXISTS `ibt_tenant_user`;
+CREATE TABLE `ibt_tenant_user` (
+  `id` char(32) NOT NULL COMMENT 'UUID主键',
+  `tenant_id` char(32) NOT NULL COMMENT '租户ID',
+  `user_id` char(32) NOT NULL COMMENT '应用ID',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_tenant_user_tenant_id` (`tenant_id`) USING BTREE,
+  KEY `idx_tenant_user_user_id` (`user_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='租户-用户关系表';
+
+
+-- ----------------------------
+-- Table structure for ibu_group
+-- ----------------------------
+DROP TABLE IF EXISTS `ibu_group`;
+CREATE TABLE `ibu_group` (
+  `id` char(32) NOT NULL COMMENT '主键(UUID)',
+  `tenant_id` char(32) NOT NULL COMMENT '租户ID',
+  `code` char(4) NOT NULL COMMENT '用户组编码',
+  `name` varchar(64) NOT NULL COMMENT '名称',
+  `remark` varchar(256) DEFAULT NULL COMMENT '备注',
+  `is_builtin` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否内置:0.非内置;1.内置',
+  `creator` varchar(64) NOT NULL COMMENT '创建人',
+  `creator_id` char(32) NOT NULL COMMENT '创建人ID',
+  `created_time` datetime NOT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_group_tenant_id` (`tenant_id`) USING BTREE,
+  KEY `idx_group_code` (`code`) USING BTREE,
+  KEY `idx_group_creator_id` (`creator_id`) USING BTREE,
+  KEY `idx_group_created_time` (`created_time`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='用户组表';
+
+-- ----------------------------
+-- Table structure for ibu_group_member
+-- ----------------------------
+DROP TABLE IF EXISTS `ibu_group_member`;
+CREATE TABLE `ibu_group_member` (
+  `id` char(32) NOT NULL COMMENT '主键(UUID)',
+  `group_id` char(32) NOT NULL COMMENT '用户组ID',
+  `user_id` char(32) NOT NULL COMMENT '用户ID',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_group_member_group_id` (`group_id`) USING BTREE,
+  KEY `idx_group_member_user_id` (`user_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='用户组成员表';
+
+
+-- ----------------------------
 -- Table structure for ibo_organize
 -- ----------------------------
 DROP TABLE IF EXISTS `ibo_organize`;
@@ -209,74 +276,6 @@ CREATE TABLE `ibo_organize_member` (
 
 
 -- ----------------------------
--- Table structure for ibu_user
--- ----------------------------
-DROP TABLE IF EXISTS `ibu_user`;
-CREATE TABLE `ibu_user` (
-  `id` char(32) NOT NULL COMMENT '主键(UUID)',
-  `code` varchar(16) DEFAULT NULL COMMENT '用户编码',
-  `name` varchar(64) NOT NULL COMMENT '名称',
-  `account` varchar(64) NOT NULL COMMENT '登录账号',
-  `mobile` varchar(32) DEFAULT NULL COMMENT '手机号',
-  `email` varchar(64) DEFAULT NULL COMMENT '电子邮箱',
-  `union_id` varchar(128) DEFAULT NULL COMMENT '微信UnionID',
-  `open_id` json DEFAULT NULL COMMENT '微信OpenID',
-  `password` varchar(256) NOT NULL DEFAULT 'e10adc3949ba59abbe56e057f20f883e' COMMENT '密码(RSA加密)',
-  `pay_password` char(32) DEFAULT NULL COMMENT '支付密码(MD5)',
-  `head_img` varchar(256) DEFAULT NULL COMMENT '用户头像',
-  `remark` varchar(256) DEFAULT NULL COMMENT '备注',
-  `is_builtin` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否内置:0.非内置;1.内置',
-  `is_invalid` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否失效:0.有效;1.失效',
-  `creator` varchar(64) NOT NULL COMMENT '创建人',
-  `creator_id` char(32) NOT NULL COMMENT '创建人ID',
-  `created_time` datetime NOT NULL COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_user_code` (`code`) USING BTREE,
-  UNIQUE KEY `idx_user_account` (`account`) USING BTREE,
-  UNIQUE KEY `idx_user_mobile` (`mobile`) USING BTREE,
-  UNIQUE KEY `idx_user_email` (`email`) USING BTREE,
-  UNIQUE KEY `idx_user_union_id` (`union_id`) USING BTREE,
-  KEY `idx_user_creator_id` (`creator_id`) USING BTREE,
-  KEY `idx_user_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='用户表';
-
-
--- ----------------------------
--- Table structure for ibu_group
--- ----------------------------
-DROP TABLE IF EXISTS `ibu_group`;
-CREATE TABLE `ibu_group` (
-  `id` char(32) NOT NULL COMMENT '主键(UUID)',
-  `tenant_id` char(32) NOT NULL COMMENT '租户ID',
-  `code` char(4) NOT NULL COMMENT '用户组编码',
-  `name` varchar(64) NOT NULL COMMENT '名称',
-  `remark` varchar(256) DEFAULT NULL COMMENT '备注',
-  `is_builtin` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否内置:0.非内置;1.内置',
-  `creator` varchar(64) NOT NULL COMMENT '创建人',
-  `creator_id` char(32) NOT NULL COMMENT '创建人ID',
-  `created_time` datetime NOT NULL COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_group_tenant_id` (`tenant_id`) USING BTREE,
-  KEY `idx_group_code` (`code`) USING BTREE,
-  KEY `idx_group_creator_id` (`creator_id`) USING BTREE,
-  KEY `idx_group_created_time` (`created_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='用户组表';
-
--- ----------------------------
--- Table structure for ibu_group_member
--- ----------------------------
-DROP TABLE IF EXISTS `ibu_group_member`;
-CREATE TABLE `ibu_group_member` (
-  `id` char(32) NOT NULL COMMENT '主键(UUID)',
-  `group_id` char(32) NOT NULL COMMENT '用户组ID',
-  `user_id` char(32) NOT NULL COMMENT '用户ID',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_group_member_group_id` (`group_id`) USING BTREE,
-  KEY `idx_group_member_user_id` (`user_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='用户组成员表';
-
-
--- ----------------------------
 -- Table structure for ibr_role
 -- ----------------------------
 DROP TABLE IF EXISTS `ibr_role`;
@@ -298,10 +297,10 @@ CREATE TABLE `ibr_role` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=COMPACT COMMENT='角色表';
 
 -- ----------------------------
--- Table structure for ibr_role_func_permit
+-- Table structure for ibr_role_permit
 -- ----------------------------
-DROP TABLE IF EXISTS `ibr_role_func_permit`;
-CREATE TABLE `ibr_role_func_permit` (
+DROP TABLE IF EXISTS `ibr_role_permit`;
+CREATE TABLE `ibr_role_permit` (
   `id` char(32) NOT NULL COMMENT '主键(UUID)',
   `role_id` char(32) NOT NULL COMMENT '角色ID',
   `function_id` char(32) NOT NULL COMMENT '功能ID',
@@ -606,15 +605,15 @@ select replace(uuid(), '-', ''), 2, (select id from ibr_role where tenant_id = '
 -- ----------------------------
 -- 初始化功能权限
 -- ---------------------------- 
-ALTER TABLE `ibr_role_func_permit` 
+ALTER TABLE `ibr_role_permit` 
 MODIFY COLUMN `id` char(36) NOT NULL COMMENT '主键(UUID)' FIRST;
-INSERT `ibr_role_func_permit`(`id`, `role_id`, `function_id`, `permit`) 
+INSERT `ibr_role_permit`(`id`, `role_id`, `function_id`, `permit`) 
 select uuid(), r.id, f.id, 1
 from ibr_role r
 join ibs_navigator n on n.app_id = r.app_id
 join ibs_function f on f.nav_id = n.id;
-update ibr_role_func_permit set id = replace(id, '-', '');
-ALTER TABLE `ibr_role_func_permit` 
+update ibr_role_permit set id = replace(id, '-', '');
+ALTER TABLE `ibr_role_permit` 
 MODIFY COLUMN `id` char(32) NOT NULL COMMENT '主键(UUID)' FIRST;
 
 -- ----------------------------

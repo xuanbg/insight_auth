@@ -4,10 +4,10 @@ import com.insight.base.auth.common.client.MessageClient;
 import com.insight.base.auth.common.client.RabbitClient;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.mapper.AuthMapper;
-import com.insight.util.*;
-import com.insight.util.common.ApplicationContextHolder;
-import com.insight.util.encrypt.Encryptor;
-import com.insight.util.pojo.*;
+import com.insight.utils.*;
+import com.insight.utils.common.ApplicationContextHolder;
+import com.insight.utils.encrypt.Encryptor;
+import com.insight.utils.pojo.*;
 import com.insight.utils.wechat.WeChatHelper;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.insight.util.pojo.TokenInfo.TIME_OUT;
+import static com.insight.utils.pojo.TokenInfo.TIME_OUT;
 
 /**
  * @author 宣炳刚
@@ -147,7 +147,7 @@ public class Core {
      * @return Code
      */
     public String getSmsCode(String userId, String mobile) {
-        String smsCode = Generator.randomInt(SMS_CODE_LENGTH);
+        String smsCode = Util.randomString(SMS_CODE_LENGTH);
         Map<String, Object> map = new HashMap<>(4);
         map.put("code", smsCode);
         map.put("minutes", SMS_CODE_LEFT);
@@ -179,6 +179,11 @@ public class Core {
      * @return 租户ID是否为空
      */
     public boolean appIsExpired(LoginDto login, String userId) {
+        String tenantId = login.getTenantId();
+        if (tenantId == null || tenantId.isEmpty()) {
+            return false;
+        }
+
         String appId = login.getAppId();
         String key = "App:" + appId;
         if (!Redis.hasKey(key)) {
@@ -188,30 +193,14 @@ public class Core {
             Redis.set(key, "TokenLife", app.getTokenLife());
             Redis.set(key, "SignInType", app.getSigninOne());
             Redis.set(key, "RefreshType", app.getAutoRefresh());
-            Redis.set(key, "AutoTenant", app.getAutoTenant());
 
             mapper.getApps(appId).forEach(i -> Redis.set(key, i.getTenantId(), i.getExpireDate()));
-        }
-
-        // 当应用设置为自动加载租户,租户ID当前为空且唯一时,自动加载用户的租户ID
-        boolean isAutoTenant = Boolean.parseBoolean(Redis.get("App:" + appId, "AutoTenant"));
-        String tenantId = login.getTenantId();
-        if (isAutoTenant && (tenantId == null || tenantId.isEmpty())) {
-            List<String> tenantIds = mapper.getTenantIds(userId);
-            if (tenantIds != null && tenantIds.size() == 1) {
-                tenantId = tenantIds.get(0);
-                login.setTenantId(tenantId);
-            }
-        }
-
-        if (tenantId == null || tenantId.isEmpty()) {
-            return false;
         }
 
         String date = Redis.get("App:" + appId, tenantId);
         LocalDate expire = LocalDate.parse(date);
 
-        return !expire.isAfter(LocalDate.now());
+        return LocalDate.now().isAfter(expire);
     }
 
     /**
@@ -250,7 +239,7 @@ public class Core {
      */
     public TokenDto refreshToken(Token token, String tokenId, String fingerprint) {
         String appId = token.getAppId();
-        token.setSecretKey(Generator.uuid());
+        token.setSecretKey(Util.uuid());
 
         return initPackage(token, tokenId, fingerprint, appId);
     }
@@ -312,7 +301,8 @@ public class Core {
 
         // 构造用户信息
         String key = "User:" + token.getUserId();
-        UserInfoDto info = Redis.get(key, UserInfoDto.class);
+        String json =  Redis.get(key);
+        UserInfoDto info = Json.toBean(json, UserInfoDto.class);
         String host = Redis.get("Config:FileHost");
         String imgUrl = info.getHeadImg();
         if (imgUrl == null || imgUrl.isEmpty()) {
@@ -367,7 +357,7 @@ public class Core {
      * @return Code
      */
     private String generateCode(String userId, String key, int seconds) {
-        String code = Generator.uuid();
+        String code = Util.uuid();
         String signature = Util.md5(key + code);
 
         // 用签名作为Key缓存Code
@@ -499,7 +489,7 @@ public class Core {
      * @param head    用户头像
      */
     public String addUser(String name, String mobile, String unionId, String head) {
-        String userId = Generator.uuid();
+        String userId = Util.uuid();
         User user = new User();
         user.setId(userId);
         user.setName(name);
