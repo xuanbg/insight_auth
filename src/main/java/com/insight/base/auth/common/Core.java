@@ -120,7 +120,7 @@ public class Core {
             user.setPassword(password);
 
             String key = "User:" + userId;
-            Redis.set(key, Json.toMap(user));
+            Redis.set(key, Json.toStringValueMap(user));
             Redis.set(key, "FailureCount", 0);
 
             return userId;
@@ -510,7 +510,7 @@ public class Core {
         }
 
         String key = "User:" + userId;
-        Redis.set(key, Json.toMap(user));
+        Redis.set(key, Json.toStringValueMap(user));
         Redis.set(key, "FailureCount", 0);
 
         RabbitClient.sendTopic(user);
