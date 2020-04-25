@@ -4,8 +4,10 @@ import com.insight.base.auth.common.client.MessageClient;
 import com.insight.base.auth.common.client.RabbitClient;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.mapper.AuthMapper;
-import com.insight.utils.*;
-import com.insight.utils.common.ApplicationContextHolder;
+import com.insight.utils.DateHelper;
+import com.insight.utils.Json;
+import com.insight.utils.Redis;
+import com.insight.utils.Util;
 import com.insight.utils.encrypt.Encryptor;
 import com.insight.utils.pojo.*;
 import com.insight.utils.wechat.WeChatHelper;
@@ -187,7 +189,6 @@ public class Core {
         String appId = login.getAppId();
         String key = "App:" + appId;
         if (!Redis.hasKey(key)) {
-            AuthMapper mapper = ApplicationContextHolder.getContext().getBean(AuthMapper.class);
             Application app = mapper.getApp(appId);
             Redis.set(key, "PermitLife", app.getPermitLife());
             Redis.set(key, "TokenLife", app.getTokenLife());
