@@ -302,8 +302,8 @@ public class Core {
 
         // 构造用户信息
         String key = "User:" + token.getUserId();
-        String json =  Redis.get(key);
-        UserInfoDto info = Json.toBean(json, UserInfoDto.class);
+        Map<Object, Object> user =  Redis.getEntity(key);
+        UserInfoDto info = Json.clone(user, UserInfoDto.class);
         String host = Redis.get("Config:FileHost");
         String imgUrl = info.getHeadImg();
         if (imgUrl == null || imgUrl.isEmpty()) {
