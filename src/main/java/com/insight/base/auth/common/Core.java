@@ -47,7 +47,7 @@ public class Core {
     /**
      * Code生命周期(30秒)
      */
-    private static final int GENERAL_CODE_LEFT = 30;
+    private static final int GENERAL_CODE_LEFT = 300;
 
     /**
      * 登录短信验证码长度(6位)
@@ -181,11 +181,6 @@ public class Core {
      * @return 租户ID是否为空
      */
     public boolean appIsExpired(LoginDto login, String userId) {
-        String tenantId = login.getTenantId();
-        if (tenantId == null || tenantId.isEmpty()) {
-            return false;
-        }
-
         String appId = login.getAppId();
         String key = "App:" + appId;
         if (!Redis.hasKey(key)) {
@@ -196,6 +191,11 @@ public class Core {
             Redis.set(key, "RefreshType", app.getAutoRefresh());
 
             mapper.getApps(appId).forEach(i -> Redis.set(key, i.getTenantId(), i.getExpireDate()));
+        }
+
+        String tenantId = login.getTenantId();
+        if (tenantId == null || tenantId.isEmpty()) {
+            return false;
         }
 
         String date = Redis.get("App:" + appId, tenantId);
