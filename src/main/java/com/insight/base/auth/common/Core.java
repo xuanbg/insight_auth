@@ -218,7 +218,7 @@ public class Core {
         String tenantId = login.getTenantId();
 
         // 加载用户授权码
-        List<String> list = getPermits(appId, userId, tenantId);
+        List<String> list = mapper.getAuthInfos(appId, tenantId, userId);
         Token token = new Token(userId, appId, tenantId);
         token.setPermitFuncs(list);
         token.setPermitTime(LocalDateTime.now());
@@ -243,18 +243,6 @@ public class Core {
         token.setSecretKey(Util.uuid());
 
         return initPackage(token, tokenId, fingerprint, appId);
-    }
-
-    /**
-     * 获取用户授权码
-     *
-     * @param appId    应用ID
-     * @param userId   用户ID
-     * @param tenantId 租户ID
-     * @return 用户授权码集合
-     */
-    public List<String> getPermits(String appId, String userId, String tenantId) {
-        return mapper.getAuthInfos(tenantId, userId, appId);
     }
 
     /**
@@ -515,36 +503,5 @@ public class Core {
 
         RabbitClient.sendTopic(user);
         return userId;
-    }
-
-    /**
-     * 获取登录用户的导航数据
-     *
-     * @param info 用户登录信息
-     * @return 导航数据
-     */
-    public List<NavDto> getNavigators(LoginInfo info) {
-        return mapper.getNavigators(info.getTenantId(), info.getUserId(), info.getAppId());
-    }
-
-    /**
-     * 获取登录用户的模块功能数据
-     *
-     * @param info     用户登录信息
-     * @param moduleId 模块ID
-     * @return 模块功能数据
-     */
-    public List<FuncDto> getModuleFunctions(LoginInfo info, String moduleId) {
-        return mapper.getModuleFunctions(info.getTenantId(), info.getUserId(), moduleId);
-    }
-
-    /**
-     * 获取用户可选登录部门
-     *
-     * @param account 登录账号
-     * @return 用户可选登录部门集合
-     */
-    public List<MemberDto> getDepartments(String account) {
-        return mapper.getDepartments(account);
     }
 }

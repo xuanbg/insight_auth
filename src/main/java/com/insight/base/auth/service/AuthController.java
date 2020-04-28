@@ -161,15 +161,16 @@ public class AuthController {
     }
 
     /**
-     * 获取用户可选登录部门
+     * 获取用户可选租户
      *
+     * @param appId   应用ID
      * @param account 登录账号
      * @return Reply
      */
-    @GetMapping("/v1.0/departments")
-    public Reply getDepartments(@RequestParam String account) {
+    @GetMapping("/v1.0/{appId}/tenants")
+    public Reply getTenants(@PathVariable String appId, @RequestParam String account) {
 
-        return service.getDepartments(account);
+        return service.getTenants(appId, account);
     }
 
     /**

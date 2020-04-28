@@ -79,12 +79,13 @@ public interface AuthService {
     Reply deleteToken(String tokenId);
 
     /**
-     * 获取用户可选登录部门
+     * 获取用户可选租户
      *
+     * @param appId   应用ID
      * @param account 登录账号
      * @return Reply
      */
-    Reply getDepartments(String account);
+    Reply getTenants(String appId, String account);
 
     /**
      * 获取用户导航栏

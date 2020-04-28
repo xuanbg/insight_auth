@@ -100,7 +100,7 @@ public interface AuthMapper {
             "join (select distinct a.function_id from ibr_role_permit a join ibv_user_roles r on r.role_id = a.role_id " +
             "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) group by a.function_id " +
             "having min(a.permit)> 0) a on a.function_id = f.id where m.app_id = #{appId}) l order by l.parent_id, l.`index`;")
-    List<NavDto> getNavigators(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("appId") String appId);
+    List<NavDto> getNavigators(@Param("appId") String appId, @Param("tenantId") String tenantId, @Param("userId") String userId);
 
     /**
      * 获取指定模块的全部可用功能集合及对指定用户的授权情况
@@ -115,7 +115,7 @@ public interface AuthMapper {
             "left join (select a.function_id, min(a.permit) as permit from ibr_role_permit a join ibv_user_roles r " +
             "on r.role_id = a.role_id and r.user_id = #{userId} and (r.tenant_id is null or r.tenant_id = #{tenantId}) " +
             "group by a.function_id) a on a.function_id = f.id where f.nav_id = #{moduleId} order by f.`index`;")
-    List<FuncDto> getModuleFunctions(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("moduleId") String moduleId);
+    List<FuncDto> getModuleFunctions(@Param("moduleId") String moduleId, @Param("tenantId") String tenantId, @Param("userId") String userId);
 
     /**
      * 获取用户授权信息
@@ -132,13 +132,17 @@ public interface AuthMapper {
             "<if test = 'tenantId == null'>and r.tenant_id is null </if>" +
             "join mysql.help_topic h on h.help_topic_id &lt; (length(f.auth_codes) - length(replace(f.auth_codes, ',', '')) + 1)" +
             "group by n.app_id, f.nav_id, auth_code having min(p.permit) > 0</script>")
-    List<String> getAuthInfos(@Param("tenantId") String tenantId, @Param("userId") String userId, @Param("appId") String appId);
+    List<String> getAuthInfos(@Param("appId") String appId, @Param("tenantId") String tenantId, @Param("userId") String userId);
 
     /**
-     * 获取用户可选登录部门
-     * @param account 登录账号
-     * @return 用户可选登录部门集合
+     * 获取用户可选租户
+     *
+     * @param appId  应用程序ID
+     * @param userId 用户ID
+     * @return 用户绑定租户集合
      */
-    @Select("SELECT t.id, t.`name` FROM ibu_user u join ibt_tenant_user r on r.user_id = u.id JOIN ibt_tenant t ON t.id = r.tenant_id WHERE u.account = #{account});")
-    List<MemberDto> getDepartments(String account);
+    @Select("select t.id, t.`name` from ibt_tenant t " +
+            "join ibt_tenant_app a on a.tenant_id = t.id and a.app_id = #{appId} " +
+            "join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId};")
+    List<MemberDto> getTenants(@Param("appId") String appId, @Param("userId") String userId);
 }

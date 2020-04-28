@@ -2,8 +2,11 @@ package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.Token;
+import com.insight.base.auth.common.dto.FuncDto;
 import com.insight.base.auth.common.dto.LoginDto;
+import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.dto.TokenDto;
+import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.*;
 import com.insight.utils.pojo.AccessToken;
 import com.insight.utils.pojo.LoginInfo;
@@ -25,14 +28,17 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class AuthServiceImpl implements AuthService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final AuthMapper mapper;
     private final Core core;
 
     /**
      * 构造函数
      *
-     * @param core Core
+     * @param mapper AuthMapper
+     * @param core   Core
      */
-    public AuthServiceImpl(Core core) {
+    public AuthServiceImpl(AuthMapper mapper, Core core) {
+        this.mapper = mapper;
         this.core = core;
     }
 
@@ -266,7 +272,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getPermits(LoginInfo info) {
-        List<String> list = core.getPermits(info.getAppId(), info.getUserId(), info.getTenantId());
+        List<String> list = mapper.getAuthInfos(info.getAppId(), info.getTenantId(), info.getUserId());
 
         return ReplyHelper.success(list);
     }
@@ -312,14 +318,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 获取用户可选登录部门
+     * 获取用户可选租户
      *
+     *
+     * @param appId   应用ID
      * @param account 登录账号
      * @return Reply
      */
     @Override
-    public Reply getDepartments(String account) {
-        List<MemberDto> list = core.getDepartments(account);
+    public Reply getTenants(String appId, String account) {
+        String userId = core.getUserId(account);
+        List<MemberDto> list = mapper.getTenants(appId, userId);
 
         return ReplyHelper.success(list);
     }
@@ -332,7 +341,9 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getNavigators(LoginInfo info) {
-        return ReplyHelper.success(core.getNavigators(info));
+        List<NavDto> list = mapper.getNavigators(info.getAppId(), info.getTenantId(), info.getUserId());
+
+        return ReplyHelper.success(list);
     }
 
     /**
@@ -344,6 +355,8 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getModuleFunctions(LoginInfo info, String moduleId) {
-        return ReplyHelper.success(core.getModuleFunctions(info, moduleId));
+        List<FuncDto> list = mapper.getModuleFunctions(moduleId, info.getTenantId(), info.getUserId());
+
+        return ReplyHelper.success(list);
     }
 }
