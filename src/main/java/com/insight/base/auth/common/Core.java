@@ -47,7 +47,7 @@ public class Core {
     /**
      * Code生命周期(30秒)
      */
-    private static final int GENERAL_CODE_LEFT = 300;
+    private static final int GENERAL_CODE_LEFT = 30;
 
     /**
      * 登录短信验证码长度(6位)
