@@ -38,8 +38,8 @@ import java.util.stream.Collectors;
 @ResponseBody
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    private static final Error error = new Error();
+    private static final Logger LOGGER = LoggerFactory.getLogger(com.insight.base.auth.common.config.GlobalExceptionHandler.class);
+    private static final Error ERROR = new Error();
 
     /**
      * 处理缺少请求参数的异常
@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public Reply handleIllegalArgumentException(IllegalArgumentException ex) {
-        logger.info("不合法的参数: {}", ex.getMessage());
+        LOGGER.info("不合法的参数: {}", ex.getMessage());
 
         return ReplyHelper.invalidParam("不合法的参数");
     }
@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ServletRequestBindingException.class)
     public Reply handleServletRequestBindingException(ServletRequestBindingException ex) {
-        logger.info("参数绑定错误: {}", ex.getMessage());
+        LOGGER.info("参数绑定错误: {}", ex.getMessage());
 
         return ReplyHelper.invalidParam("参数绑定错误");
     }
@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public Reply handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
-        logger.info("参数解析失败: {}", ex.getMessage());
+        LOGGER.info("参数解析失败: {}", ex.getMessage());
 
         return ReplyHelper.invalidParam("参数解析失败");
     }
@@ -103,7 +103,7 @@ public class GlobalExceptionHandler {
     public Reply handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         FieldError error = ex.getBindingResult().getFieldError();
         if (error == null) {
-            logger.info("参数解析失败: {}", ex.getMessage());
+            LOGGER.info("参数解析失败: {}", ex.getMessage());
 
             return ReplyHelper.invalidParam("参数解析失败");
         }
@@ -122,7 +122,7 @@ public class GlobalExceptionHandler {
     public Reply handleBindException(BindException ex) {
         FieldError error = ex.getBindingResult().getFieldError();
         if (error == null) {
-            logger.info("参数绑定失败: {}", ex.getMessage());
+            LOGGER.info("参数绑定失败: {}", ex.getMessage());
 
             return ReplyHelper.invalidParam("参数绑定失败");
         }
@@ -139,7 +139,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public Reply handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
-        logger.info("不支持当前媒体类型: {}", ex.getMessage());
+        LOGGER.info("不支持当前媒体类型: {}", ex.getMessage());
 
         return ReplyHelper.invalidParam("不支持当前媒体类型");
     }
@@ -152,7 +152,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(UnexpectedTypeException.class)
     public Reply handleUnexpectedTypeException(UnexpectedTypeException ex) {
-        logger.info("参数类型不匹配: {}", ex.getMessage());
+        LOGGER.info("参数类型不匹配: {}", ex.getMessage());
 
         return ReplyHelper.invalidParam("参数类型不匹配");
     }
@@ -246,11 +246,11 @@ public class GlobalExceptionHandler {
             message = ex.getClass().getSimpleName();
         }
 
-        error.setRequestId();
-        error.setError(message);
-        error.setException(ex.getStackTrace());
+        ERROR.setRequestId();
+        ERROR.setError(message);
+        ERROR.setException(ex.getStackTrace());
 
-        logger.error("发生异常: {}", error.toString());
+        LOGGER.error("发生异常: {}", ERROR.toString());
     }
 
     /**
