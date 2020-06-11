@@ -189,8 +189,6 @@ public class Core {
             Redis.set(key, "TokenLife", app.getTokenLife());
             Redis.set(key, "SignInType", app.getSigninOne());
             Redis.set(key, "RefreshType", app.getAutoRefresh());
-
-            mapper.getApps(appId).forEach(i -> Redis.set(key, i.getTenantId(), i.getExpireDate()));
         }
 
         String tenantId = login.getTenantId();
@@ -199,8 +197,12 @@ public class Core {
         }
 
         String date = Redis.get("App:" + appId, tenantId);
-        LocalDate expire = LocalDate.parse(date);
+        if (date == null){
+            mapper.getApps(appId).forEach(i -> Redis.set(key, i.getTenantId(), i.getExpireDate()));
+            date = Redis.get("App:" + appId, tenantId);
+        }
 
+        LocalDate expire = LocalDate.parse(date);
         return LocalDate.now().isAfter(expire);
     }
 
