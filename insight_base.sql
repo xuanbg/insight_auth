@@ -12,6 +12,7 @@ CREATE TABLE `ibs_application` (
   `domain` varchar(128) DEFAULT NULL COMMENT '应用域名',
   `permit_life` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '授权码生命周期(毫秒)',
   `token_life` int(10) unsigned NOT NULL DEFAULT '7200000' COMMENT '令牌生命周期(毫秒)',
+  `is_verify_source` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否验证来源:0.不验证;1.验证',
   `is_signin_one` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否单点登录:0.允许多点;1.单点登录',
   `is_auto_refresh` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否自动刷新:0.手动刷新;1.自动刷新',
   `creator` varchar(64) NOT NULL COMMENT '创建人',
@@ -546,13 +547,9 @@ select replace(uuid(), '-', ''), 2, (select id from ibr_role where tenant_id = '
 -- ----------------------------
 -- 初始化功能权限
 -- ---------------------------- 
-ALTER TABLE `ibr_role_permit` 
-MODIFY COLUMN `id` char(36) NOT NULL COMMENT '主键(UUID)' FIRST;
 INSERT `ibr_role_permit`(`id`, `role_id`, `function_id`, `permit`) 
-select uuid(), r.id, f.id, 1
+select replace(uuid(), '-', ''), r.id, f.id, 1
 from ibr_role r
 join ibs_navigator n on n.app_id = r.app_id
-join ibs_function f on f.nav_id = n.id;
-update ibr_role_permit set id = replace(id, '-', '');
-ALTER TABLE `ibr_role_permit` 
-MODIFY COLUMN `id` char(32) NOT NULL COMMENT '主键(UUID)' FIRST;
+join ibs_function f on f.nav_id = n.id
+where r.app_id in ('9dd99dd9e6df467a8207d05ea5581125','e46c0d4f85f24f759ad4d86b9505b1d4');

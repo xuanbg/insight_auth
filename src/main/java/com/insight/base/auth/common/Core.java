@@ -185,6 +185,7 @@ public class Core {
         String key = "App:" + appId;
         if (!Redis.hasKey(key)) {
             Application app = mapper.getApp(appId);
+            Redis.set(key, "VerifySource", app.getVerifySource());
             Redis.set(key, "PermitLife", app.getPermitLife());
             Redis.set(key, "TokenLife", app.getTokenLife());
             Redis.set(key, "SignInType", app.getSigninOne());

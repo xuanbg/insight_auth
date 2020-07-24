@@ -33,6 +33,7 @@ public class Token extends TokenInfo {
         setTenantId(tenantId);
         setPermitLife(Long.valueOf(Redis.get(key, "PermitLife")));
         setLife(Long.valueOf(Redis.get(key, "TokenLife")));
+        setVerifySource(Boolean.valueOf(Redis.get(key, "VerifySource")));
         setSignInOne(Boolean.valueOf(Redis.get(key, "SignInType")));
         setAutoRefresh(Boolean.valueOf(Redis.get(key, "RefreshType")));
         setSecretKey(Util.uuid());
