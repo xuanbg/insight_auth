@@ -64,7 +64,7 @@ public class AuthController {
     public Reply getToken(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String account = login.getAccount();
-        if (account == null || account.isEmpty()) {
+        if (account == null || account.isBlank()) {
             return ReplyHelper.invalidParam("登录账号不能为空");
         }
 
@@ -82,7 +82,7 @@ public class AuthController {
     public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String appId = login.getWeChatAppId();
-        if (appId == null || appId.isEmpty()) {
+        if (appId == null || appId.isBlank()) {
             return ReplyHelper.invalidParam("weChatAppId不能为空");
         }
 
@@ -100,7 +100,7 @@ public class AuthController {
     public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String appId = login.getWeChatAppId();
-        if (appId == null || appId.isEmpty()) {
+        if (appId == null || appId.isBlank()) {
             return ReplyHelper.invalidParam("weChatAppId不能为空");
         }
 
