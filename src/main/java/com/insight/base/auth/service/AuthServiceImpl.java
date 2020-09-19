@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getSubmitToken(String key) {
         String id = Redis.get("SubmitToken:" + key);
-        if (id == null || id.isBlank()) {
+        if (id == null || id.isEmpty()) {
             id = Util.uuid();
             Redis.set("SubmitToken:" + key, id, 1, TimeUnit.HOURS);
         }
@@ -87,7 +87,7 @@ public class AuthServiceImpl implements AuthService {
         String code;
         if (type == 0) {
             String password = Redis.get(key, "password");
-            if (password == null || password.isBlank()) {
+            if (password == null || password.isEmpty()) {
                 return ReplyHelper.notExist("账号或密码错误");
             }
 
@@ -136,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 验证用户
         String userId = core.getId(code);
-        if (userId == null || userId.isBlank()) {
+        if (userId == null || userId.isEmpty()) {
             return ReplyHelper.fail("发生了一点小意外,请重新提交");
         }
 
@@ -172,13 +172,13 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String unionId = weChatUser.getUnionid();
-        if (unionId == null || unionId.isBlank()) {
+        if (unionId == null || unionId.isEmpty()) {
             return ReplyHelper.fail("未取得微信用户的UnionID");
         }
 
         // 使用微信UnionID读取缓存,如用户不存在,则缓存微信用户信息(30分钟)后返回微信用户信息
         String userId = core.getUserId(unionId);
-        if (userId == null || userId.isBlank()) {
+        if (userId == null || userId.isEmpty()) {
             String key = "Wechat:" + Util.md5(unionId + weChatAppId);
             Redis.set(key, Json.toJson(weChatUser), 30, TimeUnit.MINUTES);
 
@@ -229,7 +229,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 根据手机号获取用户
         String userId = core.getUserId(mobile);
-        if (userId != null && !userId.isBlank()) {
+        if (userId != null && !userId.isEmpty()) {
             key = "User:" + userId;
             boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
             if (isInvalid) {
@@ -237,7 +237,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             String uid = Redis.get(key, "unionId");
-            if (uid != null && !uid.isBlank()) {
+            if (uid != null && !uid.isEmpty()) {
                 if (login.getReplace()) {
                     Redis.deleteKey("ID:" + uid);
                 } else {

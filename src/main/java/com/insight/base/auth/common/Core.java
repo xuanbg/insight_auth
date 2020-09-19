@@ -80,13 +80,13 @@ public class Core {
      */
     public String getUserId(String account) {
         String userId = Redis.get("ID:" + account);
-        if (userId != null && !userId.isBlank()) {
+        if (userId != null && !userId.isEmpty()) {
             return userId;
         }
 
         synchronized (this) {
             userId = Redis.get(account);
-            if (userId != null && !userId.isBlank()) {
+            if (userId != null && !userId.isEmpty()) {
                 return userId;
             }
 
@@ -100,17 +100,17 @@ public class Core {
             Redis.set("ID:" + user.getAccount(), userId);
 
             String mobile = user.getMobile();
-            if (mobile != null && !mobile.isBlank()) {
+            if (mobile != null && !mobile.isEmpty()) {
                 Redis.set("ID:" + mobile, userId);
             }
 
             String mail = user.getEmail();
-            if (mail != null && !mail.isBlank()) {
+            if (mail != null && !mail.isEmpty()) {
                 Redis.set("ID:" + mail, userId);
             }
 
             String unionId = user.getUnionId();
-            if (unionId != null && !unionId.isBlank()) {
+            if (unionId != null && !unionId.isEmpty()) {
                 Redis.set("ID:" + unionId, userId);
             }
 
@@ -193,7 +193,7 @@ public class Core {
         }
 
         String tenantId = login.getTenantId();
-        if (tenantId == null || tenantId.isBlank()) {
+        if (tenantId == null || tenantId.isEmpty()) {
             return false;
         }
 
@@ -297,7 +297,7 @@ public class Core {
         UserInfoDto info = Json.clone(user, UserInfoDto.class);
         String host = Redis.get("Config:FileHost");
         String imgUrl = info.getHeadImg();
-        if (imgUrl == null || imgUrl.isBlank()) {
+        if (imgUrl == null || imgUrl.isEmpty()) {
             String defaultHead = Redis.get("Config:DefaultHead");
             info.setHeadImg(host + defaultHead);
         } else if (!imgUrl.contains("http://") && !imgUrl.contains("https://")) {
@@ -319,7 +319,7 @@ public class Core {
     public Token getToken(String tokenId) {
         String key = "Token:" + tokenId;
         String json = Redis.get(key);
-        if (json == null || json.isBlank()) {
+        if (json == null || json.isEmpty()) {
             return null;
         }
 
@@ -370,7 +370,7 @@ public class Core {
     public String getCode(String sign) {
         String key = "Sign:" + sign;
         String code = Redis.get(key);
-        if (code == null || code.isBlank()) {
+        if (code == null || code.isEmpty()) {
             return null;
         }
 
@@ -387,7 +387,7 @@ public class Core {
     public String getId(String code) {
         String key = "Code:" + code;
         String id = Redis.get(key);
-        if (id == null || id.isBlank()) {
+        if (id == null || id.isEmpty()) {
             return null;
         }
 
@@ -403,7 +403,7 @@ public class Core {
     public int getFailureCount(String userId) {
         String key = "User:" + userId;
         String value = Redis.get(key, "LastFailureTime");
-        if (value == null || value.isBlank()) {
+        if (value == null || value.isEmpty()) {
             return 0;
         }
 
@@ -496,7 +496,7 @@ public class Core {
 
         // 缓存用户ID到Redis
         Redis.set("ID:" + mobile, userId);
-        if (unionId != null && !unionId.isBlank()) {
+        if (unionId != null && !unionId.isEmpty()) {
             Redis.set("ID:" + unionId, userId);
         }
 
