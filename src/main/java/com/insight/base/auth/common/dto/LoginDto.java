@@ -69,7 +69,7 @@ public class LoginDto implements Serializable {
     private String fingerprint;
 
     public String getAppId() {
-        return appId.isEmpty() ? null : appId;
+        return appId == null || appId.isEmpty() ? null : appId;
     }
 
     public void setAppId(String appId) {
@@ -77,7 +77,7 @@ public class LoginDto implements Serializable {
     }
 
     public String getTenantId() {
-        return tenantId.isEmpty() ? null : tenantId;
+        return tenantId == null || tenantId.isEmpty() ? null : tenantId;
     }
 
     public void setTenantId(String tenantId) {
@@ -109,7 +109,7 @@ public class LoginDto implements Serializable {
     }
 
     public String getWeChatAppId() {
-        return weChatAppId.isEmpty() ? null : weChatAppId;
+        return weChatAppId == null || weChatAppId.isEmpty() ? null : weChatAppId;
     }
 
     public void setWeChatAppId(String weChatAppId) {
@@ -117,7 +117,7 @@ public class LoginDto implements Serializable {
     }
 
     public String getUnionId() {
-        return unionId.isEmpty() ? null : unionId;
+        return unionId == null || unionId.isEmpty() ? null : unionId;
     }
 
     public void setUnionId(String unionId) {
@@ -133,7 +133,7 @@ public class LoginDto implements Serializable {
     }
 
     public String getDeviceId() {
-        return deviceId.isEmpty() ? null : deviceId;
+        return deviceId == null || deviceId.isEmpty() ? null : deviceId;
     }
 
     public void setDeviceId(String deviceId) {
