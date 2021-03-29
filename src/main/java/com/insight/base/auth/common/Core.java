@@ -2,21 +2,26 @@ package com.insight.base.auth.common;
 
 import com.insight.base.auth.common.client.MessageClient;
 import com.insight.base.auth.common.client.RabbitClient;
-import com.insight.base.auth.common.dto.*;
+import com.insight.base.auth.common.dto.LoginDto;
+import com.insight.base.auth.common.dto.NormalMessage;
+import com.insight.base.auth.common.dto.TokenDto;
+import com.insight.base.auth.common.dto.UserInfoDto;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.DateHelper;
 import com.insight.utils.Json;
 import com.insight.utils.Redis;
 import com.insight.utils.Util;
 import com.insight.utils.encrypt.Encryptor;
-import com.insight.utils.pojo.*;
+import com.insight.utils.pojo.AccessToken;
+import com.insight.utils.pojo.Application;
+import com.insight.utils.pojo.Reply;
+import com.insight.utils.pojo.User;
 import com.insight.utils.wechat.WeChatHelper;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -258,38 +263,36 @@ public class Core {
      * @return 令牌数据包
      */
     private TokenDto initPackage(Token token, String code, String fingerprint, String appId) {
+        TokenDto tokenDto = new TokenDto();
+
         // 生成令牌数据
+        long life = token.getLife();
         AccessToken accessToken = new AccessToken();
         accessToken.setId(code);
         accessToken.setSecret(token.getSecretKey());
+        tokenDto.setAccessToken(accessToken.toString());
+        tokenDto.setExpire(life);
 
+        String hashKey = tokenDto.getAccessToken() + fingerprint;
+        token.setHash(Util.md5(hashKey));
+        LocalDateTime now = LocalDateTime.now();
+        token.setExpiryTime(now.plusSeconds(TIME_OUT + life / 1000));
+
+        long failure = life * 12;
         AccessToken refreshToken = new AccessToken();
         refreshToken.setId(code);
         refreshToken.setSecret(token.getRefreshKey());
-
-        TokenDto tokenDto = new TokenDto();
-        tokenDto.setAccessToken(accessToken.toString());
         tokenDto.setRefreshToken(refreshToken.toString());
-
-        // 设置令牌失效时间
-        long life = token.getLife();
-        long failure = life * 12;
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime failureTime = token.getFailureTime();
-        if (failureTime != null && failureTime.isAfter(now)) {
-            Duration duration = Duration.between(now, token.getFailureTime());
-            failure = duration.toMillis();
-        }
-
-        token.setExpiryTime(now.plusSeconds(TIME_OUT + (life / 1000)));
-        token.setFailureTime(now.plusSeconds(TIME_OUT + (failure / 1000)));
-        tokenDto.setExpire(life);
         tokenDto.setFailure(failure);
 
         // 缓存令牌数据
-        String hashKey = tokenDto.getAccessToken() + fingerprint;
-        token.setHash(Util.md5(hashKey));
-        Redis.set("Token:" + code, token.toString(), failure + (TIME_OUT * 2000), TimeUnit.MILLISECONDS);
+        LocalDateTime failureTime = token.getFailureTime();
+        if (failureTime == null || now.isAfter(failureTime)) {
+            token.setFailureTime(now.plusSeconds(TIME_OUT + failure / 1000));
+            Redis.set("Token:" + code, token.toString(), life > 0 ? TIME_OUT + failure / 1000 : -1);
+        }else {
+            Redis.set("Token:" + code, token.toString());
+        }
 
         // 构造用户信息
         String key = "User:" + token.getUserId();

@@ -12,6 +12,7 @@ import com.insight.utils.pojo.TokenInfo;
  * @remark 令牌关键数据集
  */
 public class Token extends TokenInfo {
+    private String key;
 
     /**
      * 构造方法
@@ -26,16 +27,16 @@ public class Token extends TokenInfo {
      * @param appId    应用ID
      * @param tenantId 租户ID
      */
-    Token(String userId, String appId, String tenantId) {
-        String key = "App:" + appId;
+    public Token(String userId, String appId, String tenantId) {
+        key = "App:" + appId;
         setUserId(userId);
         setAppId(appId);
         setTenantId(tenantId);
-        setPermitLife(Long.valueOf(Redis.get(key, "PermitLife")));
-        setLife(Long.valueOf(Redis.get(key, "TokenLife")));
-        setVerifySource(Boolean.valueOf(Redis.get(key, "VerifySource")));
-        setSignInOne(Boolean.valueOf(Redis.get(key, "SignInType")));
-        setAutoRefresh(Boolean.valueOf(Redis.get(key, "RefreshType")));
+        setPermitLife(getLongValue("PermitLife"));
+        setLife(getLongValue("TokenLife"));
+        setVerifySource(getBooleanValue("VerifySource"));
+        setSignInOne(getBooleanValue("SignInType"));
+        setAutoRefresh(getBooleanValue("RefreshType"));
         setSecretKey(Util.uuid());
         setRefreshKey(Util.uuid());
     }
@@ -49,6 +50,30 @@ public class Token extends TokenInfo {
     @JsonIgnore
     public boolean verifyRefreshKey(AccessToken token) {
         return token != null && token.getSecret().equals(getRefreshKey());
+    }
+
+    /**
+     * 获取Long值
+     *
+     * @param field Redis field
+     * @return Long值
+     */
+    @JsonIgnore
+    private Long getLongValue(String field) {
+        String value = Redis.get(key, field);
+        return Util.isNotEmpty(value) ? Long.valueOf(value) : null;
+    }
+
+    /**
+     * 获取Boolean值
+     *
+     * @param field Redis field
+     * @return Boolean值
+     */
+    @JsonIgnore
+    private Boolean getBooleanValue(String field) {
+        String value = Redis.get(key, field);
+        return Util.isNotEmpty(value) ? Boolean.valueOf(value) : null;
     }
 }
 
