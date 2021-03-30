@@ -84,13 +84,13 @@ public class Core {
      */
     public String getUserId(String account) {
         String userId = Redis.get("ID:" + account);
-        if (userId != null && !userId.isEmpty()) {
+        if (Util.isNotEmpty(userId)) {
             return userId;
         }
 
         synchronized (this) {
             userId = Redis.get(account);
-            if (userId != null && !userId.isEmpty()) {
+            if (Util.isNotEmpty(userId)) {
                 return userId;
             }
 
@@ -104,17 +104,17 @@ public class Core {
             Redis.set("ID:" + user.getAccount(), userId);
 
             String mobile = user.getMobile();
-            if (mobile != null && !mobile.isEmpty()) {
+            if (Util.isNotEmpty(mobile)) {
                 Redis.set("ID:" + mobile, userId);
             }
 
             String mail = user.getEmail();
-            if (mail != null && !mail.isEmpty()) {
+            if (Util.isNotEmpty(mail)) {
                 Redis.set("ID:" + mail, userId);
             }
 
             String unionId = user.getUnionId();
-            if (unionId != null && !unionId.isEmpty()) {
+            if (Util.isNotEmpty(unionId)) {
                 Redis.set("ID:" + unionId, userId);
             }
 
@@ -125,7 +125,7 @@ public class Core {
 
             String key = "User:" + userId;
             Redis.setHash(key, Json.toStringValueMap(user));
-            Redis.setHash(key, "FailureCount", 0);
+            Redis.setHash(key,"FailureCount", 0);
 
             return userId;
         }

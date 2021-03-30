@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getSubmitToken(String key) {
         String id = Redis.get("SubmitToken:" + key);
-        if (id == null || id.isEmpty()) {
+        if (!Util.isNotEmpty(id)) {
             id = Util.uuid();
             Redis.set("SubmitToken:" + key, id, 1, TimeUnit.HOURS);
         }
@@ -87,7 +87,7 @@ public class AuthServiceImpl implements AuthService {
         String code;
         if (type == 0) {
             String password = Redis.get(key, "password");
-            if (password == null || password.isEmpty()) {
+            if (!Util.isNotEmpty(password)) {
                 return ReplyHelper.notExist("账号或密码错误");
             }
 
@@ -136,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 验证用户
         String userId = core.getId(code);
-        if (userId == null || userId.isEmpty()) {
+        if (!Util.isNotEmpty(userId)) {
             return ReplyHelper.fail("发生了一点小意外,请重新提交");
         }
 
@@ -178,7 +178,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 使用微信UnionID读取缓存,如用户不存在,则缓存微信用户信息(30分钟)后返回微信用户信息
         String userId = core.getUserId(unionId);
-        if (userId == null || userId.isEmpty()) {
+        if (!Util.isNotEmpty(userId)) {
             String key = "Wechat:" + Util.md5(unionId + weChatAppId);
             Redis.set(key, Json.toJson(weChatUser), 30, TimeUnit.MINUTES);
 
