@@ -128,8 +128,8 @@ public class AuthServiceImpl implements AuthService {
                 return ReplyHelper.fail("错误次数过多,账号已被锁定!请于10分钟后再试");
             }
 
-            Redis.set(key, "FailureCount", failureCount + 1);
-            Redis.set(key, "LastFailureTime", DateHelper.getDateTime());
+            Redis.setHash(key, "FailureCount", failureCount + 1);
+            Redis.setHash(key, "LastFailureTime", DateTime.formatCurrentTime());
 
             return ReplyHelper.invalidParam("账号或密码错误");
         }

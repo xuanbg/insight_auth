@@ -7,7 +7,7 @@ import com.insight.base.auth.common.dto.NormalMessage;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.dto.UserInfoDto;
 import com.insight.base.auth.common.mapper.AuthMapper;
-import com.insight.utils.DateHelper;
+import com.insight.utils.DateTime;
 import com.insight.utils.Json;
 import com.insight.utils.Redis;
 import com.insight.utils.Util;
@@ -28,7 +28,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.insight.utils.pojo.TokenInfo.TIME_OUT;
 
@@ -125,8 +124,8 @@ public class Core {
             user.setPassword(password);
 
             String key = "User:" + userId;
-            Redis.set(key, Json.toStringValueMap(user));
-            Redis.set(key, "FailureCount", 0);
+            Redis.setHash(key, Json.toStringValueMap(user));
+            Redis.setHash(key, "FailureCount", 0);
 
             return userId;
         }
@@ -190,11 +189,11 @@ public class Core {
         String key = "App:" + appId;
         if (!Redis.hasKey(key)) {
             Application app = mapper.getApp(appId);
-            Redis.set(key, "VerifySource", app.getVerifySource());
-            Redis.set(key, "PermitLife", app.getPermitLife());
-            Redis.set(key, "TokenLife", app.getTokenLife());
-            Redis.set(key, "SignInType", app.getSigninOne());
-            Redis.set(key, "RefreshType", app.getAutoRefresh());
+            Redis.setHash(key, "VerifySource", app.getVerifySource());
+            Redis.setHash(key, "PermitLife", app.getPermitLife());
+            Redis.setHash(key, "TokenLife", app.getTokenLife());
+            Redis.setHash(key, "SignInType", app.getSigninOne());
+            Redis.setHash(key, "RefreshType", app.getAutoRefresh());
         }
 
         String tenantId = login.getTenantId();
@@ -204,7 +203,7 @@ public class Core {
 
         String date = Redis.get("App:" + appId, tenantId);
         if (date == null){
-            mapper.getApps(appId).forEach(i -> Redis.set(key, i.getTenantId(), i.getExpireDate()));
+            mapper.getApps(appId).forEach(i -> Redis.setHash(key, i.getTenantId(), i.getExpireDate()));
             date = Redis.get("App:" + appId, tenantId);
         }
 
@@ -233,7 +232,7 @@ public class Core {
 
         // 缓存用户Token
         String key = "UserToken:" + userId;
-        Redis.set(key, appId, code);
+        Redis.setHash(key, appId, code);
 
         return initPackage(token, code, fingerprint, appId);
     }
@@ -276,7 +275,7 @@ public class Core {
         String hashKey = tokenDto.getAccessToken() + fingerprint;
         token.setHash(Util.md5(hashKey));
         LocalDateTime now = LocalDateTime.now();
-        token.setExpiryTime(now.plusSeconds(TIME_OUT + life / 1000));
+        token.setExpiryTime(now.plusSeconds(TIME_OUT + life));
 
         long failure = life * 12;
         AccessToken refreshToken = new AccessToken();
@@ -288,8 +287,8 @@ public class Core {
         // 缓存令牌数据
         LocalDateTime failureTime = token.getFailureTime();
         if (failureTime == null || now.isAfter(failureTime)) {
-            token.setFailureTime(now.plusSeconds(TIME_OUT + failure / 1000));
-            Redis.set("Token:" + code, token.toString(), life > 0 ? TIME_OUT + failure / 1000 : -1);
+            token.setFailureTime(now.plusSeconds(TIME_OUT + failure));
+            Redis.set("Token:" + code, token.toString(), life > 0 ? TIME_OUT + failure : -1);
         }else {
             Redis.set("Token:" + code, token.toString());
         }
@@ -356,10 +355,10 @@ public class Core {
         String signature = Util.md5(key + code);
 
         // 用签名作为Key缓存Code
-        Redis.set("Sign:" + signature, code, seconds, TimeUnit.SECONDS);
+        Redis.set("Sign:" + signature, code, seconds);
 
         // 用Code作为Key缓存用户ID
-        Redis.set("Code:" + code, userId, seconds + 1, TimeUnit.SECONDS);
+        Redis.set("Code:" + code, userId, seconds + 1);
 
         return code;
     }
@@ -417,8 +416,8 @@ public class Core {
         int failureCount = Integer.parseInt(Redis.get(key, "FailureCount"));
         if (failureCount > 0 && now.isAfter(resetTime)) {
             failureCount = 0;
-            Redis.set(key, "FailureCount", 0);
-            Redis.set(key, "LastFailureTime", DateHelper.getDateTime());
+            Redis.setHash(key, "FailureCount", 0);
+            Redis.setHash(key, "LastFailureTime", DateTime.formatCurrentDate());
         }
 
         return failureCount;
@@ -461,7 +460,7 @@ public class Core {
     public void updateUnionId(String userId, String unionId) {
         mapper.updateUnionId(userId, unionId);
 
-        Redis.set("User:" + userId, "unionId", unionId);
+        Redis.setHash("User:" + userId, "unionId", unionId);
         Redis.set("ID:" + unionId, userId);
     }
 
@@ -504,8 +503,8 @@ public class Core {
         }
 
         String key = "User:" + userId;
-        Redis.set(key, Json.toStringValueMap(user));
-        Redis.set(key, "FailureCount", 0);
+        Redis.setHash(key, Json.toStringValueMap(user));
+        Redis.setHash(key, "FailureCount", 0);
 
         RabbitClient.sendTopic(user);
         return userId;
