@@ -124,7 +124,7 @@ public class Core {
             user.setPassword(password);
 
             String key = "User:" + userId;
-            Redis.setHash(key, Json.toStringValueMap(user));
+            Redis.setHash(key, Json.toStringValueMap(user), -1L);
             Redis.setHash(key,"FailureCount", 0);
 
             return userId;
@@ -350,7 +350,7 @@ public class Core {
      * @param seconds 缓存有效时间(秒)
      * @return Code
      */
-    private String generateCode(String userId, String key, int seconds) {
+    private String generateCode(String userId, String key, long seconds) {
         String code = Util.uuid();
         String signature = Util.md5(key + code);
 
@@ -503,7 +503,7 @@ public class Core {
         }
 
         String key = "User:" + userId;
-        Redis.setHash(key, Json.toStringValueMap(user));
+        Redis.setHash(key, Json.toStringValueMap(user), -1L);
         Redis.setHash(key, "FailureCount", 0);
 
         RabbitClient.sendTopic(user);

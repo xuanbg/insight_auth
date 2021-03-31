@@ -53,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
         String id = Redis.get("SubmitToken:" + key);
         if (!Util.isNotEmpty(id)) {
             id = Util.uuid();
-            Redis.set("SubmitToken:" + key, id, 1, TimeUnit.HOURS);
+            Redis.set("SubmitToken:" + key, id, 1L, TimeUnit.HOURS);
         }
 
         return ReplyHelper.success(id);
@@ -180,7 +180,7 @@ public class AuthServiceImpl implements AuthService {
         String userId = core.getUserId(unionId);
         if (!Util.isNotEmpty(userId)) {
             String key = "Wechat:" + Util.md5(unionId + weChatAppId);
-            Redis.set(key, Json.toJson(weChatUser), 30, TimeUnit.MINUTES);
+            Redis.set(key, Json.toJson(weChatUser), 30L, TimeUnit.MINUTES);
 
             return ReplyHelper.notExist(weChatUser);
         }
