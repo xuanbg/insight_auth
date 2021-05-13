@@ -141,7 +141,7 @@ public class AuthController {
     public Reply refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
         AccessToken refreshToken = Json.toAccessToken(token);
         if (refreshToken == null) {
-            return ReplyHelper.invalidToken();
+            return ReplyHelper.fail("未提供RefreshToken");
         }
 
         return service.refreshToken(fingerprint, refreshToken);

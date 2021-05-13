@@ -143,7 +143,7 @@ public class AuthServiceImpl implements AuthService {
         String key = "User:" + userId;
         boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
         if (isInvalid) {
-            return ReplyHelper.forbid();
+            return ReplyHelper.fail("用户被禁止使用");
         }
 
         // 验证应用是否过期
@@ -188,7 +188,7 @@ public class AuthServiceImpl implements AuthService {
         String key = "User:" + userId;
         boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
         if (isInvalid) {
-            return ReplyHelper.forbid();
+            return ReplyHelper.fail("用户被禁止使用");
         }
 
         // 验证应用是否过期
@@ -233,7 +233,7 @@ public class AuthServiceImpl implements AuthService {
             key = "User:" + userId;
             boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
             if (isInvalid) {
-                return ReplyHelper.forbid();
+                return ReplyHelper.fail("用户被禁止使用");
             }
 
             String uid = Redis.get(key, "unionId");
@@ -290,14 +290,14 @@ public class AuthServiceImpl implements AuthService {
         String tokenId = accessToken.getId();
         Token token = core.getToken(tokenId);
         if (token == null || !token.verifyRefreshKey(accessToken)) {
-            return ReplyHelper.invalidToken();
+            return ReplyHelper.fail("未提供RefreshToken");
         }
 
         // 验证用户
         String key = "User:" + token.getUserId();
         boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
         if (isInvalid) {
-            return ReplyHelper.forbid();
+            return ReplyHelper.fail("用户被禁止使用");
         }
 
         TokenDto tokens = core.refreshToken(token, tokenId, fingerprint);
