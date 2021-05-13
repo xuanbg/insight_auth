@@ -269,7 +269,7 @@ public class Core {
         AccessToken accessToken = new AccessToken();
         accessToken.setId(code);
         accessToken.setSecret(token.getSecretKey());
-        tokenDto.setAccessToken(accessToken.toString());
+        tokenDto.setAccessToken(Json.toBase64(accessToken));
         tokenDto.setExpire(life);
 
         String hashKey = tokenDto.getAccessToken() + fingerprint;
@@ -281,7 +281,7 @@ public class Core {
         AccessToken refreshToken = new AccessToken();
         refreshToken.setId(code);
         refreshToken.setSecret(token.getRefreshKey());
-        tokenDto.setRefreshToken(refreshToken.toString());
+        tokenDto.setRefreshToken(Json.toBase64(refreshToken));
         tokenDto.setFailure(failure);
 
         // 缓存令牌数据
