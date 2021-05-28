@@ -1,8 +1,7 @@
 package com.insight.base.auth.common.entity;
 
-import com.insight.utils.Json;
+import com.insight.utils.pojo.BaseXo;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
@@ -10,50 +9,49 @@ import java.time.LocalDate;
  * @date 2019/12/23
  * @remark 租户应用实体类
  */
-public class TenantApp implements Serializable {
-    private static final long serialVersionUID = -1L;
+public class TenantApp extends BaseXo {
 
     /**
      * UUID主键
      */
-    private String id;
+    private Long id;
 
     /**
      * 租户ID
      */
-    private String tenantId;
+    private Long tenantId;
 
     /**
      * 应用ID
      */
-    private String appId;
+    private Long appId;
 
     /**
      * 过期日期
      */
     private LocalDate expireDate;
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getTenantId() {
+    public Long getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(String tenantId) {
+    public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
     }
 
-    public String getAppId() {
+    public Long getAppId() {
         return appId;
     }
 
-    public void setAppId(String appId) {
+    public void setAppId(Long appId) {
         this.appId = appId;
     }
 
@@ -63,10 +61,5 @@ public class TenantApp implements Serializable {
 
     public void setExpireDate(LocalDate expireDate) {
         this.expireDate = expireDate;
-    }
-
-    @Override
-    public String toString() {
-        return Json.toJson(this);
     }
 }

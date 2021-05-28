@@ -1,9 +1,8 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.utils.Json;
+import com.insight.utils.pojo.BaseXo;
 import com.insight.utils.pojo.ModuleInfo;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -11,18 +10,17 @@ import java.util.List;
  * @date 2018/4/20
  * @remark 导航数据DTO
  */
-public class NavDto implements Serializable {
-    private static final long serialVersionUID = -1L;
+public class NavDto extends BaseXo {
 
     /**
      * 导航ID
      */
-    private String id;
+    private Long id;
 
     /**
      * 父级导航ID
      */
-    private String parentId;
+    private Long parentId;
 
     /**
      * 导航级别
@@ -49,19 +47,19 @@ public class NavDto implements Serializable {
      */
     private List<FuncDto> functions;
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getParentId() {
+    public Long getParentId() {
         return parentId;
     }
 
-    public void setParentId(String parentId) {
+    public void setParentId(Long parentId) {
         this.parentId = parentId;
     }
 
@@ -103,10 +101,5 @@ public class NavDto implements Serializable {
 
     public void setFunctions(List<FuncDto> functions) {
         this.functions = functions;
-    }
-
-    @Override
-    public String toString() {
-        return Json.toJson(this);
     }
 }

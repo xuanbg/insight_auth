@@ -27,7 +27,7 @@ public class Token extends TokenInfo {
      * @param appId    应用ID
      * @param tenantId 租户ID
      */
-    public Token(String userId, String appId, String tenantId) {
+    public Token(Long userId, Long appId, Long tenantId) {
         key = "App:" + appId;
         setUserId(userId);
         setAppId(appId);

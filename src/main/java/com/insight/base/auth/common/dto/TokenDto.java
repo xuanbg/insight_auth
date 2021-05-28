@@ -1,16 +1,13 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.utils.Json;
-
-import java.io.Serializable;
+import com.insight.utils.pojo.BaseXo;
 
 /**
  * @author 宣炳刚
  * @date 2017/9/15
  * @remark 令牌数据DTO
  */
-public class TokenDto implements Serializable {
-    private static final long serialVersionUID = -1L;
+public class TokenDto extends BaseXo {
 
     /**
      * 访问令牌(Base64编码)
@@ -75,10 +72,5 @@ public class TokenDto implements Serializable {
 
     public void setUserInfo(UserInfoDto userInfo) {
         this.userInfo = userInfo;
-    }
-
-    @Override
-    public String toString() {
-        return Json.toJson(this);
     }
 }

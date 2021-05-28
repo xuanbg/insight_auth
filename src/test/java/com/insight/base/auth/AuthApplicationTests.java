@@ -10,8 +10,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class AuthApplicationTests {
-@Autowired
-private Core core;
+    @Autowired
+    private Core core;
 
     @Test
     public void contextLoads() {

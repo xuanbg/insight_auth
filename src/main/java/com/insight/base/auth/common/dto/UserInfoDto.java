@@ -1,8 +1,7 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.utils.Json;
+import com.insight.utils.pojo.BaseXo;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -10,18 +9,17 @@ import java.time.LocalDateTime;
  * @date 2018/4/13
  * @remark 用户关键信息DTO
  */
-public class UserInfoDto implements Serializable {
-    private static final long serialVersionUID = -1L;
+public class UserInfoDto extends BaseXo {
 
     /**
      * 用户ID(UUID,唯一)
      */
-    private String id;
+    private Long id;
 
     /**
      * 租户ID
      */
-    private String tenantId;
+    private Long tenantId;
 
     /**
      * 用户编码
@@ -63,19 +61,19 @@ public class UserInfoDto implements Serializable {
      */
     private LocalDateTime createdTime;
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getTenantId() {
+    public Long getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(String tenantId) {
+    public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
     }
 
@@ -141,10 +139,5 @@ public class UserInfoDto implements Serializable {
 
     public void setCreatedTime(LocalDateTime createdTime) {
         this.createdTime = createdTime;
-    }
-
-    @Override
-    public String toString() {
-        return Json.toJson(this);
     }
 }

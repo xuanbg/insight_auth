@@ -1,27 +1,26 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.utils.Json;
+import com.insight.utils.pojo.BaseXo;
 
 import javax.validation.constraints.NotEmpty;
-import java.io.Serializable;
 
 /**
  * @author 宣炳刚
  * @date 2017/9/7
  * @remark 登录数据DTO
  */
-public class LoginDto implements Serializable {
-    private static final long serialVersionUID = -1L;
+public class LoginDto extends BaseXo {
+
     /**
      * 应用ID
      */
     @NotEmpty(message = "应用ID不能为空")
-    private String appId;
+    private Long appId;
 
     /**
      * 租户ID
      */
-    private String tenantId;
+    private Long tenantId;
 
     /**
      * 登录账号
@@ -68,19 +67,19 @@ public class LoginDto implements Serializable {
      */
     private String fingerprint;
 
-    public String getAppId() {
-        return appId == null || appId.isEmpty() ? null : appId;
+    public Long getAppId() {
+        return appId;
     }
 
-    public void setAppId(String appId) {
+    public void setAppId(Long appId) {
         this.appId = appId;
     }
 
-    public String getTenantId() {
-        return tenantId == null || tenantId.isEmpty() ? null : tenantId;
+    public Long getTenantId() {
+        return tenantId;
     }
 
-    public void setTenantId(String tenantId) {
+    public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
     }
 
@@ -154,10 +153,5 @@ public class LoginDto implements Serializable {
 
     public void setFingerprint(String fingerprint) {
         this.fingerprint = fingerprint;
-    }
-
-    @Override
-    public String toString() {
-        return Json.toJson(this);
     }
 }

@@ -1,27 +1,24 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.utils.Json;
+import com.insight.utils.pojo.BaseXo;
 import com.insight.utils.pojo.FuncInfo;
-
-import java.io.Serializable;
 
 /**
  * @author 宣炳刚
  * @date 2018/4/20
  * @remark 功能及权限数据DTO
  */
-public class FuncDto implements Serializable {
-    private static final long serialVersionUID = -1L;
+public class FuncDto extends BaseXo {
 
     /**
      * 功能ID
      */
-    private String id;
+    private Long id;
 
     /**
      * 导航ID
      */
-    private String navId;
+    private Long navId;
 
     /**
      * 功能类型 0:全局功能;1:数据项功能;2:其他功能
@@ -53,19 +50,19 @@ public class FuncDto implements Serializable {
      */
     private Boolean permit;
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getNavId() {
+    public Long getNavId() {
         return navId;
     }
 
-    public void setNavId(String navId) {
+    public void setNavId(Long navId) {
         this.navId = navId;
     }
 
@@ -115,11 +112,6 @@ public class FuncDto implements Serializable {
 
     public void setPermit(Boolean permit) {
         this.permit = permit;
-    }
-
-    @Override
-    public String toString() {
-        return Json.toJson(this);
     }
 }
 

@@ -37,10 +37,11 @@ public class TopicExchangeConfig {
 
     /**
      * 默认用户绑定
+     *
      * @return Binding
      */
     @Bean
-    public Binding userBinding(){
+    public Binding userBinding() {
         return BindingBuilder.bind(userQueue()).to(exchange()).with("auth.addUser");
     }
 }

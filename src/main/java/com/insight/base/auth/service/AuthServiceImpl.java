@@ -68,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getCode(String account, int type) {
-        String userId = core.getUserId(account);
+        Long userId = core.getUserId(account);
         if (userId == null) {
             if (type == 0) {
                 return ReplyHelper.notExist("账号或密码错误");
@@ -116,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
             String account = login.getAccount();
             logger.warn("账号[{}]正在尝试使用错误的签名请求令牌!", account);
 
-            String userId = core.getUserId(account);
+            Long userId = core.getUserId(account);
             String key = "User:" + userId;
             if (!Redis.hasKey(key)) {
                 Redis.deleteKey("ID:" + account);
@@ -135,8 +135,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 验证用户
-        String userId = core.getId(code);
-        if (!Util.isNotEmpty(userId)) {
+        Long userId = core.getId(code);
+        if (userId == null) {
             return ReplyHelper.fail("发生了一点小意外,请重新提交");
         }
 
@@ -177,8 +177,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 使用微信UnionID读取缓存,如用户不存在,则缓存微信用户信息(30分钟)后返回微信用户信息
-        String userId = core.getUserId(unionId);
-        if (!Util.isNotEmpty(userId)) {
+        Long userId = core.getUserId(unionId);
+        if (userId == null) {
             String key = "Wechat:" + Util.md5(unionId + weChatAppId);
             Redis.set(key, Json.toJson(weChatUser), 30L, TimeUnit.MINUTES);
 
@@ -228,8 +228,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 根据手机号获取用户
-        String userId = core.getUserId(mobile);
-        if (userId != null && !userId.isEmpty()) {
+        Long userId = core.getUserId(mobile);
+        if (userId != null) {
             key = "User:" + userId;
             boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
             if (isInvalid) {
@@ -320,14 +320,13 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 获取用户可选租户
      *
-     *
      * @param appId   应用ID
      * @param account 登录账号
      * @return Reply
      */
     @Override
-    public Reply getTenants(String appId, String account) {
-        String userId = core.getUserId(account);
+    public Reply getTenants(Long appId, String account) {
+        Long userId = core.getUserId(account);
         List<MemberDto> list = mapper.getTenants(appId, userId);
 
         return ReplyHelper.success(list);
@@ -354,7 +353,7 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public Reply getModuleFunctions(LoginInfo info, String moduleId) {
+    public Reply getModuleFunctions(LoginInfo info, Long moduleId) {
         List<FuncDto> list = mapper.getModuleFunctions(moduleId, info.getTenantId(), info.getUserId());
 
         return ReplyHelper.success(list);

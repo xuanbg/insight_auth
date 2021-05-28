@@ -85,7 +85,7 @@ public interface AuthService {
      * @param account 登录账号
      * @return Reply
      */
-    Reply getTenants(String appId, String account);
+    Reply getTenants(Long appId, String account);
 
     /**
      * 获取用户导航栏
@@ -102,5 +102,5 @@ public interface AuthService {
      * @param moduleId 功能模块ID
      * @return Reply
      */
-    Reply getModuleFunctions(LoginInfo info, String moduleId);
+    Reply getModuleFunctions(LoginInfo info, Long moduleId);
 }

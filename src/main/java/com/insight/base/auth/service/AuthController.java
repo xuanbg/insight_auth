@@ -168,7 +168,7 @@ public class AuthController {
      * @return Reply
      */
     @GetMapping("/v1.0/{appId}/tenants")
-    public Reply getTenants(@PathVariable String appId, @RequestParam String account) {
+    public Reply getTenants(@PathVariable Long appId, @RequestParam String account) {
 
         return service.getTenants(appId, account);
     }
@@ -194,7 +194,7 @@ public class AuthController {
      * @return Reply
      */
     @GetMapping("/v1.0/navigators/{id}/functions")
-    public Reply getModuleFunctions(@RequestHeader("loginInfo") String loginInfo, @PathVariable("id") String moduleId) {
+    public Reply getModuleFunctions(@RequestHeader("loginInfo") String loginInfo, @PathVariable("id") Long moduleId) {
         LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
 
         return service.getModuleFunctions(info, moduleId);

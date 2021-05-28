@@ -7,10 +7,7 @@ import com.insight.base.auth.common.dto.NormalMessage;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.dto.UserInfoDto;
 import com.insight.base.auth.common.mapper.AuthMapper;
-import com.insight.utils.DateTime;
-import com.insight.utils.Json;
-import com.insight.utils.Redis;
-import com.insight.utils.Util;
+import com.insight.utils.*;
 import com.insight.utils.encrypt.Encryptor;
 import com.insight.utils.pojo.AccessToken;
 import com.insight.utils.pojo.Application;
@@ -38,39 +35,38 @@ import static com.insight.utils.pojo.TokenInfo.TIME_OUT;
  */
 @Component
 public class Core {
+    /**
+     * RSA私钥
+     */
+    private static final String PRIVATE_KEY = "";
+    /**
+     * Code生命周期(30秒)
+     */
+    private static final int GENERAL_CODE_LEFT = 30;
+    /**
+     * 登录短信验证码长度(6位)
+     */
+    private static final int SMS_CODE_LENGTH = 6;
+    /**
+     * 登录短信验证码有效时间(300秒)
+     */
+    private static final int SMS_CODE_LEFT = 300;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final SnowflakeCreator creator;
     private final AuthMapper mapper;
     private final WeChatHelper weChatHelper;
     private final MessageClient client;
 
     /**
-     * RSA私钥
-     */
-    private static final String PRIVATE_KEY = "";
-
-    /**
-     * Code生命周期(30秒)
-     */
-    private static final int GENERAL_CODE_LEFT = 30;
-
-    /**
-     * 登录短信验证码长度(6位)
-     */
-    private static final int SMS_CODE_LENGTH = 6;
-
-    /**
-     * 登录短信验证码有效时间(300秒)
-     */
-    private static final int SMS_CODE_LEFT = 300;
-
-    /**
      * 构造函数
      *
+     * @param creator      雪花算法ID生成器
      * @param mapper       AuthMapper
      * @param weChatHelper WeChatHelper
      * @param client       MessageClient
      */
-    public Core(AuthMapper mapper, WeChatHelper weChatHelper, MessageClient client) {
+    public Core(SnowflakeCreator creator, AuthMapper mapper, WeChatHelper weChatHelper, MessageClient client) {
+        this.creator = creator;
         this.mapper = mapper;
         this.weChatHelper = weChatHelper;
         this.client = client;
@@ -82,16 +78,16 @@ public class Core {
      * @param account 登录账号(账号、手机号、E-mail、openId)
      * @return 用户ID
      */
-    public String getUserId(String account) {
-        String userId = Redis.get("ID:" + account);
-        if (Util.isNotEmpty(userId)) {
-            return userId;
+    public Long getUserId(String account) {
+        String value = Redis.get("ID:" + account);
+        if (Util.isNotEmpty(value)) {
+            return Long.valueOf(value);
         }
 
         synchronized (this) {
-            userId = Redis.get(account);
-            if (Util.isNotEmpty(userId)) {
-                return userId;
+            value = Redis.get("ID:" + account);
+            if (Util.isNotEmpty(value)) {
+                return Long.valueOf(value);
             }
 
             User user = mapper.getUser(account);
@@ -100,22 +96,22 @@ public class Core {
             }
 
             // 缓存用户ID到Redis
-            userId = user.getId();
-            Redis.set("ID:" + user.getAccount(), userId);
+            Long userId = user.getId();
+            Redis.set("ID:" + user.getAccount(), userId.toString());
 
             String mobile = user.getMobile();
             if (Util.isNotEmpty(mobile)) {
-                Redis.set("ID:" + mobile, userId);
+                Redis.set("ID:" + mobile, userId.toString());
             }
 
             String mail = user.getEmail();
             if (Util.isNotEmpty(mail)) {
-                Redis.set("ID:" + mail, userId);
+                Redis.set("ID:" + mail, userId.toString());
             }
 
             String unionId = user.getUnionId();
             if (Util.isNotEmpty(unionId)) {
-                Redis.set("ID:" + unionId, userId);
+                Redis.set("ID:" + unionId, userId.toString());
             }
 
             // 解密用户密码
@@ -125,7 +121,7 @@ public class Core {
 
             String key = "User:" + userId;
             Redis.setHash(key, Json.toStringValueMap(user), -1L);
-            Redis.setHash(key,"FailureCount", 0);
+            Redis.setHash(key, "FailureCount", 0);
 
             return userId;
         }
@@ -139,7 +135,7 @@ public class Core {
      * @param password 密码
      * @return Code
      */
-    public String getGeneralCode(String userId, String account, String password) {
+    public String getGeneralCode(Long userId, String account, String password) {
         String key = Util.md5(account + password);
 
         return generateCode(userId, key, GENERAL_CODE_LEFT);
@@ -152,7 +148,7 @@ public class Core {
      * @param mobile 手机号
      * @return Code
      */
-    public String getSmsCode(String userId, String mobile) {
+    public String getSmsCode(Long userId, String mobile) {
         String smsCode = Util.randomString(SMS_CODE_LENGTH);
         Map<String, Object> map = new HashMap<>(4);
         map.put("code", smsCode);
@@ -184,8 +180,8 @@ public class Core {
      * @param login 登录信息
      * @return 租户ID是否为空
      */
-    public boolean appIsExpired(LoginDto login, String userId) {
-        String appId = login.getAppId();
+    public boolean appIsExpired(LoginDto login, Long userId) {
+        Long appId = login.getAppId();
         String key = "App:" + appId;
         if (!Redis.hasKey(key)) {
             Application app = mapper.getApp(appId);
@@ -196,15 +192,15 @@ public class Core {
             Redis.setHash(key, "RefreshType", app.getAutoRefresh());
         }
 
-        String tenantId = login.getTenantId();
-        if (tenantId == null || tenantId.isEmpty()) {
+        Long tenantId = login.getTenantId();
+        if (tenantId == null) {
             return false;
         }
 
-        String date = Redis.get("App:" + appId, tenantId);
-        if (date == null){
-            mapper.getApps(appId).forEach(i -> Redis.setHash(key, i.getTenantId(), i.getExpireDate()));
-            date = Redis.get("App:" + appId, tenantId);
+        String date = Redis.get("App:" + appId, tenantId.toString());
+        if (date == null) {
+            mapper.getApps(appId).forEach(i -> Redis.setHash(key, i.getTenantId().toString(), i.getExpireDate()));
+            date = Redis.get("App:" + appId, tenantId.toString());
         }
 
         LocalDate expire = LocalDate.parse(date);
@@ -219,10 +215,10 @@ public class Core {
      * @param userId 用户ID
      * @return 令牌数据包
      */
-    public TokenDto creatorToken(String code, LoginDto login, String userId) {
+    public TokenDto creatorToken(String code, LoginDto login, Long userId) {
         String fingerprint = login.getFingerprint();
-        String appId = login.getAppId();
-        String tenantId = login.getTenantId();
+        Long appId = login.getAppId();
+        Long tenantId = login.getTenantId();
 
         // 加载用户授权码
         List<String> list = mapper.getAuthInfos(appId, tenantId, userId);
@@ -232,7 +228,7 @@ public class Core {
 
         // 缓存用户Token
         String key = "UserToken:" + userId;
-        Redis.setHash(key, appId, code);
+        Redis.setHash(key, appId.toString(), code);
 
         return initPackage(token, code, fingerprint, appId);
     }
@@ -246,7 +242,7 @@ public class Core {
      * @return 令牌数据包
      */
     public TokenDto refreshToken(Token token, String tokenId, String fingerprint) {
-        String appId = token.getAppId();
+        Long appId = token.getAppId();
         token.setSecretKey(Util.uuid());
 
         return initPackage(token, tokenId, fingerprint, appId);
@@ -261,7 +257,7 @@ public class Core {
      * @param appId       应用ID
      * @return 令牌数据包
      */
-    private TokenDto initPackage(Token token, String code, String fingerprint, String appId) {
+    private TokenDto initPackage(Token token, String code, String fingerprint, Long appId) {
         TokenDto tokenDto = new TokenDto();
 
         // 生成令牌数据
@@ -289,13 +285,13 @@ public class Core {
         if (failureTime == null || now.isAfter(failureTime)) {
             token.setFailureTime(now.plusSeconds(TIME_OUT + failure));
             Redis.set("Token:" + code, token.toString(), life > 0 ? TIME_OUT + failure : -1);
-        }else {
+        } else {
             Redis.set("Token:" + code, token.toString());
         }
 
         // 构造用户信息
         String key = "User:" + token.getUserId();
-        Map<Object, Object> user =  Redis.getEntity(key);
+        Map<Object, Object> user = Redis.getEntity(key);
         UserInfoDto info = Json.clone(user, UserInfoDto.class);
         String host = Redis.get("Config:FileHost");
         String imgUrl = info.getHeadImg();
@@ -350,7 +346,7 @@ public class Core {
      * @param seconds 缓存有效时间(秒)
      * @return Code
      */
-    private String generateCode(String userId, String key, long seconds) {
+    private String generateCode(Long userId, String key, long seconds) {
         String code = Util.uuid();
         String signature = Util.md5(key + code);
 
@@ -358,7 +354,7 @@ public class Core {
         Redis.set("Sign:" + signature, code, seconds);
 
         // 用Code作为Key缓存用户ID
-        Redis.set("Code:" + code, userId, seconds + 1);
+        Redis.set("Code:" + code, userId.toString(), seconds + 1);
 
         return code;
     }
@@ -386,15 +382,15 @@ public class Core {
      * @param code Code
      * @return Code对应的用户ID
      */
-    public String getId(String code) {
+    public Long getId(String code) {
         String key = "Code:" + code;
-        String id = Redis.get(key);
-        if (id == null || id.isEmpty()) {
+        String val = Redis.get(key);
+        if (Util.isEmpty(val)) {
             return null;
         }
 
         Redis.deleteKey(key);
-        return id;
+        return Long.valueOf(val);
     }
 
     /**
@@ -402,7 +398,7 @@ public class Core {
      *
      * @return 用户是否失效状态
      */
-    public int getFailureCount(String userId) {
+    public int getFailureCount(Long userId) {
         String key = "User:" + userId;
         String value = Redis.get(key, "LastFailureTime");
         if (value == null || value.isEmpty()) {
@@ -443,7 +439,7 @@ public class Core {
      * @param openId 微信OpenID
      * @param appId  微信AppID
      */
-    public void bindOpenId(String userId, String openId, String appId) {
+    public void bindOpenId(Long userId, String openId, String appId) {
         Map<String, Map<String, String>> map = mapper.getOpenId(userId);
         Map<String, String> ids = map == null ? new HashMap<>(16) : map.get("openId");
 
@@ -457,11 +453,11 @@ public class Core {
      * @param userId  用户ID
      * @param unionId 微信UnionID
      */
-    public void updateUnionId(String userId, String unionId) {
+    public void updateUnionId(Long userId, String unionId) {
         mapper.updateUnionId(userId, unionId);
 
         Redis.setHash("User:" + userId, "unionId", unionId);
-        Redis.set("ID:" + unionId, userId);
+        Redis.set("ID:" + unionId, userId.toString());
     }
 
     /**
@@ -482,8 +478,8 @@ public class Core {
      * @param unionId 微信UnionID
      * @param head    用户头像
      */
-    public String addUser(String name, String mobile, String unionId, String head) {
-        String userId = Util.uuid();
+    public Long addUser(String name, String mobile, String unionId, String head) {
+        Long userId = creator.nextId(3);
         User user = new User();
         user.setId(userId);
         user.setName(name);
@@ -497,9 +493,9 @@ public class Core {
         user.setCreatedTime(LocalDateTime.now());
 
         // 缓存用户ID到Redis
-        Redis.set("ID:" + mobile, userId);
+        Redis.set("ID:" + mobile, userId.toString());
         if (unionId != null && !unionId.isEmpty()) {
-            Redis.set("ID:" + unionId, userId);
+            Redis.set("ID:" + unionId, userId.toString());
         }
 
         String key = "User:" + userId;
