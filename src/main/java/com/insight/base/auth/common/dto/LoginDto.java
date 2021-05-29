@@ -2,7 +2,7 @@ package com.insight.base.auth.common.dto;
 
 import com.insight.utils.pojo.BaseXo;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author 宣炳刚
@@ -14,7 +14,7 @@ public class LoginDto extends BaseXo {
     /**
      * 应用ID
      */
-    @NotEmpty(message = "应用ID不能为空")
+    @NotNull(message = "应用ID不能为空")
     private Long appId;
 
     /**
