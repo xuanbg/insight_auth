@@ -129,7 +129,7 @@ CREATE TABLE `ibt_tenant` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibt_tenant_app`;
 CREATE TABLE `ibt_tenant_app` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-5',
+  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
   `tenant_id`          bigint            NOT NULL                COMMENT '租户ID',
   `app_id`             bigint            NOT NULL                COMMENT '应用ID',
   `expire_date`        date                       DEFAULT NULL   COMMENT '过期日期',
@@ -143,7 +143,7 @@ CREATE TABLE `ibt_tenant_app` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibt_tenant_user`;
 CREATE TABLE `ibt_tenant_user` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-6',
+  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
   `tenant_id`          bigint            NOT NULL                COMMENT '租户ID',
   `user_id`            bigint            NOT NULL                COMMENT '应用ID',
   PRIMARY KEY (`id`) USING BTREE,
@@ -157,7 +157,7 @@ CREATE TABLE `ibt_tenant_user` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibu_group`;
 CREATE TABLE `ibu_group` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-7',
+  `id`                 bigint            NOT NULL                COMMENT '主键-5',
   `tenant_id`          bigint            NOT NULL                COMMENT '租户ID',
   `code`               char(4)           NOT NULL                COMMENT '用户组编码',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
@@ -178,7 +178,7 @@ CREATE TABLE `ibu_group` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibu_group_member`;
 CREATE TABLE `ibu_group_member` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-8',
+  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
   `group_id`           bigint            NOT NULL                COMMENT '用户组ID',
   `user_id`            bigint            NOT NULL                COMMENT '用户ID',
   PRIMARY KEY (`id`) USING BTREE,
@@ -192,7 +192,7 @@ CREATE TABLE `ibu_group_member` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibo_organize`;
 CREATE TABLE `ibo_organize` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-9',
+  `id`                 bigint            NOT NULL                COMMENT '主键-6',
   `tenant_id`          bigint            NOT NULL                COMMENT '租户ID',
   `parent_id`          bigint                     DEFAULT NULL   COMMENT '父级ID',
   `type`               tinyint unsigned           DEFAULT NULL   COMMENT '节点类型:0.机构;1.部门;2.职位',
@@ -218,7 +218,7 @@ CREATE TABLE `ibo_organize` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibo_organize_member`;
 CREATE TABLE `ibo_organize_member` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-10',
+  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
   `post_id`            bigint            NOT NULL                COMMENT '职位ID(组织机构表ID)',
   `user_id`            bigint            NOT NULL                COMMENT '用户ID(用户表ID)',
   PRIMARY KEY (`id`) USING BTREE,
@@ -232,7 +232,7 @@ CREATE TABLE `ibo_organize_member` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibr_role`;
 CREATE TABLE `ibr_role` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-11',
+  `id`                 bigint            NOT NULL                COMMENT '主键-7',
   `tenant_id`          bigint                     DEFAULT NULL   COMMENT '租户ID,如为空且非内置则为角色模板',
   `app_id`             bigint            NOT NULL                COMMENT '应用ID',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
@@ -267,7 +267,7 @@ CREATE TABLE `ibr_role_permit` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibr_role_member`;
 CREATE TABLE `ibr_role_member` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-12',
+  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
   `type`               tinyint unsigned  NOT NULL DEFAULT '0'    COMMENT '成员类型:0.未定义;1.用户;2.用户组;3.职位',
   `role_id`            bigint            NOT NULL                COMMENT '角色ID',
   `member_id`          bigint            NOT NULL                COMMENT '成员ID',
@@ -485,8 +485,8 @@ INSERT ibu_user (`id`, `name`, `account`, `password`, `is_builtin`, `creator`, `
 insert ibr_role (id, tenant_id, app_id, name, remark, is_builtin, creator, creator_id, `created_time`) values
 (137703403710054416, NULL, 134660498556715024, '平台管理员', '内置平台管理员角色', 0, '系统', 0, now()),
 (137703825636065296, NULL, 134661270778413072, '系统管理员', '租户系统管理员角色模板', 1, '系统', 0, now());
-insert ibr_role_member(id, `type`, role_id, member_id) values
-(138392941905444880, 1, 137703403710054416, 0);
+insert ibr_role_member(`type`, role_id, member_id) values
+(1, 137703403710054416, 0);
 
 -- ----------------------------
 -- 初始化功能权限
