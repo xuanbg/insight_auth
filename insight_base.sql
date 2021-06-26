@@ -72,6 +72,7 @@ CREATE TABLE `ibs_function` (
 DROP TABLE IF EXISTS `ibu_user`;
 CREATE TABLE `ibu_user` (
   `id`                 bigint            NOT NULL                COMMENT '主键-3',
+  `type`               tinyint unsigned  NOT NULL                COMMENT '用户类型 0:外部用户;1:平台用户',
   `code`               varchar(16)                DEFAULT NULL   COMMENT '用户编码',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `account`            varchar(64)       NOT NULL                COMMENT '登录账号',
@@ -89,6 +90,7 @@ CREATE TABLE `ibu_user` (
   `creator_id`         bigint            NOT NULL                COMMENT '创建人ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_user_type` (`type`) USING BTREE,
   KEY `idx_user_code` (`code`) USING BTREE,
   UNIQUE KEY `idx_user_account` (`account`) USING BTREE,
   UNIQUE KEY `idx_user_mobile` (`mobile`) USING BTREE,
