@@ -33,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final Core core;
 
     /**
-     * 邮件发件人
+     * 扫码授权URL
      */
     @Value("${insight.auth.url}")
     private String authUrl;
