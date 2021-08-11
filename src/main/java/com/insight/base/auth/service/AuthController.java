@@ -72,7 +72,7 @@ public class AuthController {
     }
 
     /**
-     * 获取Token
+     * 扫码授权获取Token
      *
      * @param fingerprint 用户特征串
      * @param login       用户登录数据
@@ -85,7 +85,7 @@ public class AuthController {
     }
 
     /**
-     * 获取Token
+     * 扫码授权
      *
      * @param loginInfo 用户信息
      * @param code      用户登录数据

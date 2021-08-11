@@ -15,6 +15,7 @@ import com.insight.utils.pojo.Reply;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +31,12 @@ public class AuthServiceImpl implements AuthService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final AuthMapper mapper;
     private final Core core;
+
+    /**
+     * 邮件发件人
+     */
+    @Value("${insight.auth.url}")
+    private String authUrl;
 
     /**
      * 构造函数
@@ -149,11 +156,13 @@ public class AuthServiceImpl implements AuthService {
         if (Util.isEmpty(code)) {
             code = Util.uuid();
             Redis.set("Code:" + code, "", 300L);
+
+            return ReplyHelper.success(authUrl + code);
         }
 
         String id = Redis.get("Code:" + code);
         if (Util.isEmpty(id)) {
-            return ReplyHelper.success(code);
+            return ReplyHelper.invalidCode();
         }
 
         return core.getToken(code, login);

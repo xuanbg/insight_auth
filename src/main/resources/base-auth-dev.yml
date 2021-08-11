@@ -65,3 +65,6 @@ logging:
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
+insight:
+  auth:
+    url: http://localhost:6200/base/auth/v1.0/tokens/auth/
