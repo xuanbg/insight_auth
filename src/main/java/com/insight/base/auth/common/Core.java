@@ -394,6 +394,35 @@ public class Core {
     }
 
     /**
+     * 获取Token
+     *
+     * @param code  Code
+     * @param login 用户登录数据
+     * @return Reply
+     */
+    public Reply getToken(String code, LoginDto login) {
+        Long userId = getId(code);
+        if (userId == null) {
+            return ReplyHelper.fail("发生了一点小意外,请重新提交");
+        }
+
+        // 验证用户
+        String key = "User:" + userId;
+        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
+        if (isInvalid) {
+            return ReplyHelper.fail("用户被禁止使用");
+        }
+
+        // 验证应用是否过期
+        if (appIsExpired(login, userId)) {
+            return ReplyHelper.fail("应用已过期,请续租");
+        }
+
+        TokenDto tokens = creatorToken(code, login, userId);
+        return ReplyHelper.success(tokens);
+    }
+
+    /**
      * 用户是否失效状态
      *
      * @return 用户是否失效状态

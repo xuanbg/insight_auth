@@ -72,13 +72,39 @@ public class AuthController {
     }
 
     /**
+     * 获取Token
+     *
+     * @param fingerprint 用户特征串
+     * @param login       用户登录数据
+     * @return Reply
+     */
+    @PostMapping("/v1.0/tokens/auth")
+    public Reply getTokenWithCode(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
+        login.setFingerprint(fingerprint);
+        return service.getTokenWithCode(login);
+    }
+
+    /**
+     * 获取Token
+     *
+     * @param loginInfo 用户信息
+     * @param code      用户登录数据
+     * @return Reply
+     */
+    @PutMapping("/v1.0/tokens/auth/{code}")
+    public Reply authWithCode(@RequestHeader("loginInfo") String loginInfo, @PathVariable String code) {
+        LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
+        return service.authWithCode(info, code);
+    }
+
+    /**
      * 通过微信授权码获取Token
      *
      * @param fingerprint 用户特征串
      * @param login       用户登录数据
      * @return Reply
      */
-    @PostMapping("/v1.0/tokens/withWechatCode")
+    @PostMapping("/v1.0/tokens/wechat/code")
     public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String appId = login.getWeChatAppId();
@@ -96,7 +122,7 @@ public class AuthController {
      * @param login       用户登录数据
      * @return Reply
      */
-    @PostMapping("/v1.0/tokens/withWechatUnionId")
+    @PostMapping("/v1.0/tokens/wechat/unionid")
     public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String appId = login.getWeChatAppId();

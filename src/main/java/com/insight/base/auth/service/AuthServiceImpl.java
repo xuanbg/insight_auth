@@ -110,49 +110,72 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getToken(LoginDto login) {
-        // 验证签名
         String code = core.getCode(login.getSignature());
-        if (code == null) {
-            String account = login.getAccount();
-            logger.warn("账号[{}]正在尝试使用错误的签名请求令牌!", account);
-
-            Long userId = core.getUserId(account);
-            String key = "User:" + userId;
-            if (!Redis.hasKey(key)) {
-                Redis.deleteKey("ID:" + account);
-                return ReplyHelper.fail("发生了一点小意外,请重新提交");
-            }
-
-            int failureCount = core.getFailureCount(userId);
-            if (failureCount > 5) {
-                return ReplyHelper.fail("错误次数过多,账号已被锁定!请于10分钟后再试");
-            }
-
-            Redis.setHash(key, "FailureCount", failureCount + 1);
-            Redis.setHash(key, "LastFailureTime", DateTime.formatCurrentTime());
-
-            return ReplyHelper.invalidParam("账号或密码错误");
+        if (code != null) {
+            return core.getToken(code, login);
         }
 
-        // 验证用户
-        Long userId = core.getId(code);
-        if (userId == null) {
+        // 处理错误
+        String account = login.getAccount();
+        logger.warn("账号[{}]正在尝试使用错误的签名请求令牌!", account);
+
+        Long userId = core.getUserId(account);
+        String key = "User:" + userId;
+        if (!Redis.hasKey(key)) {
+            Redis.deleteKey("ID:" + account);
             return ReplyHelper.fail("发生了一点小意外,请重新提交");
         }
 
-        String key = "User:" + userId;
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
-        if (isInvalid) {
-            return ReplyHelper.fail("用户被禁止使用");
+        int failureCount = core.getFailureCount(userId);
+        if (failureCount > 5) {
+            return ReplyHelper.fail("错误次数过多,账号已被锁定!请于10分钟后再试");
         }
 
-        // 验证应用是否过期
-        if (core.appIsExpired(login, userId)) {
-            return ReplyHelper.fail("应用已过期,请续租");
+        Redis.setHash(key, "FailureCount", failureCount + 1);
+        Redis.setHash(key, "LastFailureTime", DateTime.formatCurrentTime());
+
+        return ReplyHelper.invalidParam("账号或密码错误");
+    }
+
+    /**
+     * 扫码获取Token
+     *
+     * @param login 用户登录数据
+     * @return Reply
+     */
+    @Override
+    public Reply getTokenWithCode(LoginDto login) {
+        String code = login.getCode();
+        if (Util.isEmpty(code)) {
+            code = Util.uuid();
+            Redis.set("Code:" + code, "", 300L);
         }
 
-        TokenDto tokens = core.creatorToken(code, login, userId);
-        return ReplyHelper.success(tokens);
+        String id = Redis.get("Code:" + code);
+        if (Util.isEmpty(id)) {
+            return ReplyHelper.success(code);
+        }
+
+        return core.getToken(code, login);
+    }
+
+    /**
+     * 扫码授权
+     *
+     * @param info 用户登录信息
+     * @param code 二维码
+     * @return Reply
+     */
+    @Override
+    public Reply authWithCode(LoginInfo info, String code) {
+        if (Util.isEmpty(code)) {
+            return ReplyHelper.invalidParam();
+        }
+
+        String key = "Code:" + code;
+        Redis.set(key, info.getUserId().toString(), 30L);
+
+        return ReplyHelper.success();
     }
 
     /**

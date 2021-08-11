@@ -38,6 +38,23 @@ public interface AuthService {
     Reply getToken(LoginDto login);
 
     /**
+     * 扫码获取Token
+     *
+     * @param login 用户登录数据
+     * @return Reply
+     */
+    Reply getTokenWithCode(LoginDto login);
+
+    /**
+     * 扫码授权
+     *
+     * @param info 用户登录信息
+     * @param code 二维码
+     * @return Reply
+     */
+    Reply authWithCode(LoginInfo info, String code);
+
+    /**
      * 通过微信授权码获取Token
      *
      * @param login 用户登录数据
