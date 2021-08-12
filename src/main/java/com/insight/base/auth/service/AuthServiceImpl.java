@@ -145,27 +145,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 扫码获取Token
+     * 获取授权码
      *
-     * @param login 用户登录数据
      * @return Reply
      */
     @Override
-    public Reply getTokenWithCode(LoginDto login) {
-        String code = login.getCode();
-        if (Util.isEmpty(code)) {
-            code = Util.uuid();
-            Redis.set("Code:" + code, "", 300L);
+    public Reply getAuthCode() {
+        String code = Util.uuid();
+        Redis.set("Code:" + code, "", 300L);
 
-            return ReplyHelper.success(authUrl + code);
-        }
-
-        String id = Redis.get("Code:" + code);
-        if (Util.isEmpty(id)) {
-            return ReplyHelper.invalidCode();
-        }
-
-        return core.getToken(code, login);
+        return ReplyHelper.success(authUrl + code);
     }
 
     /**
@@ -181,10 +170,22 @@ public class AuthServiceImpl implements AuthService {
             return ReplyHelper.invalidParam();
         }
 
-        String key = "Code:" + code;
-        Redis.set(key, info.getUserId().toString(), 30L);
-
+        Redis.set("Code:" + code, info.getUserId().toString(), 30L);
         return ReplyHelper.success();
+    }
+
+    /**
+     * 扫码授权获取Token
+     *
+     * @param login 用户登录数据
+     * @return Reply
+     */
+    @Override
+    public Reply getTokenWithCode(LoginDto login) {
+        String code = login.getCode();
+        String id = Redis.get("Code:" + code);
+
+        return Util.isEmpty(id) ? ReplyHelper.invalidCode() : core.getToken(code, login);
     }
 
     /**

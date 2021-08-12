@@ -72,16 +72,13 @@ public class AuthController {
     }
 
     /**
-     * 扫码授权获取Token
+     * 获取授权码
      *
-     * @param fingerprint 用户特征串
-     * @param login       用户登录数据
      * @return Reply
      */
-    @PostMapping("/v1.0/tokens/auth")
-    public Reply getTokenWithCode(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
-        login.setFingerprint(fingerprint);
-        return service.getTokenWithCode(login);
+    @PostMapping("/v1.0/tokens/codes")
+    public Reply getAuthCode() {
+        return service.getAuthCode();
     }
 
     /**
@@ -91,10 +88,26 @@ public class AuthController {
      * @param code      用户登录数据
      * @return Reply
      */
-    @PutMapping("/v1.0/tokens/auth/{code}")
+    @PutMapping("/v1.0/tokens/{code}")
     public Reply authWithCode(@RequestHeader("loginInfo") String loginInfo, @PathVariable String code) {
         LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
         return service.authWithCode(info, code);
+    }
+
+    /**
+     * 扫码授权获取Token
+     *
+     * @param fingerprint 用户特征串
+     * @param code        授权码
+     * @param login       用户登录数据
+     * @return Reply
+     */
+    @PostMapping("/v1.0/tokens/{code}")
+    public Reply getTokenWithCode(@RequestHeader("fingerprint") String fingerprint, @PathVariable String code, @RequestBody LoginDto login) {
+        login.setFingerprint(fingerprint);
+        login.setCode(code);
+
+        return service.getTokenWithCode(login);
     }
 
     /**
