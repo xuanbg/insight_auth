@@ -3,7 +3,7 @@
 -- ----------------------------
 DROP TABLE IF EXISTS `ibs_application`;
 CREATE TABLE `ibs_application` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-0',
+  `id`                 bigint unsigned   NOT NULL                COMMENT '主键-0',
   `index`              int unsigned      NOT NULL                COMMENT '序号',
   `name`               varchar(64)       NOT NULL                COMMENT '应用名称',
   `alias`              varchar(64)       NOT NULL                COMMENT '应用简称',
@@ -15,7 +15,7 @@ CREATE TABLE `ibs_application` (
   `is_signin_one`      bit               NOT NULL DEFAULT b'0'   COMMENT '是否单点登录:0.允许多点;1.单点登录',
   `is_auto_refresh`    bit               NOT NULL DEFAULT b'0'   COMMENT '是否自动刷新:0.手动刷新;1.自动刷新',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
-  `creator_id`         bigint            NOT NULL                COMMENT '创建用户ID',
+  `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建用户ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_application_creator_id` (`creator_id`) USING BTREE,
@@ -27,15 +27,15 @@ CREATE TABLE `ibs_application` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibs_navigator`;
 CREATE TABLE `ibs_navigator` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-1',
-  `parent_id`          bigint                     DEFAULT NULL   COMMENT '父级导航ID',
-  `app_id`             bigint            NOT NULL                COMMENT '应用ID',
+  `id`                 bigint unsigned   NOT NULL                COMMENT '主键-1',
+  `parent_id`          bigint unsigned            DEFAULT NULL   COMMENT '父级导航ID',
+  `app_id`             bigint unsigned   NOT NULL                COMMENT '应用ID',
   `type`               tinyint unsigned  NOT NULL                COMMENT '导航级别',
   `index`              int unsigned      NOT NULL                COMMENT '序号',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `module_info`        json                       DEFAULT NULL   COMMENT '模块信息',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
-  `creator_id`         bigint            NOT NULL                COMMENT '创建用户ID',
+  `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建用户ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_navigator_app_id` (`app_id`) USING BTREE,
@@ -49,15 +49,15 @@ CREATE TABLE `ibs_navigator` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibs_function`;
 CREATE TABLE `ibs_function` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-2',
-  `nav_id`             bigint            NOT NULL                COMMENT '导航(末级模块)ID',
+  `id`                 bigint unsigned   NOT NULL                COMMENT '主键-2',
+  `nav_id`             bigint unsigned   NOT NULL                COMMENT '导航(末级模块)ID',
   `type`               tinyint unsigned  NOT NULL                COMMENT '功能类型 0:全局功能;1:数据项功能;2:其他功能',
   `index`              int unsigned      NOT NULL                COMMENT '序号',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `auth_codes`         varchar(256)               DEFAULT NULL   COMMENT '接口授权码,多个授权码使用英文逗号分隔',
   `func_info`          json                       DEFAULT NULL   COMMENT '图标信息',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
-  `creator_id`         bigint            NOT NULL                COMMENT '创建用户ID',
+  `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建用户ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_function_nav_id` (`nav_id`) USING BTREE,
@@ -71,8 +71,8 @@ CREATE TABLE `ibs_function` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibu_user`;
 CREATE TABLE `ibu_user` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-3',
-  `type`               tinyint unsigned  NOT NULL                COMMENT '用户类型 0:外部用户;1:平台用户',
+  `id`                 bigint unsigned   NOT NULL                COMMENT '主键-3',
+  `type`               tinyint unsigned  NOT NULL DEFAULT 0      COMMENT '用户类型 0:外部用户;1:平台用户',
   `code`               varchar(16)                DEFAULT NULL   COMMENT '用户编码',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `account`            varchar(64)       NOT NULL                COMMENT '登录账号',
@@ -87,7 +87,7 @@ CREATE TABLE `ibu_user` (
   `is_builtin`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否内置:0.非内置;1.内置',
   `is_invalid`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否失效:0.有效;1.失效',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
-  `creator_id`         bigint            NOT NULL                COMMENT '创建人ID',
+  `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建人ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_user_type` (`type`) USING BTREE,
@@ -106,7 +106,7 @@ CREATE TABLE `ibu_user` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibt_tenant`;
 CREATE TABLE `ibt_tenant` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-4',
+  `id`                 bigint unsigned   NOT NULL                COMMENT '主键-4',
   `code`               char(8)           NOT NULL                COMMENT '租户编号',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `alias`              varchar(8)                 DEFAULT NULL   COMMENT '别名',
@@ -115,10 +115,10 @@ CREATE TABLE `ibt_tenant` (
   `status`             tinyint unsigned  NOT NULL DEFAULT '0'    COMMENT '租户状态:0.待审核;1.已通过;2.未通过',
   `is_invalid`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否失效:0.正常;1.失效',
   `auditor`            varchar(64)                DEFAULT NULL   COMMENT '审核人',
-  `auditor_id`         bigint                     DEFAULT NULL   COMMENT '审核人ID',
+  `auditor_id`         bigint unsigned            DEFAULT NULL   COMMENT '审核人ID',
   `audited_time`       datetime          NULL     DEFAULT NULL   COMMENT '审核时间',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
-  `creator_id`         bigint            NOT NULL                COMMENT '创建人ID',
+  `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建人ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_tenant_code` (`code`) USING BTREE,
@@ -131,9 +131,9 @@ CREATE TABLE `ibt_tenant` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibt_tenant_app`;
 CREATE TABLE `ibt_tenant_app` (
-  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `tenant_id`          bigint            NOT NULL                COMMENT '租户ID',
-  `app_id`             bigint            NOT NULL                COMMENT '应用ID',
+  `id`                 bigint unsigned   NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `tenant_id`          bigint unsigned   NOT NULL                COMMENT '租户ID',
+  `app_id`             bigint unsigned   NOT NULL                COMMENT '应用ID',
   `expire_date`        date                       DEFAULT NULL   COMMENT '过期日期',
   PRIMARY KEY (`id`) USING BTREE,    
   KEY `idx_tenant_app_tenant_id` (`tenant_id`) USING BTREE,    
@@ -145,9 +145,9 @@ CREATE TABLE `ibt_tenant_app` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibt_tenant_user`;
 CREATE TABLE `ibt_tenant_user` (
-  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `tenant_id`          bigint            NOT NULL                COMMENT '租户ID',
-  `user_id`            bigint            NOT NULL                COMMENT '应用ID',
+  `id`                 bigint unsigned   NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `tenant_id`          bigint unsigned   NOT NULL                COMMENT '租户ID',
+  `user_id`            bigint unsigned   NOT NULL                COMMENT '应用ID',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_tenant_user_tenant_id` (`tenant_id`) USING BTREE,
   KEY `idx_tenant_user_user_id` (`user_id`) USING BTREE
@@ -159,14 +159,14 @@ CREATE TABLE `ibt_tenant_user` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibu_group`;
 CREATE TABLE `ibu_group` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-5',
-  `tenant_id`          bigint            NOT NULL                COMMENT '租户ID',
+  `id`                 bigint unsigned   NOT NULL                COMMENT '主键-5',
+  `tenant_id`          bigint unsigned   NOT NULL                COMMENT '租户ID',
   `code`               char(4)           NOT NULL                COMMENT '用户组编码',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `remark`             varchar(256)               DEFAULT NULL   COMMENT '备注',
   `is_builtin`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否内置:0.非内置;1.内置',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
-  `creator_id`         bigint            NOT NULL                COMMENT '创建人ID',
+  `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建人ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_group_tenant_id` (`tenant_id`) USING BTREE,
@@ -180,9 +180,9 @@ CREATE TABLE `ibu_group` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibu_group_member`;
 CREATE TABLE `ibu_group_member` (
-  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `group_id`           bigint            NOT NULL                COMMENT '用户组ID',
-  `user_id`            bigint            NOT NULL                COMMENT '用户ID',
+  `id`                 bigint unsigned   NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `group_id`           bigint unsigned   NOT NULL                COMMENT '用户组ID',
+  `user_id`            bigint unsigned   NOT NULL                COMMENT '用户ID',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_group_member_group_id` (`group_id`) USING BTREE,
   KEY `idx_group_member_user_id` (`user_id`) USING BTREE
@@ -194,9 +194,9 @@ CREATE TABLE `ibu_group_member` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibo_organize`;
 CREATE TABLE `ibo_organize` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-6',
-  `tenant_id`          bigint            NOT NULL                COMMENT '租户ID',
-  `parent_id`          bigint                     DEFAULT NULL   COMMENT '父级ID',
+  `id`                 bigint unsigned   NOT NULL                COMMENT '主键-6',
+  `tenant_id`          bigint unsigned   NOT NULL                COMMENT '租户ID',
+  `parent_id`          bigint unsigned            DEFAULT NULL   COMMENT '父级ID',
   `type`               tinyint unsigned           DEFAULT NULL   COMMENT '节点类型:0.机构;1.部门;2.职位',
   `index`              tinyint unsigned  NOT NULL                COMMENT '序号',
   `code`               varchar(8)                 DEFAULT NULL   COMMENT '编码',
@@ -206,7 +206,7 @@ CREATE TABLE `ibo_organize` (
   `remark`             varchar(256)               DEFAULT NULL   COMMENT '备注',
   `is_invalid`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否失效:0.有效;1.失效',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
-  `creator_id`         bigint            NOT NULL                COMMENT '创建人ID',
+  `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建人ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_organize_tenant_id` (`tenant_id`) USING BTREE,
@@ -220,9 +220,9 @@ CREATE TABLE `ibo_organize` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibo_organize_member`;
 CREATE TABLE `ibo_organize_member` (
-  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `post_id`            bigint            NOT NULL                COMMENT '职位ID(组织机构表ID)',
-  `user_id`            bigint            NOT NULL                COMMENT '用户ID(用户表ID)',
+  `id`                 bigint unsigned   NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `post_id`            bigint unsigned   NOT NULL                COMMENT '职位ID(组织机构表ID)',
+  `user_id`            bigint unsigned   NOT NULL                COMMENT '用户ID(用户表ID)',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_organize_member_post_id` (`post_id`) USING BTREE,
   KEY `idx_organize_member_user_id` (`user_id`) USING BTREE
@@ -234,14 +234,14 @@ CREATE TABLE `ibo_organize_member` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibr_role`;
 CREATE TABLE `ibr_role` (
-  `id`                 bigint            NOT NULL                COMMENT '主键-7',
-  `tenant_id`          bigint                     DEFAULT NULL   COMMENT '租户ID,如为空且非内置则为角色模板',
-  `app_id`             bigint            NOT NULL                COMMENT '应用ID',
+  `id`                 bigint unsigned   NOT NULL                COMMENT '主键-7',
+  `tenant_id`          bigint unsigned            DEFAULT NULL   COMMENT '租户ID,如为空且非内置则为角色模板',
+  `app_id`             bigint unsigned   NOT NULL                COMMENT '应用ID',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `remark`             varchar(256)               DEFAULT NULL   COMMENT '备注',
   `is_builtin`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否内置:0.非内置;1.内置',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
-  `creator_id`         bigint            NOT NULL                COMMENT '创建人ID',
+  `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建人ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_tenant_id` (`tenant_id`) USING BTREE,
@@ -255,9 +255,9 @@ CREATE TABLE `ibr_role` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibr_role_permit`;
 CREATE TABLE `ibr_role_permit` (
-  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `role_id`            bigint            NOT NULL                COMMENT '角色ID',
-  `function_id`        bigint            NOT NULL                COMMENT '功能ID',
+  `id`                 bigint unsigned   NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `role_id`            bigint unsigned   NOT NULL                COMMENT '角色ID',
+  `function_id`        bigint unsigned   NOT NULL                COMMENT '功能ID',
   `permit`             bit               NOT NULL DEFAULT b'0'   COMMENT '授权类型:0.拒绝;1.允许',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_func_permit_role_id` (`role_id`) USING BTREE,
@@ -269,10 +269,10 @@ CREATE TABLE `ibr_role_permit` (
 -- ----------------------------
 DROP TABLE IF EXISTS `ibr_role_member`;
 CREATE TABLE `ibr_role_member` (
-  `id`                 bigint            NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `id`                 bigint unsigned   NOT NULL AUTO_INCREMENT COMMENT '主键',
   `type`               tinyint unsigned  NOT NULL DEFAULT '0'    COMMENT '成员类型:0.未定义;1.用户;2.用户组;3.职位',
-  `role_id`            bigint            NOT NULL                COMMENT '角色ID',
-  `member_id`          bigint            NOT NULL                COMMENT '成员ID',
+  `role_id`            bigint unsigned   NOT NULL                COMMENT '角色ID',
+  `member_id`          bigint unsigned   NOT NULL                COMMENT '成员ID',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_member_role_id` (`role_id`) USING BTREE,
   KEY `idx_role_member_member_id` (`member_id`) USING BTREE
@@ -478,8 +478,8 @@ INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_codes`, `func
 -- ----------------------------
 -- 初始化用户:系统管理员
 -- ----------------------------
-INSERT ibu_user (`id`, `name`, `account`, `password`, `is_builtin`, `creator`, `creator_id`, `created_time`) VALUES
-(0, '系统管理员', 'admin', 'e10adc3949ba59abbe56e057f20f883e', 1, '系统', 0, now());
+INSERT ibu_user (`id`, `type`, `name`, `account`, `password`, `is_builtin`, `creator`, `creator_id`, `created_time`) VALUES
+(0, 1, '系统管理员', 'admin', 'e10adc3949ba59abbe56e057f20f883e', 1, '系统', 0, now());
 
 -- ----------------------------
 -- 初始化角色:管理员
