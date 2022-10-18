@@ -8,6 +8,7 @@ import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.dto.UserInfoDto;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.*;
+import com.insight.utils.common.BusinessException;
 import com.insight.utils.encrypt.Encryptor;
 import com.insight.utils.pojo.AccessToken;
 import com.insight.utils.pojo.Application;
@@ -185,6 +186,10 @@ public class Core {
         String key = "App:" + appId;
         if (!Redis.hasKey(key)) {
             Application app = mapper.getApp(appId);
+            if (app == null){
+                throw new BusinessException("未找指定的应用");
+            }
+
             Redis.setHash(key, "VerifySource", app.getVerifySource());
             Redis.setHash(key, "PermitLife", app.getPermitLife());
             Redis.setHash(key, "TokenLife", app.getTokenLife());
