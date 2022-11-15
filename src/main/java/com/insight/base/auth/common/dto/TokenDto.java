@@ -1,6 +1,6 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.utils.pojo.BaseXo;
+import com.insight.utils.pojo.base.BaseXo;
 
 /**
  * @author 宣炳刚

@@ -30,8 +30,6 @@ spring:
   cloud:
     consul:
       host: 192.168.160.8
-    inetutils:
-      preferred-networks: 192\.168\.[\d]+\.[\d]+
   config:
     activate:
       on-profile: dev

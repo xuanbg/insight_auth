@@ -10,10 +10,12 @@ import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.*;
 import com.insight.utils.common.BusinessException;
 import com.insight.utils.encrypt.Encryptor;
-import com.insight.utils.pojo.AccessToken;
-import com.insight.utils.pojo.Application;
-import com.insight.utils.pojo.Reply;
-import com.insight.utils.pojo.User;
+import com.insight.utils.pojo.app.Application;
+import com.insight.utils.pojo.auth.AccessToken;
+import com.insight.utils.pojo.auth.TokenInfo;
+import com.insight.utils.pojo.base.BaseVo;
+import com.insight.utils.pojo.base.Reply;
+import com.insight.utils.pojo.user.User;
 import com.insight.utils.wechat.WeChatHelper;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
@@ -27,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.insight.utils.pojo.TokenInfo.TIME_OUT;
 
 /**
  * @author 宣炳刚
@@ -186,7 +187,7 @@ public class Core {
         String key = "App:" + appId;
         if (!Redis.hasKey(key)) {
             Application app = mapper.getApp(appId);
-            if (app == null){
+            if (app == null) {
                 throw new BusinessException("未找指定的应用");
             }
 
@@ -227,9 +228,19 @@ public class Core {
 
         // 加载用户授权码
         List<String> list = mapper.getAuthInfos(appId, tenantId, userId);
-        Token token = new Token(userId, appId, tenantId);
+        Token token = new Token(appId);
+        token.setTenantId(tenantId);
+        token.setUserId(userId);
         token.setPermitFuncs(list);
         token.setPermitTime(LocalDateTime.now());
+
+        if (tenantId != null) {
+            BaseVo org = mapper.getLoginOrg(userId, tenantId);
+            if (org != null) {
+                token.setOrgId(org.getId());
+                token.setOrgName(org.getName());
+            }
+        }
 
         // 缓存用户Token
         String key = "UserToken:" + userId;
@@ -276,7 +287,7 @@ public class Core {
         String hashKey = tokenDto.getAccessToken() + fingerprint;
         token.setHash(Util.md5(hashKey));
         LocalDateTime now = LocalDateTime.now();
-        token.setExpiryTime(now.plusSeconds(TIME_OUT + life));
+        token.setExpiryTime(now.plusSeconds(TokenInfo.TIME_OUT + life));
 
         long failure = life * 12;
         AccessToken refreshToken = new AccessToken();
@@ -288,8 +299,8 @@ public class Core {
         // 缓存令牌数据
         LocalDateTime failureTime = token.getFailureTime();
         if (failureTime == null || now.isAfter(failureTime)) {
-            token.setFailureTime(now.plusSeconds(TIME_OUT + failure));
-            Redis.set("Token:" + code, token.toString(), life > 0 ? TIME_OUT + failure : -1);
+            token.setFailureTime(now.plusSeconds(TokenInfo.TIME_OUT + failure));
+            Redis.set("Token:" + code, token.toString(), life > 0 ? TokenInfo.TIME_OUT + failure : -1);
         } else {
             Redis.set("Token:" + code, token.toString());
         }

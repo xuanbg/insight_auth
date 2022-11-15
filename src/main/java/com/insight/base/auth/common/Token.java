@@ -3,8 +3,8 @@ package com.insight.base.auth.common;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.insight.utils.Redis;
 import com.insight.utils.Util;
-import com.insight.utils.pojo.AccessToken;
-import com.insight.utils.pojo.TokenInfo;
+import com.insight.utils.pojo.auth.AccessToken;
+import com.insight.utils.pojo.auth.TokenInfo;
 
 /**
  * @author 宣炳刚
@@ -23,15 +23,11 @@ public class Token extends TokenInfo {
     /**
      * 构造方法
      *
-     * @param userId   用户ID
-     * @param appId    应用ID
-     * @param tenantId 租户ID
+     * @param appId 应用ID
      */
-    public Token(Long userId, Long appId, Long tenantId) {
+    public Token(Long appId) {
         key = "App:" + appId;
-        setUserId(userId);
         setAppId(appId);
-        setTenantId(tenantId);
         setPermitLife(getLongValue("PermitLife"));
         setLife(getLongValue("TokenLife"));
         setVerifySource(getBooleanValue("VerifySource"));

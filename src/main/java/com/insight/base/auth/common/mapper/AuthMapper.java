@@ -4,7 +4,12 @@ import com.insight.base.auth.common.dto.FuncDto;
 import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.utils.common.JsonTypeHandler;
-import com.insight.utils.pojo.*;
+import com.insight.utils.pojo.app.Application;
+import com.insight.utils.pojo.app.FuncInfo;
+import com.insight.utils.pojo.app.ModuleInfo;
+import com.insight.utils.pojo.base.BaseVo;
+import com.insight.utils.pojo.user.MemberDto;
+import com.insight.utils.pojo.user.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -145,4 +150,17 @@ public interface AuthMapper {
             "join ibt_tenant_app a on a.tenant_id = t.id and a.app_id = #{appId} " +
             "join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId};")
     List<MemberDto> getTenants(@Param("appId") Long appId, @Param("userId") Long userId);
+
+    /**
+     * 获取用户登录的机构
+     *
+     * @param userId   用户ID
+     * @param tenantId 租户ID
+     * @return 机构DTO
+     */
+    @Select("with recursive org as (select o.id, o.type, o.parent_id, o.code, o.name from ibo_organize o " +
+            "join ibo_organize_member m on m.post_id = o.id and m.user_id = #{userId} where o.tenant_id = #{tenantId} " +
+            "union select p.id, p.type, p.parent_id, p.code, p.name from ibo_organize p join org s on s.parent_id = p.id) " +
+            "select * from org where type = 0 order by code desc limit 1")
+    BaseVo getLoginOrg(long userId, long tenantId);
 }

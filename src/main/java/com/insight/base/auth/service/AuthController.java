@@ -3,9 +3,9 @@ package com.insight.base.auth.service;
 import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.utils.Json;
 import com.insight.utils.ReplyHelper;
-import com.insight.utils.pojo.AccessToken;
-import com.insight.utils.pojo.LoginInfo;
-import com.insight.utils.pojo.Reply;
+import com.insight.utils.pojo.auth.AccessToken;
+import com.insight.utils.pojo.auth.LoginInfo;
+import com.insight.utils.pojo.base.Reply;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;

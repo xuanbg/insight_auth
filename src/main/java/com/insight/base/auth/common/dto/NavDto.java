@@ -1,7 +1,7 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.utils.pojo.BaseXo;
-import com.insight.utils.pojo.ModuleInfo;
+import com.insight.utils.pojo.app.ModuleInfo;
+import com.insight.utils.pojo.base.BaseXo;
 
 import java.util.List;
 
