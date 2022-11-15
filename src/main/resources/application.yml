@@ -20,15 +20,6 @@ spring:
 spring:
   cloud:
     consul:
-      host: localhost
-  config:
-    activate:
-      on-profile: test
-    import: optional:consul:localhost:8500
----
-spring:
-  cloud:
-    consul:
       host: 192.168.160.8
   config:
     activate:
