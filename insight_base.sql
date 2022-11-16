@@ -110,6 +110,7 @@ CREATE TABLE `ibt_tenant` (
   `code`               char(8)           NOT NULL                COMMENT '租户编号',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `alias`              varchar(8)                 DEFAULT NULL   COMMENT '别名',
+  `area_code`          varchar(4)                 DEFAULT NULL   COMMENT '区号',
   `company_info`       json                       DEFAULT NULL   COMMENT '企业信息',
   `remark`             varchar(1024)              DEFAULT NULL   COMMENT '描述',
   `status`             tinyint unsigned  NOT NULL DEFAULT '0'    COMMENT '租户状态:0.待审核;1.已通过;2.未通过',

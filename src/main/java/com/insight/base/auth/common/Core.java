@@ -6,13 +6,13 @@ import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.NormalMessage;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.dto.UserInfo;
+import com.insight.base.auth.common.entity.LoginInfo;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.*;
 import com.insight.utils.common.BusinessException;
 import com.insight.utils.encrypt.Encryptor;
 import com.insight.utils.pojo.app.Application;
 import com.insight.utils.pojo.auth.AccessToken;
-import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.auth.TokenInfo;
 import com.insight.utils.pojo.base.BaseVo;
 import com.insight.utils.pojo.base.Reply;
@@ -331,6 +331,7 @@ public class Core {
             if (data != null) {
                 loginInfo.setOrgId(data.getId());
                 loginInfo.setOrgName(data.getName());
+                loginInfo.setAreaCode(data.getCode());
             }
 
             tokenDto.setLoginInfo(loginInfo);

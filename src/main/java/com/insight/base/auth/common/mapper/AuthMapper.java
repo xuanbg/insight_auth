@@ -158,9 +158,10 @@ public interface AuthMapper {
      * @param tenantId 租户ID
      * @return 机构DTO
      */
-    @Select("with recursive org as (select o.id, o.type, o.parent_id, o.code, o.name from ibo_organize o " +
+    @Select("with recursive org as (select o.id, o.parent_id, o.type, o.parent_id, o.code, o.name from ibo_organize o " +
             "join ibo_organize_member m on m.post_id = o.id and m.user_id = #{userId} where o.tenant_id = #{tenantId} " +
-            "union select p.id, p.type, p.parent_id, p.code, p.name from ibo_organize p join org s on s.parent_id = p.id) " +
-            "select * from org where type = 0 order by code desc limit 1")
+            "union select p.id, p.parent_id, p.type, p.parent_id, p.code, p.name from ibo_organize p join org s on s.parent_id = p.id) " +
+            "select o.id, t.area_code as code, o.name from org o join ibt_tenant t on t.id = o.tenant_id " +
+            "where o.type = 0 order by o.code desc limit 1")
     BaseVo getLoginOrg(long userId, long tenantId);
 }
