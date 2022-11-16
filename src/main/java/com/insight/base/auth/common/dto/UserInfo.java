@@ -9,17 +9,12 @@ import java.time.LocalDateTime;
  * @date 2018/4/13
  * @remark 用户关键信息DTO
  */
-public class UserInfoDto extends BaseXo {
+public class UserInfo extends BaseXo {
 
     /**
      * 用户ID(UUID,唯一)
      */
     private Long id;
-
-    /**
-     * 租户ID
-     */
-    private Long tenantId;
 
     /**
      * 用户编码
@@ -67,14 +62,6 @@ public class UserInfoDto extends BaseXo {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getCode() {
