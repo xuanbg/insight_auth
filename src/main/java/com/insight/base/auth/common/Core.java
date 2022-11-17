@@ -217,21 +217,25 @@ public class Core {
     /**
      * 生成令牌数据包
      *
-     * @param code   Code
-     * @param login  登录信息
-     * @param userId 用户ID
+     * @param code  Code
+     * @param login 登录信息
+     * @param user  用户信息
      * @return 令牌数据包
      */
-    public TokenDto creatorToken(String code, LoginDto login, Long userId) {
+    public TokenDto creatorToken(String code, LoginDto login, User user) {
         String fingerprint = login.getFingerprint();
         Long appId = login.getAppId();
         Long tenantId = login.getTenantId();
 
         // 加载用户授权码
+        Long userId = user.getId();
         List<String> list = mapper.getAuthInfos(appId, tenantId, userId);
         Token token = new Token(appId);
         token.setTenantId(tenantId);
         token.setUserId(userId);
+        token.setUserName(user.getName());
+        token.setMobile(user.getMobile());
+        token.setHeadImg(user.getHeadImg());
         token.setPermitFuncs(list);
         token.setPermitTime(LocalDateTime.now());
 
@@ -440,8 +444,8 @@ public class Core {
 
         // 验证用户
         String key = "User:" + userId;
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
-        if (isInvalid) {
+        User user = Json.clone(Redis.getEntity(key), User.class);
+        if (user.getInvalid()) {
             return ReplyHelper.fail("用户被禁止使用");
         }
 
@@ -450,7 +454,7 @@ public class Core {
             return ReplyHelper.fail("应用已过期,请续租");
         }
 
-        TokenDto tokens = creatorToken(code, login, userId);
+        TokenDto tokens = creatorToken(code, login, user);
         return ReplyHelper.success(tokens);
     }
 
@@ -534,27 +538,20 @@ public class Core {
     /**
      * 新增用户
      *
-     * @param name    用户姓名
-     * @param mobile  用户手机号
-     * @param unionId 微信UnionID
-     * @param head    用户头像
+     * @param user 用户信息
      */
-    public Long addUser(String name, String mobile, String unionId, String head) {
+    public Long addUser(User user) {
         Long userId = creator.nextId(3);
-        User user = new User();
         user.setId(userId);
-        user.setName(name);
-        user.setMobile(mobile);
-        user.setUnionId(unionId);
-        user.setHeadImg(head);
         user.setBuiltin(false);
         user.setInvalid(false);
-        user.setCreator(name);
+        user.setCreator(user.getName());
         user.setCreatorId(userId);
         user.setCreatedTime(LocalDateTime.now());
 
         // 缓存用户ID到Redis
-        Redis.set("ID:" + mobile, userId.toString());
+        Redis.set("ID:" + user.getMobile(), userId.toString());
+        String unionId = user.getUnionId();
         if (unionId != null && !unionId.isEmpty()) {
             Redis.set("ID:" + unionId, userId.toString());
         }

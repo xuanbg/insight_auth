@@ -12,6 +12,7 @@ import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.user.MemberDto;
+import com.insight.utils.pojo.user.User;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,11 @@ public class AuthServiceImpl implements AuthService {
             if (type == 0) {
                 return ReplyHelper.notExist("账号或密码错误");
             } else {
-                userId = core.addUser(account, account, null, null);
+                User user = new User();
+                user.setName(account);
+                user.setAccount(account);
+                user.setMobile(account);
+                userId = core.addUser(user);
             }
         }
 
@@ -219,8 +224,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String key = "User:" + userId;
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
-        if (isInvalid) {
+        User user = Json.clone(Redis.getEntity(key), User.class);
+        if (user.getInvalid()) {
             return ReplyHelper.fail("用户被禁止使用");
         }
 
@@ -230,7 +235,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
-        TokenDto tokens = core.creatorToken(Util.uuid(), login, userId);
+        TokenDto tokens = core.creatorToken(Util.uuid(), login, user);
 
         return ReplyHelper.success(tokens);
     }
@@ -262,6 +267,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 根据手机号获取用户
         Long userId = core.getUserId(mobile);
+        User user = new User();
         if (userId != null) {
             key = "User:" + userId;
             boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
@@ -269,7 +275,8 @@ public class AuthServiceImpl implements AuthService {
                 return ReplyHelper.fail("用户被禁止使用");
             }
 
-            String uid = Redis.get(key, "unionId");
+            user = Json.clone(Redis.getEntity(key), User.class);
+            String uid = user.getUnionId();
             if (uid != null && !uid.isEmpty()) {
                 if (login.getReplace()) {
                     Redis.deleteKey("ID:" + uid);
@@ -282,7 +289,12 @@ public class AuthServiceImpl implements AuthService {
             core.updateUnionId(userId, unionId);
         } else {
             // 用户不存在,自动创建用户
-            core.addUser(weChatUser.getNickname(), mobile, unionId, weChatUser.getHeadimgurl());
+            user.setName(weChatUser.getNickname());
+            user.setAccount(mobile);
+            user.setMobile(mobile);
+            user.setUnionId(unionId);
+            user.setHeadImg(weChatUser.getHeadimgurl());
+            core.addUser(user);
         }
 
         // 验证应用是否过期
@@ -292,7 +304,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 绑定用户微信OpenID,创建令牌
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
-        TokenDto tokens = core.creatorToken(Util.uuid(), login, userId);
+        TokenDto tokens = core.creatorToken(Util.uuid(), login, user);
 
         return ReplyHelper.success(tokens);
     }
