@@ -70,7 +70,7 @@
         <dependency>
             <groupId>com.insight</groupId>
             <artifactId>utils</artifactId>
-            <version>2.2.0-RELEASE</version>
+            <version>2.2.1-RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.insight.utils</groupId>
@@ -87,11 +87,6 @@
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>1.33</version>
         </dependency>
     </dependencies>
 
