@@ -34,6 +34,12 @@ public class AuthServiceImpl implements AuthService {
     private final Core core;
 
     /**
+     * 是否允许自动注册
+     */
+    @Value("${insight.auth.autoReg}")
+    private Boolean autoReg;
+
+    /**
      * 扫码授权URL
      */
     @Value("${insight.auth.url}")
@@ -78,14 +84,14 @@ public class AuthServiceImpl implements AuthService {
     public Reply getCode(String account, int type) {
         Long userId = core.getUserId(account);
         if (userId == null) {
-            if (type == 0) {
-                return ReplyHelper.notExist("账号或密码错误");
-            } else {
+            if (type == 1 && autoReg) {
                 User user = new User();
                 user.setName(account);
                 user.setAccount(account);
                 user.setMobile(account);
                 userId = core.addUser(user);
+            } else {
+                return ReplyHelper.notExist("账号或密码错误");
             }
         }
 
