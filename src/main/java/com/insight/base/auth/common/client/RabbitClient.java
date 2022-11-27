@@ -1,6 +1,5 @@
 package com.insight.base.auth.common.client;
 
-import com.insight.utils.Json;
 import com.insight.utils.common.ApplicationContextHolder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
@@ -18,7 +17,6 @@ public class RabbitClient {
      * @param data 用户DTO
      */
     public static void sendTopic(Object data) {
-        Object object = Json.clone(data, Object.class);
-        TEMPLATE.convertAndSend("amq.topic", "auth.addUser", object);
+        TEMPLATE.convertAndSend("amq.topic", "auth.addUser", data);
     }
 }
