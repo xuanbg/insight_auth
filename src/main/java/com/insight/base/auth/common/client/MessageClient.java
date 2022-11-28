@@ -1,13 +1,10 @@
 package com.insight.base.auth.common.client;
 
 import com.insight.base.auth.common.config.FeignClientConfig;
-import com.insight.base.auth.common.dto.NormalMessage;
 import com.insight.utils.pojo.base.Reply;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * @author 宣炳刚
@@ -16,15 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
  */
 @FeignClient(name = "common-message", configuration = FeignClientConfig.class)
 public interface MessageClient {
-
-    /**
-     * 同步发短信
-     *
-     * @param message 标准信息DTO
-     * @return Reply
-     */
-    @PostMapping("/common/message/v1.0/messages")
-    Reply sendMessage(@RequestBody NormalMessage message);
 
     /**
      * 验证短信验证码

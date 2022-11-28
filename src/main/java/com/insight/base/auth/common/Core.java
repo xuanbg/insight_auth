@@ -3,7 +3,6 @@ package com.insight.base.auth.common;
 import com.insight.base.auth.common.client.MessageClient;
 import com.insight.base.auth.common.client.RabbitClient;
 import com.insight.base.auth.common.dto.LoginDto;
-import com.insight.base.auth.common.dto.NormalMessage;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.dto.UserInfo;
 import com.insight.base.auth.common.entity.LoginInfo;
@@ -16,6 +15,8 @@ import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.TokenInfo;
 import com.insight.utils.pojo.base.BaseVo;
 import com.insight.utils.pojo.base.Reply;
+import com.insight.utils.pojo.message.InsightMessage;
+import com.insight.utils.pojo.message.Schedule;
 import com.insight.utils.pojo.user.User;
 import com.insight.utils.wechat.WeChatHelper;
 import com.insight.utils.wechat.WeChatUser;
@@ -153,28 +154,21 @@ public class Core {
      */
     public String getSmsCode(Long userId, String mobile) {
         String smsCode = Util.randomString(SMS_CODE_LENGTH);
-        Map<String, Object> map = new HashMap<>(4);
-        map.put("code", smsCode);
-        map.put("minutes", SMS_CODE_LEFT);
 
-        NormalMessage message = new NormalMessage();
-        message.setSceneCode("0001");
-        message.setReceivers(mobile);
-        message.setParams(map);
-        message.setBroadcast(false);
-        try {
-            Reply reply = client.sendMessage(message);
-            if (!reply.getSuccess()) {
-                return reply.getMessage();
-            }
+        var message = new InsightMessage();
+        message.setChannel(EnvUtil.getValue("insight.sms.channel"));
+        message.setReceiver(mobile);
+        message.setParam("code", smsCode);
 
-            String key = Util.md5(mobile + Util.md5(smsCode));
-            logger.info("账户[{}]的验证码为: {}", mobile, smsCode);
+        Schedule<InsightMessage> schedule = new Schedule<>();
+        schedule.setType(0);
+        schedule.setMethod("sendSms");
+        schedule.setContent(message);
+        RabbitClient.sendSms(schedule);
 
-            return generateCode(userId, key, SMS_CODE_LEFT);
-        } catch (Exception ex) {
-            return "发送短信失败,请稍后重试";
-        }
+        String key = Util.md5(mobile + Util.md5(smsCode));
+        logger.info("账户[{}]的验证码为: {}", mobile, smsCode);
+        return generateCode(userId, key, SMS_CODE_LEFT);
     }
 
     /**
@@ -560,7 +554,7 @@ public class Core {
         Redis.setHash(key, Json.toStringValueMap(user), -1L);
         Redis.setHash(key, "FailureCount", 0);
 
-        RabbitClient.sendTopic(user);
+        RabbitClient.addUser(user);
         return userId;
     }
 }
