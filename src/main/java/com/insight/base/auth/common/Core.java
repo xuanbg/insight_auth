@@ -8,20 +8,20 @@ import com.insight.base.auth.common.dto.UserInfo;
 import com.insight.base.auth.common.entity.LoginInfo;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.*;
-import com.insight.utils.common.BusinessException;
 import com.insight.utils.encrypt.Encryptor;
 import com.insight.utils.pojo.app.Application;
 import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.TokenInfo;
 import com.insight.utils.pojo.base.BaseVo;
+import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.base.Reply;
-import com.insight.utils.pojo.message.InsightMessage;
-import com.insight.utils.pojo.message.Schedule;
+import com.insight.utils.pojo.message.SmsCode;
 import com.insight.utils.pojo.user.User;
 import com.insight.utils.wechat.WeChatHelper;
 import com.insight.utils.wechat.WeChatUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -39,6 +39,12 @@ import java.util.Map;
  */
 @Component
 public class Core {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final SnowflakeCreator creator;
+    private final AuthMapper mapper;
+    private final WeChatHelper weChatHelper;
+    private final MessageClient client;
+
     /**
      * RSA私钥
      */
@@ -55,11 +61,9 @@ public class Core {
      * 登录短信验证码有效时间(300秒)
      */
     private static final int SMS_CODE_LEFT = 300;
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final SnowflakeCreator creator;
-    private final AuthMapper mapper;
-    private final WeChatHelper weChatHelper;
-    private final MessageClient client;
+
+    @Value("${insight.sms.channel}")
+    private String smsChannel;
 
     /**
      * 构造函数
@@ -155,16 +159,11 @@ public class Core {
     public String getSmsCode(Long userId, String mobile) {
         String smsCode = Util.randomString(SMS_CODE_LENGTH);
 
-        var message = new InsightMessage();
-        message.setChannel(EnvUtil.getValue("insight.sms.channel"));
-        message.setReceiver(mobile);
-        message.setParam("code", smsCode);
-
-        Schedule<InsightMessage> schedule = new Schedule<>();
-        schedule.setType(0);
-        schedule.setMethod("sendSms");
-        schedule.setContent(message);
-        RabbitClient.sendSms(schedule);
+        var sms = new SmsCode();
+        sms.setChannel(smsChannel);
+        sms.setMobile(mobile);
+        sms.setCode(smsCode);
+        client.sendSmsCode(sms);
 
         String key = Util.md5(mobile + Util.md5(smsCode));
         logger.info("账户[{}]的验证码为: {}", mobile, smsCode);
@@ -430,26 +429,25 @@ public class Core {
      * @param login 用户登录数据
      * @return Reply
      */
-    public Reply getToken(String code, LoginDto login) {
+    public TokenDto getToken(String code, LoginDto login) {
         Long userId = getId(code);
         if (userId == null) {
-            return ReplyHelper.fail("发生了一点小意外,请重新提交");
+            throw new BusinessException("发生了一点小意外,请重新提交");
         }
 
         // 验证用户
         String key = "User:" + userId;
         User user = Json.clone(Redis.getEntity(key), User.class);
         if (user.getInvalid()) {
-            return ReplyHelper.fail("用户被禁止使用");
+            throw new BusinessException("用户被禁止使用");
         }
 
         // 验证应用是否过期
         if (appIsExpired(login, userId)) {
-            return ReplyHelper.fail("应用已过期,请续租");
+            throw new BusinessException("应用已过期,请续租");
         }
 
-        TokenDto tokens = creatorToken(code, login, user);
-        return ReplyHelper.success(tokens);
+        return creatorToken(code, login, user);
     }
 
     /**

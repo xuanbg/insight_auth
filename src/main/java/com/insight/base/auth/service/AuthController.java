@@ -1,14 +1,20 @@
 package com.insight.base.auth.service;
 
+import com.insight.base.auth.common.dto.FuncDto;
 import com.insight.base.auth.common.dto.LoginDto;
+import com.insight.base.auth.common.dto.NavDto;
+import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.utils.Json;
 import com.insight.utils.ReplyHelper;
 import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
+import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.base.Reply;
+import com.insight.utils.pojo.user.MemberDto;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @author 宣炳刚
@@ -37,7 +43,7 @@ public class AuthController {
      * @return Reply
      */
     @GetMapping("/v1.0/tokens")
-    public Reply getSubmitToken(@RequestParam String key) {
+    public String getSubmitToken(@RequestParam String key) {
         return service.getSubmitToken(key);
     }
 
@@ -61,11 +67,11 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens")
-    public Reply getToken(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
+    public TokenDto getToken(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String account = login.getAccount();
         if (account == null || account.isEmpty()) {
-            return ReplyHelper.invalidParam("登录账号不能为空");
+            throw new BusinessException("登录账号不能为空");
         }
 
         return service.getToken(login);
@@ -77,7 +83,7 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens/codes")
-    public Reply getAuthCode() {
+    public String getAuthCode() {
         return service.getAuthCode();
     }
 
@@ -86,12 +92,11 @@ public class AuthController {
      *
      * @param loginInfo 用户信息
      * @param code      用户登录数据
-     * @return Reply
      */
     @PutMapping("/v1.0/tokens/{code}")
-    public Reply authWithCode(@RequestHeader("loginInfo") String loginInfo, @PathVariable String code) {
+    public void authWithCode(@RequestHeader("loginInfo") String loginInfo, @PathVariable String code) {
         LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
-        return service.authWithCode(info, code);
+        service.authWithCode(info, code);
     }
 
     /**
@@ -103,7 +108,7 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens/{code}")
-    public Reply getTokenWithCode(@RequestHeader("fingerprint") String fingerprint, @PathVariable String code, @RequestBody LoginDto login) {
+    public TokenDto getTokenWithCode(@RequestHeader("fingerprint") String fingerprint, @PathVariable String code, @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         login.setCode(code);
 
@@ -118,11 +123,11 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens/wechat/code")
-    public Reply getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
+    public TokenDto getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String appId = login.getWeChatAppId();
         if (appId == null || appId.isEmpty()) {
-            return ReplyHelper.invalidParam("weChatAppId不能为空");
+            throw new BusinessException("weChatAppId不能为空");
         }
 
         return service.getTokenWithWeChat(login);
@@ -136,11 +141,11 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens/wechat/unionid")
-    public Reply getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
+    public TokenDto getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
         String appId = login.getWeChatAppId();
         if (appId == null || appId.isEmpty()) {
-            return ReplyHelper.invalidParam("weChatAppId不能为空");
+            throw new BusinessException("weChatAppId不能为空");
         }
 
         return service.getTokenWithUserInfo(login);
@@ -163,7 +168,7 @@ public class AuthController {
      * @return Reply
      */
     @GetMapping("/v1.0/tokens/permits")
-    public Reply getPermits(@RequestHeader("loginInfo") String loginInfo) {
+    public List<String> getPermits(@RequestHeader("loginInfo") String loginInfo) {
         LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
 
         return service.getPermits(info);
@@ -177,10 +182,10 @@ public class AuthController {
      * @return Reply
      */
     @PutMapping("/v1.0/tokens")
-    public Reply refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
+    public TokenDto refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
         AccessToken refreshToken = Json.toAccessToken(token);
         if (refreshToken == null) {
-            return ReplyHelper.fail("未提供RefreshToken");
+            throw new BusinessException("未提供RefreshToken");
         }
 
         return service.refreshToken(fingerprint, refreshToken);
@@ -190,13 +195,12 @@ public class AuthController {
      * 用户账号离线
      *
      * @param token 访问令牌字符串
-     * @return Reply
      */
     @DeleteMapping("/v1.0/tokens")
-    public Reply deleteToken(@RequestHeader(value = "Authorization") String token) {
+    public void deleteToken(@RequestHeader(value = "Authorization") String token) {
         AccessToken accessToken = Json.toAccessToken(token);
 
-        return service.deleteToken(accessToken.getId());
+        service.deleteToken(accessToken.getId());
     }
 
     /**
@@ -207,7 +211,7 @@ public class AuthController {
      * @return Reply
      */
     @GetMapping("/v1.0/{appId}/tenants")
-    public Reply getTenants(@PathVariable Long appId, @RequestParam String account) {
+    public List<MemberDto> getTenants(@PathVariable Long appId, @RequestParam String account) {
 
         return service.getTenants(appId, account);
     }
@@ -219,7 +223,7 @@ public class AuthController {
      * @return Reply
      */
     @GetMapping("/v1.0/navigators")
-    public Reply getNavigators(@RequestHeader("loginInfo") String loginInfo) {
+    public List<NavDto> getNavigators(@RequestHeader("loginInfo") String loginInfo) {
         LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
 
         return service.getNavigators(info);
@@ -233,7 +237,7 @@ public class AuthController {
      * @return Reply
      */
     @GetMapping("/v1.0/navigators/{id}/functions")
-    public Reply getModuleFunctions(@RequestHeader("loginInfo") String loginInfo, @PathVariable("id") Long moduleId) {
+    public List<FuncDto> getModuleFunctions(@RequestHeader("loginInfo") String loginInfo, @PathVariable("id") Long moduleId) {
         LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
 
         return service.getModuleFunctions(info, moduleId);

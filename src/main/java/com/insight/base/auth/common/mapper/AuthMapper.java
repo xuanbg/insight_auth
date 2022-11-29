@@ -3,11 +3,11 @@ package com.insight.base.auth.common.mapper;
 import com.insight.base.auth.common.dto.FuncDto;
 import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.entity.TenantApp;
-import com.insight.utils.common.JsonTypeHandler;
 import com.insight.utils.pojo.app.Application;
 import com.insight.utils.pojo.app.FuncInfo;
 import com.insight.utils.pojo.app.ModuleInfo;
 import com.insight.utils.pojo.base.BaseVo;
+import com.insight.utils.pojo.base.JsonTypeHandler;
 import com.insight.utils.pojo.user.MemberDto;
 import com.insight.utils.pojo.user.User;
 import org.apache.ibatis.annotations.*;
@@ -75,7 +75,7 @@ public interface AuthMapper {
      * @param userId 用户ID
      * @param openId 微信OpenID
      */
-    @Update("update ibu_user set open_id = #{openId, typeHandler = com.insight.utils.common.JsonTypeHandler} where id = #{userId};")
+    @Update("update ibu_user set open_id = #{openId, typeHandler = com.insight.utils.pojo.base.JsonTypeHandler} where id = #{userId};")
     void updateOpenId(@Param("userId") Long userId, @Param("openId") Map openId);
 
     /**

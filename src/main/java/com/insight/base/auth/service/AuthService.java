@@ -1,9 +1,15 @@
 package com.insight.base.auth.service;
 
+import com.insight.base.auth.common.dto.FuncDto;
 import com.insight.base.auth.common.dto.LoginDto;
+import com.insight.base.auth.common.dto.NavDto;
+import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.base.Reply;
+import com.insight.utils.pojo.user.MemberDto;
+
+import java.util.List;
 
 /**
  * @author 宣炳刚
@@ -18,7 +24,7 @@ public interface AuthService {
      * @param key 接口Hash
      * @return Reply
      */
-    Reply getSubmitToken(String key);
+    String getSubmitToken(String key);
 
     /**
      * 获取Code
@@ -35,23 +41,22 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    Reply getToken(LoginDto login);
+    TokenDto getToken(LoginDto login);
 
     /**
      * 获取授权码
      *
      * @return Reply
      */
-    Reply getAuthCode();
+    String getAuthCode();
 
     /**
      * 扫码授权
      *
      * @param info 用户登录信息
      * @param code 二维码
-     * @return Reply
      */
-    Reply authWithCode(LoginInfo info, String code);
+    void authWithCode(LoginInfo info, String code);
 
     /**
      * 扫码授权获取Token
@@ -59,7 +64,7 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    Reply getTokenWithCode(LoginDto login);
+    TokenDto getTokenWithCode(LoginDto login);
 
     /**
      * 通过微信授权码获取Token
@@ -67,7 +72,7 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    Reply getTokenWithWeChat(LoginDto login);
+    TokenDto getTokenWithWeChat(LoginDto login);
 
     /**
      * 通过微信UnionId获取Token
@@ -75,7 +80,7 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    Reply getTokenWithUserInfo(LoginDto login);
+    TokenDto getTokenWithUserInfo(LoginDto login);
 
     /**
      * 获取用户授权码
@@ -83,7 +88,7 @@ public interface AuthService {
      * @param info 用户登录信息
      * @return Reply
      */
-    Reply getPermits(LoginInfo info);
+    List<String> getPermits(LoginInfo info);
 
     /**
      * 刷新访问令牌过期时间
@@ -92,15 +97,14 @@ public interface AuthService {
      * @param token       刷新令牌
      * @return Reply
      */
-    Reply refreshToken(String fingerprint, AccessToken token);
+    TokenDto refreshToken(String fingerprint, AccessToken token);
 
     /**
      * 用户账号离线
      *
      * @param tokenId 令牌ID
-     * @return Reply
      */
-    Reply deleteToken(String tokenId);
+    void deleteToken(String tokenId);
 
     /**
      * 获取用户可选租户
@@ -109,7 +113,7 @@ public interface AuthService {
      * @param account 登录账号
      * @return Reply
      */
-    Reply getTenants(Long appId, String account);
+    List<MemberDto> getTenants(Long appId, String account);
 
     /**
      * 获取用户导航栏
@@ -117,7 +121,7 @@ public interface AuthService {
      * @param info 用户登录信息
      * @return Reply
      */
-    Reply getNavigators(LoginInfo info);
+    List<NavDto> getNavigators(LoginInfo info);
 
     /**
      * 获取业务模块的功能(及对用户的授权情况)
@@ -126,5 +130,5 @@ public interface AuthService {
      * @param moduleId 功能模块ID
      * @return Reply
      */
-    Reply getModuleFunctions(LoginInfo info, Long moduleId);
+    List<FuncDto> getModuleFunctions(LoginInfo info, Long moduleId);
 }
