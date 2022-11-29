@@ -55,7 +55,7 @@ public class AuthController {
      * @return Reply
      */
     @GetMapping("/v1.0/tokens/codes")
-    public Reply getCode(@RequestParam String account, @RequestParam(defaultValue = "0") int type) {
+    public String getCode(@RequestParam String account, @RequestParam(defaultValue = "0") int type) {
         return service.getCode(account, type);
     }
 

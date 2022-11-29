@@ -7,7 +7,10 @@ import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.mapper.AuthMapper;
-import com.insight.utils.*;
+import com.insight.utils.DateTime;
+import com.insight.utils.Json;
+import com.insight.utils.Redis;
+import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.base.BusinessException;
@@ -82,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public Reply getCode(String account, int type) {
+    public String getCode(String account, int type) {
         Long userId = core.getUserId(account);
         if (userId == null) {
             if (type == 1 && autoReg) {
@@ -110,15 +113,14 @@ public class AuthServiceImpl implements AuthService {
                 throw new BusinessException("账号或密码错误");
             }
 
-            code = core.getGeneralCode(userId, account, password);
+            return core.getGeneralCode(userId, account, password);
         } else {
-            code = core.getSmsCode(userId, account);
-            if (!code.matches("[0-9a-f]{32}")) {
-                throw new BusinessException(code);
+            if (!account.matches("^1[0-9]{10}")) {
+                throw new BusinessException("请使用正确的手机号");
             }
-        }
 
-        return ReplyHelper.success(code);
+            return core.getSmsCode(userId, account);
+        }
     }
 
     /**

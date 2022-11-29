@@ -6,7 +6,6 @@ import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
-import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.user.MemberDto;
 
 import java.util.List;
@@ -33,7 +32,7 @@ public interface AuthService {
      * @param type    登录类型(0:密码登录、1:验证码登录)
      * @return Reply
      */
-    Reply getCode(String account, int type);
+    String getCode(String account, int type);
 
     /**
      * 获取Token

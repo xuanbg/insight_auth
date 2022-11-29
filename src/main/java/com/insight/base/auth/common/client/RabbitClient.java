@@ -1,8 +1,6 @@
 package com.insight.base.auth.common.client;
 
 import com.insight.utils.common.ApplicationContextHolder;
-import com.insight.utils.pojo.message.InsightMessage;
-import com.insight.utils.pojo.message.Schedule;
 import com.insight.utils.pojo.user.User;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
@@ -21,9 +19,5 @@ public class RabbitClient {
      */
     public static void addUser(User data) {
         TEMPLATE.convertAndSend("amq.topic", "auth.addUser", data);
-    }
-
-    public static void sendSms(Schedule<InsightMessage> schedule){
-        TEMPLATE.convertAndSend("amq.topic", "schedule.message", schedule);
     }
 }
