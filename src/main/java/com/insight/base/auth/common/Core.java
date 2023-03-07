@@ -173,7 +173,8 @@ public class Core {
     /**
      * 应用是否过期
      *
-     * @param login 登录信息
+     * @param login  登录信息
+     * @param userId 用户ID
      * @return 租户ID是否为空
      */
     public boolean appIsExpired(LoginDto login, Long userId) {
@@ -185,6 +186,7 @@ public class Core {
                 throw new BusinessException("未找指定的应用");
             }
 
+            Redis.setHash(key, "Type", app.getType());
             Redis.setHash(key, "VerifySource", app.getVerifySource());
             Redis.setHash(key, "PermitLife", app.getPermitLife());
             Redis.setHash(key, "TokenLife", app.getTokenLife());
@@ -205,6 +207,24 @@ public class Core {
 
         LocalDate expire = LocalDate.parse(date);
         return LocalDate.now().isAfter(expire);
+    }
+
+    /**
+     * 检查用户类型和应用是否匹配
+     *
+     * @param appId    应用ID
+     * @param userType 用户类型
+     */
+    public void checkType(Long appId, Integer userType) {
+        var data = Redis.get("App:" + appId, "Type");
+        if (data == null) {
+            throw new BusinessException("应用类型数据不存在");
+        }
+
+        var type = Integer.parseInt(data);
+        if (type > 0 && !userType.equals(type)) {
+            throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
+        }
     }
 
     /**
@@ -447,6 +467,7 @@ public class Core {
             throw new BusinessException("应用已过期,请续租");
         }
 
+        checkType(login.getAppId(), user.getType());
         return creatorToken(code, login, user);
     }
 

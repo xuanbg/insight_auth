@@ -245,6 +245,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("应用已过期,请续租");
         }
 
+        core.checkType(login.getAppId(), user.getType());
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
         return core.creatorToken(Util.uuid(), login, user);
     }
@@ -311,7 +312,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("应用已过期,请续租");
         }
 
-        // 绑定用户微信OpenID,创建令牌
+        core.checkType(login.getAppId(), user.getType());
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
         return core.creatorToken(Util.uuid(), login, user);
     }

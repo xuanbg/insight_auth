@@ -2,19 +2,23 @@
 
 ## 目录
 
-- [概述](#概述)
-- [Token接口](#Token接口)
-    - [获取Code](#获取Code)
-    - [获取Token](#获取Token)
-    - [微信授权码获取Token](#微信授权码获取Token)
-    - [微信UnionId获取Token](#微信UnionId获取Token)
-    - [验证Token](#验证Token)
-    - [刷新Token](#刷新Token)
-    - [注销Token](#注销Token)
-- [应用权限接口](#应用权限接口)
+- [Insight Auth 服务使用手册](#insight-auth-服务使用手册)
+  - [目录](#目录)
+  - [概述](#概述)
+    - [主要功能](#主要功能)
+    - [通讯方式](#通讯方式)
+  - [Token接口](#token接口)
+    - [获取Code](#获取code)
+    - [获取Token](#获取token)
+    - [微信授权码获取Token](#微信授权码获取token)
+    - [微信UnionId获取Token](#微信unionid获取token)
+    - [验证Token](#验证token)
+    - [刷新Token](#刷新token)
+    - [注销Token](#注销token)
+  - [应用权限接口](#应用权限接口)
     - [获取模块导航](#获取模块导航)
     - [获取模块功能](#获取模块功能)
-- [配置管理接口](#配置管理接口)
+  - [配置管理接口](#配置管理接口)
     - [获取接口配置列表](#获取接口配置列表)
     - [获取接口配置详情](#获取接口配置详情)
     - [新增接口配置](#新增接口配置)
@@ -22,8 +26,14 @@
     - [删除接口配置](#删除接口配置)
     - [获取日志列表](#获取日志列表)
     - [获取日志详情](#获取日志详情)
-    - [加载接口配置表](#加载接口配置表)
-- [DTO类型说明](#DTO类型说明)
+    - [加载接口配置到缓存](#加载接口配置到缓存)
+  - [DTO类型说明](#dto类型说明)
+    - [Reply](#reply)
+    - [UserInfo](#userinfo)
+    - [WeChatUser](#wechatuser)
+    - [ModuleInfo](#moduleinfo)
+    - [FuncDTO](#funcdto)
+    - [FuncInfo](#funcinfo)
 
 ## 概述
 
@@ -42,7 +52,7 @@ Auth 服务是一个依赖于用户数据的、基于Token的用户身份认证�
 ### 通讯方式
 
 **Insight** 所有的服务都支持 **HTTP/HTTPS** 协议的访问请求，以 **URL Params** 、 **Path Variable** 或 **BODY** 传递参数。如使用 **BODY** 传参，则需使用 **
-JSON** 格式的请求参数。接口 **URL** 区分大小写，请求以及返回都使用 **UTF-8** 字符集进行编码，接口返回的数据封装为统一的 **JSON** 格式，详见：[**Reply**](#Reply)
+JSON** 格式的请求参数。接口 **URL** 区分大小写，请求以及返回都使用 **UTF-8** 字符集进行编码，接口返回的数据封装为统一的 **JSON** 格式，详见：[**Reply**](#reply)
 数据类型。除获取Token等公开接口外，都需要在请求头的 **Authorization** 字段承载 **AccessToken** 数据。HTTP请求头参数设置如下：
 
 |参数名|参数值|
@@ -130,7 +140,7 @@ Code)** 。此接口的限流策略为：同一设备的调用间隔需3秒以�
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfo|用户信息|
+|[UserInfo](#userinfo)|userInfo|用户信息|
 
 请求参数示例：
 
@@ -175,7 +185,7 @@ Code)** 。此接口的限流策略为：同一设备的调用间隔需3秒以�
 
 ### 微信授权码获取Token
 
-此接口支持通过微信授权获取访问令牌、刷新令牌、令牌过期时间、令牌失效时间和用户信息。如该微信号未绑定用户，则缓存该微信号的 [微信用户信息](#WeChatUser)
+此接口支持通过微信授权获取访问令牌、刷新令牌、令牌过期时间、令牌失效时间和用户信息。如该微信号未绑定用户，则缓存该微信号的 [微信用户信息](#wechatuser)
 30分钟并返回该数据。前端应用可使用微信用户信息中的UnionId调用 [微信UnionId获取Token](#微信UnionId获取Token) 接口，将该UnionId绑定到指定手机号的用户，并获取Token。
 
 请求方法：**POST**
@@ -200,7 +210,7 @@ Code)** 。此接口的限流策略为：同一设备的调用间隔需3秒以�
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfo|用户信息|
+|[UserInfo](#userinfo)|userInfo|用户信息|
 
 请求参数示例：
 
@@ -296,7 +306,7 @@ Code)** 。此接口的限流策略为：同一设备的调用间隔需3秒以�
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfo|用户信息|
+|[UserInfo](#userinfo)|userInfo|用户信息|
 
 请求参数示例：
 
@@ -387,7 +397,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/status" \
 |String|refreshToken|刷新用令牌|
 |Integer|expire|令牌过期时间(毫秒)|
 |Integer|failure|令牌失效时间(毫秒)|
-|[UserInfo](#UserInfo)|userInfo|用户信息|
+|[UserInfo](#userinfo)|userInfo|用户信息|
 
 返回结果示例：
 
@@ -460,8 +470,8 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/tokens/status" \
 |Integer|type|导航级别|
 |Integer|index|索引,排序用|
 |String|name|导航名称|
-|[ModuleInfo](#ModuleInfo)|moduleInfo|模块信息|
-|List\<[FuncDTO](#FuncDTO)>|functions|功能集合|
+|[ModuleInfo](#moduleinfo)|moduleInfo|模块信息|
+|List\<[FuncDTO](#funcdto)>|functions|功能集合|
 
 请求示例：
 
@@ -541,7 +551,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/navigators" \
 |Integer|index|索引,排序用|
 |String|name|功能名称|
 |String|authCode|授权码|
-|[FuncInfo](#FuncInfo)|funcInfo|功能图标信息|
+|[FuncInfo](#funcinfo)|funcInfo|功能图标信息|
 |Boolean|permit|是否授权(true:已授权,false:已拒绝,null:未授权)|
 
 请求示例：
@@ -1128,7 +1138,7 @@ curl "http://192.168.16.1:6200/base/auth/v1.0/configs/load" \
 |Integer|index|索引,排序用|
 |String|name|功能名称|
 |String|authCode|授权码|
-|[FuncInfo](#FuncInfo)|funcInfo|功能图标信息|
+|[FuncInfo](#funcinfo)|funcInfo|功能图标信息|
 |Boolean|permit|是否授权(true:已授权,false:已拒绝,null:未授权)|
 
 [回目录](#目录)

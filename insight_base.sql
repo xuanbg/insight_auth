@@ -4,6 +4,7 @@
 DROP TABLE IF EXISTS `ibs_application`;
 CREATE TABLE `ibs_application` (
   `id`                 bigint unsigned   NOT NULL                COMMENT '主键-0',
+  `type`               tinyint unsigned  NOT NULL DEFAULT '0'    COMMENT '类型: 0.常规应用, 1.限定应用(与用户类型匹配)',
   `index`              int unsigned      NOT NULL                COMMENT '序号',
   `name`               varchar(64)       NOT NULL                COMMENT '应用名称',
   `alias`              varchar(64)       NOT NULL                COMMENT '应用简称',
@@ -11,9 +12,9 @@ CREATE TABLE `ibs_application` (
   `domain`             varchar(128)               DEFAULT NULL   COMMENT '应用域名',
   `permit_life`        int unsigned      NOT NULL DEFAULT '0'    COMMENT '授权码生命周期(毫秒)',
   `token_life`         int unsigned      NOT NULL                COMMENT '令牌生命周期(毫秒)',
-  `is_verify_source`   bit               NOT NULL DEFAULT b'0'   COMMENT '是否验证来源:0.不验证;1.验证',
-  `is_signin_one`      bit               NOT NULL DEFAULT b'0'   COMMENT '是否单点登录:0.允许多点;1.单点登录',
-  `is_auto_refresh`    bit               NOT NULL DEFAULT b'0'   COMMENT '是否自动刷新:0.手动刷新;1.自动刷新',
+  `verify_source`      bit               NOT NULL DEFAULT b'0'   COMMENT '是否验证来源: 0.不验证, 1.验证',
+  `signin_one`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否单点登录: 0.允许多点, 1.单点登录',
+  `auto_refresh`       bit               NOT NULL DEFAULT b'0'   COMMENT '是否自动刷新: 0.手动刷新, 1.自动刷新',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
   `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建用户ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
@@ -51,7 +52,7 @@ DROP TABLE IF EXISTS `ibs_function`;
 CREATE TABLE `ibs_function` (
   `id`                 bigint unsigned   NOT NULL                COMMENT '主键-2',
   `nav_id`             bigint unsigned   NOT NULL                COMMENT '导航(末级模块)ID',
-  `type`               tinyint unsigned  NOT NULL                COMMENT '功能类型 0:全局功能;1:数据项功能;2:其他功能',
+  `type`               tinyint unsigned  NOT NULL                COMMENT '功能类型: 0.全局功能, 1.数据项功能, 2.其他功能',
   `index`              int unsigned      NOT NULL                COMMENT '序号',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `auth_codes`         varchar(256)               DEFAULT NULL   COMMENT '接口授权码,多个授权码使用英文逗号分隔',
@@ -72,7 +73,7 @@ CREATE TABLE `ibs_function` (
 DROP TABLE IF EXISTS `ibu_user`;
 CREATE TABLE `ibu_user` (
   `id`                 bigint unsigned   NOT NULL                COMMENT '主键-3',
-  `type`               tinyint unsigned  NOT NULL DEFAULT 0      COMMENT '用户类型 0:外部用户;1:平台用户',
+  `type`               tinyint unsigned  NOT NULL DEFAULT 0      COMMENT '用户类型: 0.平台用户, 1.外部用户',
   `code`               varchar(16)                DEFAULT NULL   COMMENT '用户编码',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `account`            varchar(64)       NOT NULL                COMMENT '登录账号',
@@ -84,8 +85,8 @@ CREATE TABLE `ibu_user` (
   `pay_password`       char(32)                   DEFAULT NULL   COMMENT '支付密码(MD5)',
   `head_img`           varchar(256)               DEFAULT NULL   COMMENT '用户头像',
   `remark`             varchar(256)               DEFAULT NULL   COMMENT '备注',
-  `is_builtin`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否内置:0.非内置;1.内置',
-  `is_invalid`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否失效:0.有效;1.失效',
+  `builtin`            bit               NOT NULL DEFAULT b'0'   COMMENT '是否内置: 0.非内置, 1.内置',
+  `invalid`            bit               NOT NULL DEFAULT b'0'   COMMENT '是否失效: 0.有效, 1.失效',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
   `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建人ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
@@ -113,8 +114,8 @@ CREATE TABLE `ibt_tenant` (
   `area_code`          varchar(4)                 DEFAULT NULL   COMMENT '区号',
   `company_info`       json                       DEFAULT NULL   COMMENT '企业信息',
   `remark`             varchar(1024)              DEFAULT NULL   COMMENT '描述',
-  `status`             tinyint unsigned  NOT NULL DEFAULT '0'    COMMENT '租户状态:0.待审核;1.已通过;2.未通过',
-  `is_invalid`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否失效:0.正常;1.失效',
+  `status`             tinyint unsigned  NOT NULL DEFAULT '0'    COMMENT '租户状态: 0.待审核, 1.已通过, 2.未通过',
+  `invalid`            bit               NOT NULL DEFAULT b'0'   COMMENT '是否失效: 0.有效, 1.失效',
   `auditor`            varchar(64)                DEFAULT NULL   COMMENT '审核人',
   `auditor_id`         bigint unsigned            DEFAULT NULL   COMMENT '审核人ID',
   `audited_time`       datetime          NULL     DEFAULT NULL   COMMENT '审核时间',
@@ -165,7 +166,7 @@ CREATE TABLE `ibu_group` (
   `code`               char(4)           NOT NULL                COMMENT '用户组编码',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `remark`             varchar(256)               DEFAULT NULL   COMMENT '备注',
-  `is_builtin`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否内置:0.非内置;1.内置',
+  `builtin`            bit               NOT NULL DEFAULT b'0'   COMMENT '是否内置: 0.非内置, 1.内置',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
   `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建人ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
@@ -198,14 +199,14 @@ CREATE TABLE `ibo_organize` (
   `id`                 bigint unsigned   NOT NULL                COMMENT '主键-6',
   `tenant_id`          bigint unsigned   NOT NULL                COMMENT '租户ID',
   `parent_id`          bigint unsigned            DEFAULT NULL   COMMENT '父级ID',
-  `type`               tinyint unsigned           DEFAULT NULL   COMMENT '节点类型:0.机构;1.部门;2.职位',
+  `type`               tinyint unsigned           DEFAULT NULL   COMMENT '节点类型: 0.机构, 1.部门, 2.职位',
   `index`              tinyint unsigned  NOT NULL                COMMENT '序号',
   `code`               varchar(8)                 DEFAULT NULL   COMMENT '编码',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `alias`              varchar(64)                DEFAULT NULL   COMMENT '简称',
   `full_name`          varchar(128)               DEFAULT NULL   COMMENT '全称',
   `remark`             varchar(256)               DEFAULT NULL   COMMENT '备注',
-  `is_invalid`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否失效:0.有效;1.失效',
+  `invalid`            bit               NOT NULL DEFAULT b'0'   COMMENT '是否失效: 0.有效, 1.失效',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
   `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建人ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
@@ -240,7 +241,7 @@ CREATE TABLE `ibr_role` (
   `app_id`             bigint unsigned   NOT NULL                COMMENT '应用ID',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `remark`             varchar(256)               DEFAULT NULL   COMMENT '备注',
-  `is_builtin`         bit               NOT NULL DEFAULT b'0'   COMMENT '是否内置:0.非内置;1.内置',
+  `builtin`            bit               NOT NULL DEFAULT b'0'   COMMENT '是否内置: 0.非内置, 1.内置',
   `creator`            varchar(64)       NOT NULL                COMMENT '创建人',
   `creator_id`         bigint unsigned   NOT NULL                COMMENT '创建人ID',
   `created_time`       datetime          NOT NULL                COMMENT '创建时间',
@@ -259,7 +260,7 @@ CREATE TABLE `ibr_role_permit` (
   `id`                 bigint unsigned   NOT NULL AUTO_INCREMENT COMMENT '主键',
   `role_id`            bigint unsigned   NOT NULL                COMMENT '角色ID',
   `function_id`        bigint unsigned   NOT NULL                COMMENT '功能ID',
-  `permit`             bit               NOT NULL DEFAULT b'0'   COMMENT '授权类型:0.拒绝;1.允许',
+  `permit`             bit               NOT NULL DEFAULT b'0'   COMMENT '授权类型: 0.拒绝, 1.允许',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_role_func_permit_role_id` (`role_id`) USING BTREE,
   KEY `idx_role_func_permit_function_id` (`function_id`) USING BTREE
@@ -271,7 +272,7 @@ CREATE TABLE `ibr_role_permit` (
 DROP TABLE IF EXISTS `ibr_role_member`;
 CREATE TABLE `ibr_role_member` (
   `id`                 bigint unsigned   NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `type`               tinyint unsigned  NOT NULL DEFAULT '0'    COMMENT '成员类型:0.未定义;1.用户;2.用户组;3.职位',
+  `type`               tinyint unsigned  NOT NULL DEFAULT '0'    COMMENT '成员类型: 0.未定义, 1.用户, 2.用户组, 3.职位',
   `role_id`            bigint unsigned   NOT NULL                COMMENT '角色ID',
   `member_id`          bigint unsigned   NOT NULL                COMMENT '成员ID',
   PRIMARY KEY (`id`) USING BTREE,
@@ -312,8 +313,8 @@ from ibr_role r
 -- 初始化应用
 -- ----------------------------
 INSERT ibs_application (`id`, `index`, `name`, `alias`, `permit_life`, `token_life`, `creator`, `creator_id`, `created_time`) VALUES
-(134660498556715024, 1, '因赛特多租户平台管理系统', 'MTP', 300, 7200, '系统', 0, now()),
-(134661270778413072, 2, '因赛特用户及权限管理系统', 'RMS', 300, 7200, '系统', 0, now());
+(134660498556715024, 1, '因赛特多租户平台管理系统', 'MTP', 5, 7200, '系统', 0, now()),
+(134661270778413072, 2, '因赛特用户及权限管理系统', 'RMS', 5, 7200, '系统', 0, now());
 
 -- ----------------------------
 -- 初始化应用:功能导航
@@ -479,16 +480,16 @@ INSERT ibs_function(`id`, `nav_id`, `type`, `index`, `name`, `auth_codes`, `func
 -- ----------------------------
 -- 初始化用户:系统管理员
 -- ----------------------------
-INSERT ibu_user (`id`, `type`, `name`, `account`, `password`, `is_builtin`, `creator`, `creator_id`, `created_time`) VALUES
-(0, 1, '系统管理员', 'admin', 'e10adc3949ba59abbe56e057f20f883e', 1, '系统', 0, now());
+INSERT ibu_user (`id`, `type`, `name`, `account`, `password`, `builtin`, `creator`, `creator_id`, `created_time`) VALUES
+(0, 0, '系统管理员', 'admin', 'e10adc3949ba59abbe56e057f20f883e', 1, '系统', 0, now());
 
 -- ----------------------------
 -- 初始化角色:管理员
 -- ----------------------------
-insert ibr_role (id, tenant_id, app_id, name, remark, is_builtin, creator, creator_id, `created_time`) values
+insert ibr_role (`id`, `tenant_id`, `app_id`, `name`, `remark`, `builtin`, `creator`, `creator_id`, `created_time`) values
 (137703403710054416, NULL, 134660498556715024, '平台管理员', '内置平台管理员角色', 0, '系统', 0, now()),
 (137703825636065296, NULL, 134661270778413072, '系统管理员', '租户系统管理员角色模板', 1, '系统', 0, now());
-insert ibr_role_member(`type`, role_id, member_id) values
+insert ibr_role_member(`type`, `role_id`, `member_id`) values
 (1, 137703403710054416, 0);
 
 -- ----------------------------

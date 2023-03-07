@@ -50,7 +50,7 @@ public class LoginDto extends BaseXo {
     /**
      * 是否替换用户的UnionId(微信登录用)
      */
-    private Boolean isReplace;
+    private Boolean replace;
 
     /**
      * 设备ID
@@ -124,11 +124,11 @@ public class LoginDto extends BaseXo {
     }
 
     public Boolean getReplace() {
-        return isReplace;
+        return replace;
     }
 
     public void setReplace(Boolean replace) {
-        isReplace = replace;
+        this.replace = replace;
     }
 
     public String getDeviceId() {
