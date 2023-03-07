@@ -73,7 +73,7 @@ CREATE TABLE `ibs_function` (
 DROP TABLE IF EXISTS `ibu_user`;
 CREATE TABLE `ibu_user` (
   `id`                 bigint unsigned   NOT NULL                COMMENT '主键-3',
-  `type`               tinyint unsigned  NOT NULL DEFAULT 0      COMMENT '用户类型: 0.平台用户, 1.外部用户',
+  `type`               tinyint unsigned  NOT NULL DEFAULT 1      COMMENT '用户类型: 0.平台用户, 1.外部用户',
   `code`               varchar(16)                DEFAULT NULL   COMMENT '用户编码',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `account`            varchar(64)       NOT NULL                COMMENT '登录账号',
