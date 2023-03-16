@@ -14,7 +14,6 @@ import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.TokenInfo;
 import com.insight.utils.pojo.base.BaseVo;
 import com.insight.utils.pojo.base.BusinessException;
-import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.message.SmsCode;
 import com.insight.utils.pojo.user.User;
 import com.insight.utils.wechat.WeChatHelper;
@@ -175,9 +174,8 @@ public class Core {
      *
      * @param login  登录信息
      * @param userId 用户ID
-     * @return 租户ID是否为空
      */
-    public boolean appIsExpired(LoginDto login, Long userId) {
+    public void checkExpired(LoginDto login, Long userId) {
         Long appId = login.getAppId();
         String key = "App:" + appId;
         if (!Redis.hasKey(key)) {
@@ -196,7 +194,7 @@ public class Core {
 
         Long tenantId = login.getTenantId();
         if (tenantId == null) {
-            return false;
+            return;
         }
 
         String date = Redis.get("App:" + appId, tenantId.toString());
@@ -206,7 +204,9 @@ public class Core {
         }
 
         LocalDate expire = LocalDate.parse(date);
-        return LocalDate.now().isAfter(expire);
+        if (LocalDate.now().isAfter(expire)) {
+            throw new BusinessException("应用已过期,请续租");
+        }
     }
 
     /**
@@ -264,7 +264,23 @@ public class Core {
         String key = "UserToken:" + userId;
         Redis.setHash(key, appId.toString(), code);
 
-        return initPackage(token, code, fingerprint, appId);
+        return initPackage(token, code, fingerprint);
+    }
+
+    /**
+     * 生成令牌数据包
+     *
+     * @param token       令牌
+     * @param tokenId     令牌ID
+     * @param fingerprint 用户特征串
+     * @return 令牌数据包
+     */
+    public TokenDto creatorToken(Token token, String tokenId, String fingerprint) {
+        String key = "UserToken:" + token.getUserId();
+        Redis.setHash(key, token.getAppId().toString(), tokenId);
+
+        token.setSecretKey(Util.uuid());
+        return initPackage(token, tokenId, fingerprint);
     }
 
     /**
@@ -276,10 +292,8 @@ public class Core {
      * @return 令牌数据包
      */
     public TokenDto refreshToken(Token token, String tokenId, String fingerprint) {
-        Long appId = token.getAppId();
         token.setSecretKey(Util.uuid());
-
-        return initPackage(token, tokenId, fingerprint, appId);
+        return initPackage(token, tokenId, fingerprint);
     }
 
     /**
@@ -288,10 +302,9 @@ public class Core {
      * @param token       令牌数据
      * @param code        Code
      * @param fingerprint 用户特征串
-     * @param appId       应用ID
      * @return 令牌数据包
      */
-    private TokenDto initPackage(Token token, String code, String fingerprint, Long appId) {
+    private TokenDto initPackage(Token token, String code, String fingerprint) {
         TokenDto tokenDto = new TokenDto();
 
         // 生成令牌数据
@@ -341,7 +354,7 @@ public class Core {
         Long tenantId = token.getTenantId();
         if (tenantId != null) {
             LoginInfo loginInfo = new LoginInfo();
-            loginInfo.setAppId(appId);
+            loginInfo.setAppId(token.getAppId());
             loginInfo.setTenantId(tenantId);
 
             BaseVo data = mapper.getLoginOrg(userId, tenantId);
@@ -366,8 +379,8 @@ public class Core {
     public Token getToken(String tokenId) {
         String key = "Token:" + tokenId;
         String json = Redis.get(key);
-        if (json == null || json.isEmpty()) {
-            return null;
+        if (Util.isEmpty(json)) {
+            throw new BusinessException("指定的Token不存在");
         }
 
         return Json.toBean(json, Token.class);
@@ -462,11 +475,7 @@ public class Core {
             throw new BusinessException("用户被禁止使用");
         }
 
-        // 验证应用是否过期
-        if (appIsExpired(login, userId)) {
-            throw new BusinessException("应用已过期,请续租");
-        }
-
+        checkExpired(login, userId);
         checkType(login.getAppId(), user.getType());
         return creatorToken(code, login, user);
     }
@@ -542,10 +551,12 @@ public class Core {
      * 验证短信验证码
      *
      * @param verifyKey 验证参数
-     * @return Reply
      */
-    public Reply verifySmsCode(String verifyKey) {
-        return client.verifySmsCode(verifyKey);
+    public void verifySmsCode(String verifyKey) {
+        var reply = client.verifySmsCode(verifyKey);
+        if (!reply.getSuccess()) {
+            throw new BusinessException("短信验证码错误");
+        }
     }
 
     /**
@@ -556,6 +567,7 @@ public class Core {
     public Long addUser(User user) {
         Long userId = creator.nextId(3);
         user.setId(userId);
+        user.setType(0);
         user.setBuiltin(false);
         user.setInvalid(false);
         user.setCreator(user.getName());

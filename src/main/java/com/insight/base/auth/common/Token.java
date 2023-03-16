@@ -44,8 +44,8 @@ public class Token extends TokenInfo {
      * @return 是否通过验证
      */
     @JsonIgnore
-    public boolean verifyRefreshKey(AccessToken token) {
-        return token != null && token.getSecret().equals(getRefreshKey());
+    public boolean refreshKeyIsInvalid(AccessToken token) {
+        return token == null || !token.getSecret().equals(getRefreshKey());
     }
 
     /**

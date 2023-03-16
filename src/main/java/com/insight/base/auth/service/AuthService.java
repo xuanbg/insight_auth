@@ -1,9 +1,6 @@
 package com.insight.base.auth.service;
 
-import com.insight.base.auth.common.dto.FuncDto;
-import com.insight.base.auth.common.dto.LoginDto;
-import com.insight.base.auth.common.dto.NavDto;
-import com.insight.base.auth.common.dto.TokenDto;
+import com.insight.base.auth.common.dto.*;
 import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.user.MemberDto;
@@ -18,29 +15,21 @@ import java.util.List;
 public interface AuthService {
 
     /**
-     * 获取提交数据用临时Token
+     * 获取用户可选租户
      *
-     * @param key 接口Hash
+     * @param appId   应用ID
+     * @param account 登录账号
      * @return Reply
      */
-    String getSubmitToken(String key);
+    List<MemberDto> getTenants(Long appId, String account);
 
     /**
-     * 获取Code
+     * 生成加密Code
      *
-     * @param account 用户登录账号
-     * @param type    登录类型(0:密码登录、1:验证码登录)
+     * @param dto CodeDTO
      * @return Reply
      */
-    String getCode(String account, int type);
-
-    /**
-     * 获取Token
-     *
-     * @param login 用户登录数据
-     * @return Reply
-     */
-    TokenDto getToken(LoginDto login);
+    String generateCode(CodeDto dto);
 
     /**
      * 获取授权码
@@ -53,17 +42,25 @@ public interface AuthService {
      * 扫码授权
      *
      * @param info 用户登录信息
-     * @param code 二维码
+     * @param code 授权识别码
      */
     void authWithCode(LoginInfo info, String code);
 
     /**
-     * 扫码授权获取Token
+     * 获取提交数据用临时Token
+     *
+     * @param key 接口Hash
+     * @return Reply
+     */
+    String getSubmitToken(String key);
+
+    /**
+     * 生成Token
      *
      * @param login 用户登录数据
      * @return Reply
      */
-    TokenDto getTokenWithCode(LoginDto login);
+    TokenDto generateToken(LoginDto login);
 
     /**
      * 通过微信授权码获取Token
@@ -82,12 +79,22 @@ public interface AuthService {
     TokenDto getTokenWithUserInfo(LoginDto login);
 
     /**
-     * 获取用户授权码
+     * 扫码授权获取Token
      *
-     * @param info 用户登录信息
+     * @param login 用户登录数据
      * @return Reply
      */
-    List<String> getPermits(LoginInfo info);
+    TokenDto getTokenWithCode(LoginDto login);
+
+    /**
+     * 获取指定应用的Token
+     *
+     * @param fingerprint 用户特征串
+     * @param token       刷新令牌
+     * @param appId 应用ID
+     * @return Reply
+     */
+    TokenDto getToken(String fingerprint, AccessToken token, Long appId);
 
     /**
      * 刷新访问令牌过期时间
@@ -106,13 +113,12 @@ public interface AuthService {
     void deleteToken(String tokenId);
 
     /**
-     * 获取用户可选租户
+     * 获取用户授权码
      *
-     * @param appId   应用ID
-     * @param account 登录账号
+     * @param info 用户登录信息
      * @return Reply
      */
-    List<MemberDto> getTenants(Long appId, String account);
+    List<String> getPermits(LoginInfo info);
 
     /**
      * 获取用户导航栏

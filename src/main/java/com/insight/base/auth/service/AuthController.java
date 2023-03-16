@@ -1,15 +1,11 @@
 package com.insight.base.auth.service;
 
-import com.insight.base.auth.common.dto.FuncDto;
-import com.insight.base.auth.common.dto.LoginDto;
-import com.insight.base.auth.common.dto.NavDto;
-import com.insight.base.auth.common.dto.TokenDto;
+import com.insight.base.auth.common.dto.*;
 import com.insight.utils.Json;
-import com.insight.utils.ReplyHelper;
+import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.base.BusinessException;
-import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.user.MemberDto;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,141 +33,102 @@ public class AuthController {
     }
 
     /**
-     * 获取提交数据用临时Token
+     * 获取用户可选租户
      *
-     * @param key 接口Hash
+     * @param appId   应用ID
+     * @param account 登录账号
      * @return Reply
      */
-    @GetMapping("/v1.0/tokens")
-    public String getSubmitToken(@RequestParam String key) {
-        return service.getSubmitToken(key);
+    @GetMapping("/v1.0/{appId}/tenants")
+    public List<MemberDto> getTenants(@PathVariable Long appId, @RequestParam String account) {
+
+        return service.getTenants(appId, account);
     }
 
     /**
-     * 获取Code
+     * 生成加密Code或授权识别码
      *
-     * @param account 用户登录账号
-     * @param type    登录类型(0:密码登录、1:验证码登录)
+     * @param dto CodeDTO
      * @return Reply
      */
-    @GetMapping("/v1.0/tokens/codes")
-    public String getCode(@RequestParam String account, @RequestParam(defaultValue = "0") int type) {
-        return service.getCode(account, type);
-    }
-
-    /**
-     * 获取Token
-     *
-     * @param fingerprint 用户特征串
-     * @param login       用户登录数据
-     * @return Reply
-     */
-    @PostMapping("/v1.0/tokens")
-    public TokenDto getToken(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
-        login.setFingerprint(fingerprint);
-        String account = login.getAccount();
-        if (account == null || account.isEmpty()) {
-            throw new BusinessException("登录账号不能为空");
+    @PostMapping("/v1.0/codes")
+    public String getCode(@Valid @RequestBody CodeDto dto) {
+        switch (dto.getType()) {
+            case 0, 1 -> {
+                if (Util.isEmpty(dto.getAccount())) {
+                    throw new BusinessException("登录账号不能为空");
+                }
+                return service.generateCode(dto);
+            }
+            case 2 -> {
+                return service.getAuthCode();
+            }
+            case 3 -> {
+                if (Util.isEmpty(dto.getHashKey())) {
+                    throw new BusinessException("接口哈希值不能为空");
+                }
+                return service.getSubmitToken(dto.getHashKey());
+            }
+            default -> throw new BusinessException("错误的Code类型");
         }
-
-        return service.getToken(login);
-    }
-
-    /**
-     * 获取授权码
-     *
-     * @return Reply
-     */
-    @PostMapping("/v1.0/tokens/codes")
-    public String getAuthCode() {
-        return service.getAuthCode();
     }
 
     /**
      * 扫码授权
      *
      * @param loginInfo 用户信息
-     * @param code      用户登录数据
+     * @param code      授权识别码
      */
-    @PutMapping("/v1.0/tokens/{code}")
+    @PutMapping("/v1.0/codes/{code}")
     public void authWithCode(@RequestHeader("loginInfo") String loginInfo, @PathVariable String code) {
         LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
         service.authWithCode(info, code);
     }
 
     /**
-     * 扫码授权获取Token
-     *
-     * @param fingerprint 用户特征串
-     * @param code        授权码
-     * @param login       用户登录数据
-     * @return Reply
-     */
-    @PostMapping("/v1.0/tokens/{code}")
-    public TokenDto getTokenWithCode(@RequestHeader("fingerprint") String fingerprint, @PathVariable String code, @RequestBody LoginDto login) {
-        login.setFingerprint(fingerprint);
-        login.setCode(code);
-
-        return service.getTokenWithCode(login);
-    }
-
-    /**
-     * 通过微信授权码获取Token
+     * 生成Token
      *
      * @param fingerprint 用户特征串
      * @param login       用户登录数据
      * @return Reply
      */
-    @PostMapping("/v1.0/tokens/wechat/code")
-    public TokenDto getTokenWithWeChat(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
+    @PostMapping("/v1.0/tokens")
+    public TokenDto generateToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization", required = false) String token,
+                                  @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
-        String appId = login.getWeChatAppId();
-        if (appId == null || appId.isEmpty()) {
-            throw new BusinessException("weChatAppId不能为空");
+
+        // 账号/密码或短信验证码登录
+        if (Util.isNotEmpty(login.getAccount()) && Util.isNotEmpty(login.getSignature())) {
+            return service.generateToken(login);
         }
 
-        return service.getTokenWithWeChat(login);
-    }
+        // 微信授权/扫码登录
+        if (Util.isNotEmpty(login.getWeChatAppId())) {
+            if (Util.isNotEmpty(login.getCode())) {
+                return service.getTokenWithWeChat(login);
+            }
 
-    /**
-     * 通过微信UnionId获取Token
-     *
-     * @param fingerprint 用户特征串
-     * @param login       用户登录数据
-     * @return Reply
-     */
-    @PostMapping("/v1.0/tokens/wechat/unionid")
-    public TokenDto getTokenWithUserInfo(@RequestHeader("fingerprint") String fingerprint, @Valid @RequestBody LoginDto login) {
-        login.setFingerprint(fingerprint);
-        String appId = login.getWeChatAppId();
-        if (appId == null || appId.isEmpty()) {
-            throw new BusinessException("weChatAppId不能为空");
+            if (Util.isNotEmpty(login.getUnionId())) {
+                return service.getTokenWithUserInfo(login);
+            }
         }
 
-        return service.getTokenWithUserInfo(login);
-    }
+        // 扫码授权登录
+        if (Util.isNotEmpty(login.getCode())) {
+            return service.getTokenWithCode(login);
+        }
 
-    /**
-     * 验证Token
-     *
-     * @return Reply
-     */
-    @GetMapping("/v1.0/tokens/status")
-    public Reply verifyToken() {
-        return ReplyHelper.success();
-    }
+        // 获取其他应用令牌
+        if (Util.isNotEmpty(token)) {
+            AccessToken accessToken = Json.toAccessToken(token);
+            if (accessToken == null) {
+                throw new BusinessException("错误的AccessToken");
+            }
 
-    /**
-     * 获取用户授权码
-     *
-     * @param loginInfo 用户信息
-     * @return Reply
-     */
-    @GetMapping("/v1.0/tokens/permits")
-    public List<String> getPermits(@RequestHeader("loginInfo") String loginInfo) {
-        LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
+            return service.getToken(fingerprint, accessToken, login.getAppId());
+        }
 
-        return service.getPermits(info);
+        throw new BusinessException("接口参数错误");
     }
 
     /**
@@ -204,16 +161,16 @@ public class AuthController {
     }
 
     /**
-     * 获取用户可选租户
+     * 获取用户授权码
      *
-     * @param appId   应用ID
-     * @param account 登录账号
+     * @param loginInfo 用户信息
      * @return Reply
      */
-    @GetMapping("/v1.0/{appId}/tenants")
-    public List<MemberDto> getTenants(@PathVariable Long appId, @RequestParam String account) {
+    @GetMapping("/v1.0/tokens/permits")
+    public List<String> getPermits(@RequestHeader("loginInfo") String loginInfo) {
+        LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
 
-        return service.getTenants(appId, account);
+        return service.getPermits(info);
     }
 
     /**
