@@ -27,7 +27,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -242,14 +241,16 @@ public class Core {
 
         // 加载用户授权码
         Long userId = user.getId();
-        List<String> list = mapper.getAuthInfos(appId, tenantId, userId);
         Token token = new Token(appId);
         token.setTenantId(tenantId);
+        token.setTenantName(mapper.getTenant(tenantId));
+        token.setUserType(user.getType());
         token.setUserId(userId);
+        token.setUserCode(user.getCode());
         token.setUserName(user.getName());
         token.setMobile(user.getMobile());
         token.setHeadImg(user.getHeadImg());
-        token.setPermitFuncs(list);
+        token.setPermitFuncs(mapper.getAuthInfos(appId, tenantId, userId));
         token.setPermitTime(LocalDateTime.now());
 
         if (tenantId != null) {

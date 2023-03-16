@@ -42,6 +42,15 @@ public interface AuthMapper {
     List<String> getTenantIds(Long userId);
 
     /**
+     * 获取指定ID的租户
+     *
+     * @param id 租户ID
+     * @return 租户名称
+     */
+    @Select("select name from ibt_tenant where id = #{id};")
+    String getTenant(Long id);
+
+    /**
      * 查询指定ID的应用信息
      *
      * @param appId 应用ID
