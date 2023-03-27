@@ -328,8 +328,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public TokenDto getToken(String fingerprint, AccessToken accessToken, Long appId) {
-        String tokenId = accessToken.getId();
-        Token token = core.getToken(tokenId);
+        Token token = core.getToken(accessToken.getId());
         if (!token.verifySecretKey(accessToken.getSecret())) {
             throw new BusinessException("非法的Token");
         }
@@ -341,7 +340,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         token.setAppId(appId);
-        return core.creatorToken(token, tokenId, fingerprint);
+        return core.creatorToken(token, fingerprint);
     }
 
     /**
@@ -367,7 +366,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("用户被禁止使用");
         }
 
-        return core.refreshToken(token, tokenId, fingerprint);
+        return core.refreshToken(tokenId, token, fingerprint);
     }
 
     /**

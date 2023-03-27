@@ -265,53 +265,53 @@ public class Core {
         String key = "UserToken:" + userId;
         Redis.setHash(key, appId.toString(), code);
 
-        return initPackage(token, code, fingerprint);
+        return initPackage(code, token, fingerprint);
     }
 
     /**
      * 生成令牌数据包
      *
      * @param token       令牌
-     * @param tokenId     令牌ID
      * @param fingerprint 用户特征串
      * @return 令牌数据包
      */
-    public TokenDto creatorToken(Token token, String tokenId, String fingerprint) {
+    public TokenDto creatorToken(Token token, String fingerprint) {
+        var tokenId = Util.uuid();
         String key = "UserToken:" + token.getUserId();
         Redis.setHash(key, token.getAppId().toString(), tokenId);
 
         token.setSecretKey(Util.uuid());
-        return initPackage(token, tokenId, fingerprint);
+        return initPackage(tokenId, token, fingerprint);
     }
 
     /**
      * 刷新Secret过期时间
      *
-     * @param token       令牌
      * @param tokenId     令牌ID
+     * @param token       令牌
      * @param fingerprint 用户特征串
      * @return 令牌数据包
      */
-    public TokenDto refreshToken(Token token, String tokenId, String fingerprint) {
+    public TokenDto refreshToken(String tokenId, Token token, String fingerprint) {
         token.setSecretKey(Util.uuid());
-        return initPackage(token, tokenId, fingerprint);
+        return initPackage(tokenId, token, fingerprint);
     }
 
     /**
      * 初始化令牌数据包
      *
+     * @param tokenId     令牌ID
      * @param token       令牌数据
-     * @param code        Code
      * @param fingerprint 用户特征串
      * @return 令牌数据包
      */
-    private TokenDto initPackage(Token token, String code, String fingerprint) {
+    private TokenDto initPackage(String tokenId, Token token, String fingerprint) {
         TokenDto tokenDto = new TokenDto();
 
         // 生成令牌数据
         long life = token.getLife();
         AccessToken accessToken = new AccessToken();
-        accessToken.setId(code);
+        accessToken.setId(tokenId);
         accessToken.setSecret(token.getSecretKey());
         tokenDto.setAccessToken(Json.toBase64(accessToken));
         tokenDto.setExpire(life);
@@ -323,7 +323,7 @@ public class Core {
 
         long failure = life * 12;
         AccessToken refreshToken = new AccessToken();
-        refreshToken.setId(code);
+        refreshToken.setId(tokenId);
         refreshToken.setSecret(token.getRefreshKey());
         tokenDto.setRefreshToken(Json.toBase64(refreshToken));
         tokenDto.setFailure(failure);
@@ -332,9 +332,9 @@ public class Core {
         LocalDateTime failureTime = token.getFailureTime();
         if (failureTime == null || now.isAfter(failureTime)) {
             token.setFailureTime(now.plusSeconds(TokenInfo.TIME_OUT + failure));
-            Redis.set("Token:" + code, token.toString(), life > 0 ? TokenInfo.TIME_OUT + failure : -1);
+            Redis.set("Token:" + tokenId, token.toString(), life > 0 ? TokenInfo.TIME_OUT + failure : -1);
         } else {
-            Redis.set("Token:" + code, token.toString());
+            Redis.set("Token:" + tokenId, token.toString());
         }
 
         // 构造用户信息
