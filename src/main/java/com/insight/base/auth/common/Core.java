@@ -344,7 +344,7 @@ public class Core {
         UserInfo info = Json.clone(user, UserInfo.class);
         String host = Redis.get("Config:FileHost");
         String imgUrl = info.getHeadImg();
-        if (!imgUrl.contains("http://") && !imgUrl.contains("https://")) {
+        if (Util.isNotEmpty(imgUrl) && !imgUrl.matches("^https?://")) {
             info.setHeadImg(host + imgUrl);
         }
 
