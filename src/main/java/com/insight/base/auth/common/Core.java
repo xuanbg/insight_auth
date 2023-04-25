@@ -379,7 +379,7 @@ public class Core {
         String key = "Token:" + tokenId;
         String json = Redis.get(key);
         if (Util.isEmpty(json)) {
-            throw new BusinessException("指定的Token不存在");
+            throw new BusinessException(421, "指定的Token不存在");
         }
 
         return Json.toBean(json, Token.class);
