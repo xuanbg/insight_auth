@@ -281,6 +281,7 @@ public class Core {
         Redis.setHash(key, token.getAppId().toString(), tokenId);
 
         token.setSecretKey(Util.uuid());
+        token.setPermitFuncs(mapper.getAuthInfos(token.getAppId(), token.getTenantId(), token.getUserId()));
         return initPackage(tokenId, token, fingerprint);
     }
 
