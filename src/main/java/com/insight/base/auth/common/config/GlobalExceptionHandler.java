@@ -58,10 +58,14 @@ public class GlobalExceptionHandler implements ResponseBodyAdvice<Object> {
      */
     @ExceptionHandler(BusinessException.class)
     public Reply handleBusinessException(BusinessException ex) {
+        Integer code = ex.getCode();
         String msg = ex.getMessage();
         logger(LogLevel.INFO, "业务发生异常, " + msg);
 
-        return ReplyHelper.fail(msg);
+        Reply reply = new Reply();
+        reply.setCode(code == null ? 400 : code);
+        reply.setMessage(msg);
+        return reply;
     }
 
     /**
