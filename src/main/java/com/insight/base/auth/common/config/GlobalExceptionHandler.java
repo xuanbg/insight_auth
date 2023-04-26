@@ -5,6 +5,8 @@ import com.insight.utils.ReplyHelper;
 import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.base.Reply;
 import feign.FeignException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.UnexpectedTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.logging.LogLevel;
@@ -32,8 +34,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.UnexpectedTypeException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLSyntaxErrorException;
 import java.time.format.DateTimeParseException;
@@ -41,7 +41,7 @@ import java.util.Objects;
 
 /**
  * @author 宣炳刚
- * @date 2019/9/2
+ * @date 2023/1/4
  * @remark 全局异常捕获
  */
 @ResponseStatus(HttpStatus.OK)
@@ -58,14 +58,10 @@ public class GlobalExceptionHandler implements ResponseBodyAdvice<Object> {
      */
     @ExceptionHandler(BusinessException.class)
     public Reply handleBusinessException(BusinessException ex) {
-        Integer code = ex.getCode();
         String msg = ex.getMessage();
         logger(LogLevel.INFO, "业务发生异常, " + msg);
 
-        Reply reply = new Reply();
-        reply.setCode(code == null ? 400 : code);
-        reply.setMessage(msg);
-        return reply;
+        return ReplyHelper.fail(ex.getCode(), msg);
     }
 
     /**

@@ -330,7 +330,7 @@ public class AuthServiceImpl implements AuthService {
     public TokenDto getToken(String fingerprint, AccessToken accessToken, Long appId) {
         Token token = core.getToken(accessToken.getId());
         if (!token.verifySecretKey(accessToken.getSecret())) {
-            throw new BusinessException("非法的Token");
+            throw new BusinessException(421, "非法的Token");
         }
 
         String key = "User:" + token.getUserId();

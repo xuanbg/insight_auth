@@ -7,9 +7,9 @@ import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.user.MemberDto;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 /**

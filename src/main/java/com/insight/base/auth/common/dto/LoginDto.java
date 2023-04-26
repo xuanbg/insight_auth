@@ -1,8 +1,7 @@
 package com.insight.base.auth.common.dto;
 
 import com.insight.utils.pojo.base.BaseXo;
-
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author 宣炳刚
