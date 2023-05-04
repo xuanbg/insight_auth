@@ -3,6 +3,7 @@ package com.insight.base.auth.service;
 import com.insight.base.auth.common.dto.*;
 import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
+import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.user.MemberDto;
 
 import java.util.List;
@@ -60,7 +61,7 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    TokenDto generateToken(LoginDto login);
+    Reply generateToken(LoginDto login);
 
     /**
      * 通过微信授权码获取Token
@@ -68,7 +69,7 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    TokenDto getTokenWithWeChat(LoginDto login);
+    Reply getTokenWithWeChat(LoginDto login);
 
     /**
      * 通过微信UnionId获取Token
@@ -76,7 +77,15 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    TokenDto getTokenWithUserInfo(LoginDto login);
+    Reply getTokenWithUnionId(LoginDto login);
+
+    /**
+     * 通过微信UnionId获取Token
+     *
+     * @param login 用户登录数据
+     * @return Reply
+     */
+    Reply getTokenWithUserInfo(LoginDto login);
 
     /**
      * 扫码授权获取Token
@@ -84,17 +93,17 @@ public interface AuthService {
      * @param login 用户登录数据
      * @return Reply
      */
-    TokenDto getTokenWithCode(LoginDto login);
+    Reply getTokenWithCode(LoginDto login);
 
     /**
      * 获取指定应用的Token
      *
      * @param fingerprint 用户特征串
      * @param token       刷新令牌
-     * @param appId 应用ID
+     * @param appId       应用ID
      * @return Reply
      */
-    TokenDto getToken(String fingerprint, AccessToken token, Long appId);
+    Reply getToken(String fingerprint, AccessToken token, Long appId);
 
     /**
      * 刷新访问令牌过期时间
@@ -103,7 +112,7 @@ public interface AuthService {
      * @param token       刷新令牌
      * @return Reply
      */
-    TokenDto refreshToken(String fingerprint, AccessToken token);
+    Reply refreshToken(String fingerprint, AccessToken token);
 
     /**
      * 用户账号离线

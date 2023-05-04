@@ -1,11 +1,15 @@
 package com.insight.base.auth.service;
 
-import com.insight.base.auth.common.dto.*;
+import com.insight.base.auth.common.dto.CodeDto;
+import com.insight.base.auth.common.dto.FuncDto;
+import com.insight.base.auth.common.dto.LoginDto;
+import com.insight.base.auth.common.dto.NavDto;
 import com.insight.utils.Json;
 import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.base.BusinessException;
+import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.user.MemberDto;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -93,8 +97,8 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens")
-    public TokenDto generateToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization", required = false) String token,
-                                  @Valid @RequestBody LoginDto login) {
+    public Reply generateToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization", required = false) String token,
+                               @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
 
         // 账号/密码或短信验证码登录
@@ -109,7 +113,13 @@ public class AuthController {
             }
 
             if (Util.isNotEmpty(login.getUnionId())) {
-                return service.getTokenWithUserInfo(login);
+                if (Util.isNotEmpty(login.getAccount())) {
+                    return service.getTokenWithUserInfo(login);
+                }
+
+                if (login.getTenantId() != null) {
+                    return service.getTokenWithUnionId(login);
+                }
             }
         }
 
@@ -139,7 +149,7 @@ public class AuthController {
      * @return Reply
      */
     @PutMapping("/v1.0/tokens")
-    public TokenDto refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
+    public Reply refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
         AccessToken refreshToken = Json.toAccessToken(token);
         if (refreshToken == null) {
             throw new BusinessException("未提供RefreshToken");

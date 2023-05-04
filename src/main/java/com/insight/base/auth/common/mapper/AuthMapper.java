@@ -38,8 +38,8 @@ public interface AuthMapper {
      * @param userId 用户ID
      * @return 租户ID集合
      */
-    @Select("select tenant_id from ibt_tenant_user where user_id = #{userId};")
-    List<String> getTenantIds(Long userId);
+    @Select("select t.* from ibt_tenant t join ibt_tenant_user r on r.tenant_id = t.id where r.user_id = #{userId};")
+    List<BaseVo> getTenantIds(Long userId);
 
     /**
      * 获取指定ID的租户
