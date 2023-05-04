@@ -245,6 +245,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var token = core.creatorToken(Util.uuid(), login, user);
+        var info = token.getUserInfo();
+        info.setWechatName(weChatUser.getNickname());
+        if (Util.isEmpty(info.getHeadImg())) {
+            info.setHeadImg(weChatUser.getHeadimgurl());
+        }
+
         return ReplyHelper.created(token);
     }
 
@@ -267,6 +273,12 @@ public class AuthServiceImpl implements AuthService {
         User user = Json.clone(Redis.getEntity("User:" + userId), User.class);
 
         var token = core.creatorToken(Util.uuid(), login, user);
+        var info = token.getUserInfo();
+        info.setWechatName(weChatUser.getNickname());
+        if (Util.isEmpty(info.getHeadImg())) {
+            info.setHeadImg(weChatUser.getHeadimgurl());
+        }
+
         return ReplyHelper.created(token);
     }
 
@@ -331,6 +343,12 @@ public class AuthServiceImpl implements AuthService {
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
 
         var token = core.creatorToken(Util.uuid(), login, user);
+        var info = token.getUserInfo();
+        info.setWechatName(weChatUser.getNickname());
+        if (Util.isEmpty(info.getHeadImg())) {
+            info.setHeadImg(weChatUser.getHeadimgurl());
+        }
+
         return ReplyHelper.created(token);
     }
 

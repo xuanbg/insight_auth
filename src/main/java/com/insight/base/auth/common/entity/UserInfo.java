@@ -1,4 +1,4 @@
-package com.insight.base.auth.common.dto;
+package com.insight.base.auth.common.entity;
 
 import com.insight.utils.pojo.base.BaseXo;
 
@@ -40,6 +40,11 @@ public class UserInfo extends BaseXo {
      * 用户绑定E-mail,可作登录名
      */
     private String email;
+
+    /**
+     * 微信昵称
+     */
+    private String wechatName;
 
     /**
      * 用户头像
@@ -102,6 +107,14 @@ public class UserInfo extends BaseXo {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getWechatName() {
+        return wechatName;
+    }
+
+    public void setWechatName(String wechatName) {
+        this.wechatName = wechatName;
     }
 
     public String getHeadImg() {

@@ -4,7 +4,7 @@ import com.insight.base.auth.common.client.MessageClient;
 import com.insight.base.auth.common.client.RabbitClient;
 import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenDto;
-import com.insight.base.auth.common.dto.UserInfo;
+import com.insight.base.auth.common.entity.UserInfo;
 import com.insight.base.auth.common.entity.LoginInfo;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.*;

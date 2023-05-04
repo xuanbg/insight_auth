@@ -1,6 +1,7 @@
 package com.insight.base.auth.common.dto;
 
 import com.insight.base.auth.common.entity.LoginInfo;
+import com.insight.base.auth.common.entity.UserInfo;
 import com.insight.utils.pojo.base.BaseXo;
 
 /**
