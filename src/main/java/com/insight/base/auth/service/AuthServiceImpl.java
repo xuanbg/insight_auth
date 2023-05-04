@@ -218,6 +218,7 @@ public class AuthServiceImpl implements AuthService {
         // 使用微信UnionID读取缓存,如用户不存在,则缓存微信用户信息(30分钟)后返回微信用户信息
         Long userId = core.getUserId(unionId);
         if (userId == null) {
+            logger.info("微信UnionId: {} 未绑定到用户", unionId);
             throw new BusinessException(425, "微信账号未绑定到用户");
         }
 
