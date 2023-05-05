@@ -2,7 +2,6 @@ package com.insight.base.auth.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.insight.utils.Util;
-import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.user.UserBase;
@@ -44,10 +43,9 @@ public class Token extends TokenData {
         key = "App:" + appId;
         userInfo = user;
 
-        loginInfo = user.convert(LoginInfo.class);
-        loginInfo.setAppId(appId);
-        loginInfo.setTenantId(tenantId);
-
+        setAppId(appId);
+        setUserId(user.getId());
+        setTenantId(tenantId);
         setPermitTime(LocalDateTime.now());
         setPermitLife(getLongValue("PermitLife"));
         setLife(getLongValue("TokenLife"));
@@ -98,6 +96,7 @@ public class Token extends TokenData {
         return userInfo;
     }
 
+    @JsonIgnore
     public void setUserInfo(UserBase userInfo) {
         this.userInfo = userInfo;
     }
