@@ -1,8 +1,11 @@
 package com.insight.base.auth.service;
 
-import com.insight.base.auth.common.dto.*;
-import com.insight.utils.pojo.auth.AccessToken;
+import com.insight.base.auth.common.dto.CodeDto;
+import com.insight.base.auth.common.dto.FuncDto;
+import com.insight.base.auth.common.dto.LoginDto;
+import com.insight.base.auth.common.dto.NavDto;
 import com.insight.utils.pojo.auth.LoginInfo;
+import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.user.MemberDto;
 
@@ -103,7 +106,7 @@ public interface AuthService {
      * @param appId       应用ID
      * @return Reply
      */
-    Reply getToken(String fingerprint, AccessToken token, Long appId);
+    Reply getToken(String fingerprint, TokenKey token, Long appId);
 
     /**
      * 刷新访问令牌过期时间
@@ -112,7 +115,7 @@ public interface AuthService {
      * @param token       刷新令牌
      * @return Reply
      */
-    Reply refreshToken(String fingerprint, AccessToken token);
+    Reply refreshToken(String fingerprint, TokenKey token);
 
     /**
      * 用户账号离线
@@ -124,25 +127,30 @@ public interface AuthService {
     /**
      * 获取用户授权码
      *
-     * @param info 用户登录信息
-     * @return Reply
+     * @param tenantId 租户ID
+     * @param appId    应用程序ID
+     * @param userId   用户ID
+     * @return 授权码集合
      */
-    List<String> getPermits(LoginInfo info);
+    List<String> getPermits(Long appId, Long tenantId, Long userId);
 
     /**
      * 获取用户导航栏
      *
-     * @param info 用户登录信息
-     * @return Reply
+     * @param tenantId 租户ID
+     * @param appId    应用程序ID
+     * @param userId   用户ID
+     * @return 导航数据集合
      */
-    List<NavDto> getNavigators(LoginInfo info);
+    List<NavDto> getNavigators(Long appId, Long tenantId, Long userId);
 
     /**
      * 获取业务模块的功能(及对用户的授权情况)
      *
-     * @param info     用户登录信息
+     * @param tenantId 租户ID
+     * @param userId   用户ID
      * @param moduleId 功能模块ID
-     * @return Reply
+     * @return 功能及权限数据集合
      */
-    List<FuncDto> getModuleFunctions(LoginInfo info, Long moduleId);
+    List<FuncDto> getModuleFunctions(Long tenantId, Long userId, Long moduleId);
 }

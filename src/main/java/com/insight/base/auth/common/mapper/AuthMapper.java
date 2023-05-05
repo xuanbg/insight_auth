@@ -85,7 +85,7 @@ public interface AuthMapper {
      * @param openId 微信OpenID
      */
     @Update("update ibu_user set open_id = #{openId, typeHandler = com.insight.utils.pojo.base.JsonTypeHandler} where id = #{userId};")
-    void updateOpenId(@Param("userId") Long userId, @Param("openId") Map openId);
+    void updateOpenId(Long userId, Map openId);
 
     /**
      * 更新用户微信UnionID
@@ -94,7 +94,7 @@ public interface AuthMapper {
      * @param unionId 微信UnionID
      */
     @Update("update ibu_user set union_id = #{unionId} where id = #{userId};")
-    void updateUnionId(@Param("userId") Long userId, @Param("unionId") String unionId);
+    void updateUnionId(Long userId, String unionId);
 
     /**
      * 获取用户可用的导航栏
@@ -114,7 +114,7 @@ public interface AuthMapper {
             "join (select distinct a.function_id from ibr_role_permit a join ibv_user_roles r on r.role_id = a.role_id " +
             "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) group by a.function_id " +
             "having min(a.permit)> 0) a on a.function_id = f.id where m.app_id = #{appId}) l order by l.parent_id, l.`index`;")
-    List<NavDto> getNavigators(@Param("appId") Long appId, @Param("tenantId") Long tenantId, @Param("userId") Long userId);
+    List<NavDto> getNavigators(Long appId, Long tenantId, Long userId);
 
     /**
      * 获取指定模块的全部可用功能集合及对指定用户的授权情况
@@ -129,7 +129,7 @@ public interface AuthMapper {
             "left join (select a.function_id, min(a.permit) as permit from ibr_role_permit a join ibv_user_roles r " +
             "on r.role_id = a.role_id and r.user_id = #{userId} and (r.tenant_id is null or r.tenant_id = #{tenantId}) " +
             "group by a.function_id) a on a.function_id = f.id where f.nav_id = #{moduleId} order by f.`index`;")
-    List<FuncDto> getModuleFunctions(@Param("moduleId") Long moduleId, @Param("tenantId") Long tenantId, @Param("userId") Long userId);
+    List<FuncDto> getModuleFunctions(Long moduleId, Long tenantId, Long userId);
 
     /**
      * 获取用户授权信息
@@ -146,7 +146,7 @@ public interface AuthMapper {
             "<if test = 'tenantId == null'>and r.tenant_id is null </if>" +
             "join mysql.help_topic h on h.help_topic_id &lt; (length(f.auth_codes) - length(replace(f.auth_codes, ',', '')) + 1)" +
             "group by n.app_id, f.nav_id, auth_code having min(p.permit) > 0</script>")
-    List<String> getAuthInfos(@Param("appId") Long appId, @Param("tenantId") Long tenantId, @Param("userId") Long userId);
+    List<String> getAuthInfos(Long appId, Long tenantId, Long userId);
 
     /**
      * 获取用户可选租户
@@ -158,7 +158,7 @@ public interface AuthMapper {
     @Select("select t.id, t.`name` from ibt_tenant t " +
             "join ibt_tenant_app a on a.tenant_id = t.id and a.app_id = #{appId} " +
             "join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId};")
-    List<MemberDto> getTenants(@Param("appId") Long appId, @Param("userId") Long userId);
+    List<MemberDto> getTenants(Long appId, Long userId);
 
     /**
      * 获取用户登录的机构

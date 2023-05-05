@@ -74,11 +74,12 @@ DROP TABLE IF EXISTS `ibu_user`;
 CREATE TABLE `ibu_user` (
   `id`                 bigint unsigned   NOT NULL                COMMENT '主键-3',
   `type`               tinyint unsigned  NOT NULL DEFAULT 1      COMMENT '用户类型: 0.平台用户, 1.外部用户',
-  `code`               varchar(16)                DEFAULT NULL   COMMENT '用户编码',
+  `code`               varchar(32)                DEFAULT NULL   COMMENT '用户编码',
   `name`               varchar(64)       NOT NULL                COMMENT '名称',
   `account`            varchar(64)       NOT NULL                COMMENT '登录账号',
   `mobile`             varchar(32)                DEFAULT NULL   COMMENT '手机号',
   `email`              varchar(64)                DEFAULT NULL   COMMENT '电子邮箱',
+  `nickname`           varchar(64)                DEFAULT NULL   COMMENT '微信昵称',
   `union_id`           varchar(128)               DEFAULT NULL   COMMENT '微信UnionID',
   `open_id`            json                       DEFAULT NULL   COMMENT '微信OpenID',
   `password`           varchar(256)      NOT NULL                COMMENT '密码(RSA加密)',

@@ -1,17 +1,20 @@
 package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.Core;
-import com.insight.base.auth.common.Token;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.mapper.AuthMapper;
-import com.insight.utils.*;
-import com.insight.utils.pojo.auth.AccessToken;
+import com.insight.utils.DateTime;
+import com.insight.utils.Json;
+import com.insight.utils.ReplyHelper;
+import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.LoginInfo;
+import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.user.MemberDto;
 import com.insight.utils.pojo.user.User;
-import com.insight.utils.wechat.WeChatUser;
+import com.insight.utils.pojo.wechat.WechatUser;
+import com.insight.utils.redis.Redis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public List<MemberDto> getTenants(Long appId, String account) {
-        Long userId = core.getUserId(account);
+        var userId = core.getUserId(account);
         return mapper.getTenants(appId, userId);
     }
 
@@ -76,10 +79,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String generateCode(CodeDto dto) {
         var account = dto.getAccount();
-        Long userId = core.getUserId(account);
+        var userId = core.getUserId(account);
         if (userId == null) {
             if (dto.getType() == 1 && autoReg) {
-                User user = new User();
+                var user = new User();
                 user.setName(account);
                 user.setAccount(account);
                 user.setMobile(account);
@@ -89,7 +92,7 @@ public class AuthServiceImpl implements AuthService {
             }
         }
 
-        String key = "User:" + userId;
+        var key = "User:" + userId;
         if (!Redis.hasKey(key)) {
             Redis.deleteKey("ID:" + account);
             throw new BusinessException("发生了一点小意外,请重新提交");
@@ -98,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
         // 生成Code
         String code;
         if (dto.getType() == 0) {
-            String password = Redis.get(key, "password");
+            var password = Redis.get(key, "password");
             if (!Util.isNotEmpty(password)) {
                 throw new BusinessException("账号或密码错误");
             }
@@ -120,7 +123,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String getAuthCode() {
-        String code = Util.uuid();
+        var code = Util.uuid();
         Redis.set("Code:" + code, "", 300L);
 
         return authUrl + code;
@@ -138,7 +141,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("无效参数code: " + code);
         }
 
-        Redis.set("Code:" + code, info.getUserId().toString(), 30L);
+        Redis.set("Code:" + code, info.getId().toString(), 30L);
     }
 
     /**
@@ -149,7 +152,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String getSubmitToken(String key) {
-        String id = Redis.get("SubmitToken:" + key);
+        var id = Redis.get("SubmitToken:" + key);
         if (!Util.isNotEmpty(id)) {
             id = Util.uuid();
             Redis.set("SubmitToken:" + key, id, 1L, TimeUnit.HOURS);
@@ -166,24 +169,24 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply generateToken(LoginDto login) {
-        String code = core.getCode(login.getSignature());
+        var code = core.getCode(login.getSignature());
         if (code != null) {
             var token = core.getToken(code, login);
             return ReplyHelper.created(token);
         }
 
         // 处理错误
-        String account = login.getAccount();
+        var account = login.getAccount();
         logger.warn("账号[{}]正在尝试使用错误的签名请求令牌!", account);
 
-        Long userId = core.getUserId(account);
-        String key = "User:" + userId;
+        var userId = core.getUserId(account);
+        var key = "User:" + userId;
         if (!Redis.hasKey(key)) {
             Redis.deleteKey("ID:" + account);
             throw new BusinessException("发生了一点小意外,请重新提交");
         }
 
-        int failureCount = core.getFailureCount(userId);
+        var failureCount = core.getFailureCount(userId);
         if (failureCount > 5) {
             throw new BusinessException("错误次数过多,账号已被锁定!请于10分钟后再试");
         }
@@ -202,40 +205,41 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getTokenWithWeChat(LoginDto login) {
-        String code = login.getCode();
-        String weChatAppId = login.getWeChatAppId();
+        var code = login.getCode();
+        var weChatAppId = login.getWeChatAppId();
 
-        WeChatUser weChatUser = core.getWeChatInfo(code, weChatAppId);
+        var weChatUser = core.getWeChatInfo(code, weChatAppId);
         if (weChatUser == null) {
             throw new BusinessException("微信授权失败");
         }
 
-        String unionId = weChatUser.getUnionid();
+        var unionId = weChatUser.getUnionid();
         if (unionId == null || unionId.isEmpty()) {
             throw new BusinessException("未取得微信用户的UnionID");
         }
 
         // 使用微信UnionID读取缓存,如用户不存在,则缓存微信用户信息(30分钟)后返回微信用户信息
-        Long userId = core.getUserId(unionId);
+        var userId = core.getUserId(unionId);
         if (userId == null) {
             logger.info("微信UnionId: {} 未绑定到用户", unionId);
             throw new BusinessException(425, "微信账号未绑定到用户");
         }
 
-        User user = Json.clone(Redis.getEntity("User:" + userId), User.class);
-        if (user.getInvalid()) {
-            throw new BusinessException("用户被禁止使用");
-        }
-
+        var user = core.getUser(userId);
         core.checkExpired(login, userId);
         core.checkType(login.getAppId(), user.getType());
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
+
+        user.setNickname(weChatUser.getNickname());
+        if (Util.isEmpty(user.getHeadImg())) {
+            user.setHeadImg(weChatUser.getHeadimgurl());
+        }
 
         var tenants = mapper.getTenantIds(userId);
         if (tenants.size() == 1) {
             login.setTenantId(tenants.get(0).getId());
         } else if (tenants.size() > 1) {
-            String key = "Wechat:" + unionId;
+            var key = "Wechat:" + unionId;
             Redis.set(key, Json.toJson(weChatUser), 30L, TimeUnit.MINUTES);
 
             var dto = new TenantDto();
@@ -245,12 +249,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var token = core.creatorToken(Util.uuid(), login, user);
-        var info = token.getUserInfo();
-        info.setWechatName(weChatUser.getNickname());
-        if (Util.isEmpty(info.getHeadImg())) {
-            info.setHeadImg(weChatUser.getHeadimgurl());
-        }
-
         return ReplyHelper.created(token);
     }
 
@@ -262,23 +260,21 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getTokenWithUnionId(LoginDto login) {
-        String unionId = login.getUnionId();
-        String json = Redis.get("Wechat:" + unionId);
-        WeChatUser weChatUser = Json.toBean(json, WeChatUser.class);
+        var unionId = login.getUnionId();
+        var json = Redis.get("Wechat:" + unionId);
+        var weChatUser = Json.toBean(json, WechatUser.class);
         if (weChatUser == null) {
             throw new BusinessException("微信授权已过期，请重新登录");
         }
 
-        Long userId = core.getUserId(unionId);
-        User user = Json.clone(Redis.getEntity("User:" + userId), User.class);
-
-        var token = core.creatorToken(Util.uuid(), login, user);
-        var info = token.getUserInfo();
-        info.setWechatName(weChatUser.getNickname());
-        if (Util.isEmpty(info.getHeadImg())) {
-            info.setHeadImg(weChatUser.getHeadimgurl());
+        var userId = core.getUserId(unionId);
+        var user = core.getUser(userId);
+        user.setNickname(weChatUser.getNickname());
+        if (Util.isEmpty(user.getHeadImg())) {
+            user.setHeadImg(weChatUser.getHeadimgurl());
         }
 
+        var token = core.creatorToken(Util.uuid(), login, user);
         return ReplyHelper.created(token);
     }
 
@@ -291,32 +287,26 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getTokenWithUserInfo(LoginDto login) {
         // 验证账号绑定的手机号
-        String mobile = login.getAccount();
-        String verifyKey = Util.md5(0 + mobile + login.getCode());
+        var mobile = login.getAccount();
+        var verifyKey = Util.md5(0 + mobile + login.getCode());
         core.verifySmsCode(verifyKey);
 
         // 从缓存读取微信用户信息
-        String unionId = login.getUnionId();
-        String key = "Wechat:" + unionId;
-        String json = Redis.get(key);
-        WeChatUser weChatUser = Json.toBean(json, WeChatUser.class);
+        var unionId = login.getUnionId();
+        var key = "Wechat:" + unionId;
+        var json = Redis.get(key);
+        var weChatUser = Json.toBean(json, WechatUser.class);
         if (weChatUser == null) {
             throw new BusinessException("微信授权已过期，请重新登录");
         }
 
         // 根据手机号获取用户
-        Long userId = core.getUserId(mobile);
-        User user = new User();
+        var userId = core.getUserId(mobile);
+        var user = new User();
         if (userId != null) {
-            key = "User:" + userId;
-            boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
-            if (isInvalid) {
-                throw new BusinessException("用户被禁止使用");
-            }
-
-            user = Json.clone(Redis.getEntity(key), User.class);
-            String uid = user.getUnionId();
-            if (uid != null && !uid.isEmpty()) {
+            user = core.getUser(userId);
+            var uid = user.getUnionId();
+            if (Util.isNotEmpty(uid)) {
                 if (login.getReplace()) {
                     Redis.deleteKey("ID:" + uid);
                 } else {
@@ -342,13 +332,12 @@ public class AuthServiceImpl implements AuthService {
         core.checkType(login.getAppId(), user.getType());
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
 
-        var token = core.creatorToken(Util.uuid(), login, user);
-        var info = token.getUserInfo();
-        info.setWechatName(weChatUser.getNickname());
-        if (Util.isEmpty(info.getHeadImg())) {
-            info.setHeadImg(weChatUser.getHeadimgurl());
+        user.setNickname(weChatUser.getNickname());
+        if (Util.isEmpty(user.getHeadImg())) {
+            user.setHeadImg(weChatUser.getHeadimgurl());
         }
 
+        var token = core.creatorToken(Util.uuid(), login, user);
         return ReplyHelper.created(token);
     }
 
@@ -360,8 +349,8 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getTokenWithCode(LoginDto login) {
-        String code = login.getCode();
-        String id = Redis.get("Code:" + code);
+        var code = login.getCode();
+        var id = Redis.get("Code:" + code);
 
         if (Util.isEmpty(id)) {
             throw new BusinessException("Code已失效，请刷新");
@@ -380,21 +369,15 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public Reply getToken(String fingerprint, AccessToken accessToken, Long appId) {
-        Token data = core.getToken(accessToken.getId());
-        if (!data.verifySecretKey(accessToken.getSecret())) {
+    public Reply getToken(String fingerprint, TokenKey accessToken, Long appId) {
+        var token = core.getToken(accessToken.getId());
+        if (!token.verifySecretKey(accessToken.getSecret())) {
             throw new BusinessException(421, "非法的Token");
         }
 
-        String key = "User:" + data.getUserId();
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
-        if (isInvalid) {
-            throw new BusinessException("用户被禁止使用");
-        }
-
-        data.setAppId(appId);
-        var token = core.creatorToken(data, fingerprint);
-        return ReplyHelper.created(token);
+        token.setAppId(appId);
+        var dto = core.creatorToken(token, fingerprint);
+        return ReplyHelper.created(dto);
     }
 
     /**
@@ -405,23 +388,16 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public Reply refreshToken(String fingerprint, AccessToken accessToken) {
+    public Reply refreshToken(String fingerprint, TokenKey accessToken) {
         // 验证令牌
-        String tokenId = accessToken.getId();
-        Token data = core.getToken(tokenId);
-        if (data.refreshKeyIsInvalid(accessToken)) {
+        var tokenId = accessToken.getId();
+        var token = core.getToken(tokenId);
+        if (token.refreshKeyIsInvalid(accessToken)) {
             throw new BusinessException("未提供RefreshToken");
         }
 
-        // 验证用户
-        String key = "User:" + data.getUserId();
-        boolean isInvalid = Boolean.parseBoolean(Redis.get(key, "invalid"));
-        if (isInvalid) {
-            throw new BusinessException("用户被禁止使用");
-        }
-
-        var token = core.refreshToken(tokenId, data, fingerprint);
-        return ReplyHelper.created(token);
+        var dto = core.refreshToken(tokenId, token, fingerprint);
+        return ReplyHelper.created(dto);
     }
 
     /**
@@ -437,34 +413,39 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 获取用户授权码
      *
-     * @param info 用户登录信息
-     * @return Reply
+     * @param tenantId 租户ID
+     * @param appId    应用程序ID
+     * @param userId   用户ID
+     * @return 授权码集合
      */
     @Override
-    public List<String> getPermits(LoginInfo info) {
-        return mapper.getAuthInfos(info.getAppId(), info.getTenantId(), info.getUserId());
+    public List<String> getPermits(Long appId, Long tenantId, Long userId) {
+        return mapper.getAuthInfos(appId, tenantId, userId);
     }
 
     /**
      * 获取用户导航栏
      *
-     * @param info 用户登录信息
-     * @return Reply
+     * @param tenantId 租户ID
+     * @param appId    应用程序ID
+     * @param userId   用户ID
+     * @return 导航数据集合
      */
     @Override
-    public List<NavDto> getNavigators(LoginInfo info) {
-        return mapper.getNavigators(info.getAppId(), info.getTenantId(), info.getUserId());
+    public List<NavDto> getNavigators(Long appId, Long tenantId, Long userId) {
+        return mapper.getNavigators(appId, tenantId, userId);
     }
 
     /**
      * 获取业务模块的功能(及对用户的授权情况)
      *
-     * @param info     用户登录信息
+     * @param tenantId 租户ID
+     * @param userId   用户ID
      * @param moduleId 功能模块ID
-     * @return Reply
+     * @return 功能及权限数据集合
      */
     @Override
-    public List<FuncDto> getModuleFunctions(LoginInfo info, Long moduleId) {
-        return mapper.getModuleFunctions(moduleId, info.getTenantId(), info.getUserId());
+    public List<FuncDto> getModuleFunctions(Long tenantId, Long userId, Long moduleId) {
+        return mapper.getModuleFunctions(moduleId, tenantId, userId);
     }
 }

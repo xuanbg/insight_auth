@@ -6,7 +6,6 @@ import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.NavDto;
 import com.insight.utils.Json;
 import com.insight.utils.Util;
-import com.insight.utils.pojo.auth.AccessToken;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.base.Reply;
@@ -45,7 +44,6 @@ public class AuthController {
      */
     @GetMapping("/v1.0/{appId}/tenants")
     public List<MemberDto> getTenants(@PathVariable Long appId, @RequestParam String account) {
-
         return service.getTenants(appId, account);
     }
 
@@ -85,7 +83,7 @@ public class AuthController {
      */
     @PutMapping("/v1.0/codes/{code}")
     public void authWithCode(@RequestHeader("loginInfo") String loginInfo, @PathVariable String code) {
-        LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
+        var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
         service.authWithCode(info, code);
     }
 
@@ -130,7 +128,7 @@ public class AuthController {
 
         // 获取其他应用令牌
         if (Util.isNotEmpty(token)) {
-            AccessToken accessToken = Json.toAccessToken(token);
+            var accessToken = Json.toToken(token);
             if (accessToken == null) {
                 throw new BusinessException("错误的AccessToken");
             }
@@ -150,7 +148,7 @@ public class AuthController {
      */
     @PutMapping("/v1.0/tokens")
     public Reply refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
-        AccessToken refreshToken = Json.toAccessToken(token);
+        var refreshToken = Json.toToken(token);
         if (refreshToken == null) {
             throw new BusinessException("未提供RefreshToken");
         }
@@ -165,8 +163,7 @@ public class AuthController {
      */
     @DeleteMapping("/v1.0/tokens")
     public void deleteToken(@RequestHeader(value = "Authorization") String token) {
-        AccessToken accessToken = Json.toAccessToken(token);
-
+        var accessToken = Json.toToken(token);
         service.deleteToken(accessToken.getId());
     }
 
@@ -178,9 +175,8 @@ public class AuthController {
      */
     @GetMapping("/v1.0/tokens/permits")
     public List<String> getPermits(@RequestHeader("loginInfo") String loginInfo) {
-        LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
-
-        return service.getPermits(info);
+        var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
+        return service.getPermits(info.getAppId(), info.getTenantId(), info.getId());
     }
 
     /**
@@ -191,9 +187,8 @@ public class AuthController {
      */
     @GetMapping("/v1.0/navigators")
     public List<NavDto> getNavigators(@RequestHeader("loginInfo") String loginInfo) {
-        LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
-
-        return service.getNavigators(info);
+        var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
+        return service.getNavigators(info.getAppId(), info.getTenantId(), info.getId());
     }
 
     /**
@@ -205,8 +200,7 @@ public class AuthController {
      */
     @GetMapping("/v1.0/navigators/{id}/functions")
     public List<FuncDto> getModuleFunctions(@RequestHeader("loginInfo") String loginInfo, @PathVariable("id") Long moduleId) {
-        LoginInfo info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
-
-        return service.getModuleFunctions(info, moduleId);
+        var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
+        return service.getModuleFunctions(info.getId(), info.getTenantId(), moduleId);
     }
 }
