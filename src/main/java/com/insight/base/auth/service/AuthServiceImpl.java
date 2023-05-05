@@ -315,7 +315,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 更新用户微信UnionID
-            core.updateUnionId(userId, unionId);
+            core.updateUnionId(userId, unionId, weChatUser.getNickname());
         } else if (autoReg) {
             // 用户不存在,自动创建用户
             user.setName(weChatUser.getNickname());

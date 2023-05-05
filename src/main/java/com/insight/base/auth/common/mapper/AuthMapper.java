@@ -90,11 +90,12 @@ public interface AuthMapper {
     /**
      * 更新用户微信UnionID
      *
-     * @param userId  用户ID
-     * @param unionId 微信UnionID
+     * @param userId   用户ID
+     * @param unionId  微信UnionID
+     * @param nickname 微信昵称
      */
-    @Update("update ibu_user set union_id = #{unionId} where id = #{userId};")
-    void updateUnionId(Long userId, String unionId);
+    @Update("update ibu_user set union_id = #{unionId}, nickname = #{nickname} where id = #{userId};")
+    void updateUnionId(Long userId, String unionId, String nickname);
 
     /**
      * 获取用户可用的导航栏

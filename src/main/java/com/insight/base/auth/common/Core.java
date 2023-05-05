@@ -487,13 +487,16 @@ public class Core {
     /**
      * 更新用户微信UnionID
      *
-     * @param userId  用户ID
-     * @param unionId 微信UnionID
+     * @param userId   用户ID
+     * @param unionId  微信UnionID
+     * @param nickname 微信昵称
      */
-    public void updateUnionId(Long userId, String unionId) {
-        mapper.updateUnionId(userId, unionId);
+    public void updateUnionId(Long userId, String unionId, String nickname) {
+        mapper.updateUnionId(userId, unionId, nickname);
 
-        Redis.setHash("User:" + userId, "unionId", unionId);
+        var key = "User:" + userId;
+        Redis.setHash(key, "unionId", unionId);
+        Redis.setHash(key, "nickname", nickname);
         Redis.set("ID:" + unionId, userId.toString());
     }
 
