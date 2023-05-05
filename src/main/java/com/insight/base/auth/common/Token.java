@@ -95,6 +95,7 @@ public class Token extends TokenData {
         return Util.isNotEmpty(value) ? Boolean.valueOf(value) : null;
     }
 
+    @JsonIgnore
     public UserBase getUserInfo() {
         return userInfo;
     }
