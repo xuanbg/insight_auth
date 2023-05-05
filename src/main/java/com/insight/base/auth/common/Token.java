@@ -44,9 +44,7 @@ public class Token extends TokenData {
         key = "App:" + appId;
         userInfo = user;
 
-        loginInfo = new LoginInfo();
-        loginInfo.setId(user.getId());
-        loginInfo.setName(user.getName());
+        loginInfo = user.convert(LoginInfo.class);
         loginInfo.setAppId(appId);
         loginInfo.setTenantId(tenantId);
 
