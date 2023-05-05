@@ -61,69 +61,6 @@ public class Token extends TokenData {
     }
 
     /**
-     * 获取应用ID
-     *
-     * @return 应用ID
-     */
-    public Long getAppId() {
-        return loginInfo.getAppId();
-    }
-
-    /**
-     * 设置应用ID
-     *
-     * @param id 应用ID
-     */
-    public void setAppId(Long id) {
-        loginInfo.setAppId(id);
-    }
-
-    /**
-     * 获取用户ID
-     *
-     * @return 用户ID
-     */
-    public Long getUserId() {
-        return loginInfo.getId();
-    }
-
-    /**
-     * 获取租户ID
-     *
-     * @return 租户ID
-     */
-    public Long getTenantId() {
-        return loginInfo.getTenantId();
-    }
-
-    /**
-     * 设置登租户名称
-     *
-     * @param name 租户名称
-     */
-    public void setTenantName(String name) {
-        loginInfo.setTenantName(name);
-    }
-
-    /**
-     * 设置登录机构ID
-     *
-     * @param id 机构ID
-     */
-    public void setOrgId(Long id) {
-        loginInfo.setOrgId(id);
-    }
-
-    /**
-     * 设置登录机构名称
-     *
-     * @param name 机构名称
-     */
-    public void setOrgName(String name) {
-        loginInfo.setOrgName(name);
-    }
-
-    /**
      * 验证刷新密钥
      *
      * @param token 用户令牌
