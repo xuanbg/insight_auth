@@ -355,8 +355,8 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(427, "Code已失效，请刷新");
         }
 
-        Redis.deleteKey(key);
         var token = core.getToken(code, login);
+        Redis.deleteKey(key);
         return ReplyHelper.created(token);
     }
 
