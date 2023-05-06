@@ -349,12 +349,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getTokenWithCode(LoginDto login) {
         var code = login.getCode();
-        var id = Redis.get("Code:" + code);
-
+        var key ="Code:" + code;
+        var id = Redis.get(key);
         if (Util.isEmpty(id)) {
             throw new BusinessException(427, "Code已失效，请刷新");
         }
 
+        Redis.deleteKey(key);
         var token = core.getToken(code, login);
         return ReplyHelper.created(token);
     }
