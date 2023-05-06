@@ -95,8 +95,7 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/tokens")
-    public Reply generateToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization", required = false) String token,
-                               @Valid @RequestBody LoginDto login) {
+    public Reply generateToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization", required = false) String token, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
 
         // 账号/密码或短信验证码登录

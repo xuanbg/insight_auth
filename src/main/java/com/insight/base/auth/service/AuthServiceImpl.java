@@ -7,6 +7,7 @@ import com.insight.utils.DateTime;
 import com.insight.utils.Json;
 import com.insight.utils.ReplyHelper;
 import com.insight.utils.Util;
+import com.insight.utils.http.HttpClientUtil;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
@@ -15,8 +16,6 @@ import com.insight.utils.pojo.user.MemberDto;
 import com.insight.utils.pojo.user.User;
 import com.insight.utils.pojo.wechat.WechatUser;
 import com.insight.utils.redis.Redis;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +29,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class AuthServiceImpl implements AuthService {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final AuthMapper mapper;
     private final Core core;
 
@@ -126,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
         var code = Util.uuid();
         Redis.set("Code:" + code, "", 300L);
 
-        return authUrl + code;
+        return code;
     }
 
     /**
@@ -142,6 +140,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         Redis.set("Code:" + code, info.getId().toString(), 30L);
+        HttpClientUtil.httpClientGet(authUrl + "?code=" + code);
     }
 
     /**
@@ -177,8 +176,6 @@ public class AuthServiceImpl implements AuthService {
 
         // 处理错误
         var account = login.getAccount();
-        logger.warn("账号[{}]正在尝试使用错误的签名请求令牌!", account);
-
         var userId = core.getUserId(account);
         var key = "User:" + userId;
         if (!Redis.hasKey(key)) {
@@ -221,7 +218,6 @@ public class AuthServiceImpl implements AuthService {
         // 使用微信UnionID读取缓存,如用户不存在,则缓存微信用户信息(30分钟)后返回微信用户信息
         var userId = core.getUserId(unionId);
         if (userId == null) {
-            logger.info("微信UnionId: {} 未绑定到用户", unionId);
             throw new BusinessException(425, "微信账号未绑定到用户");
         }
 
