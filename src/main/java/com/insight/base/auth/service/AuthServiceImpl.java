@@ -7,7 +7,6 @@ import com.insight.utils.DateTime;
 import com.insight.utils.Json;
 import com.insight.utils.ReplyHelper;
 import com.insight.utils.Util;
-import com.insight.utils.http.HttpClientUtil;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
@@ -139,8 +138,12 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("无效参数code: " + code);
         }
 
-        Redis.set("Code:" + code, info.getId().toString(), 30L);
-        HttpClientUtil.httpClientGet(authUrl + "?code=" + code);
+        var key = "Code:" + code;
+        if (!Redis.hasKey(key)){
+            throw new BusinessException("Code已失效，请重新获取Code");
+        }
+
+        Redis.set(key, info.getId().toString(), 30L);
     }
 
     /**
@@ -349,7 +352,7 @@ public class AuthServiceImpl implements AuthService {
         var id = Redis.get("Code:" + code);
 
         if (Util.isEmpty(id)) {
-            throw new BusinessException("Code已失效，请刷新");
+            throw new BusinessException(427, "Code已失效，请刷新");
         }
 
         var token = core.getToken(code, login);
