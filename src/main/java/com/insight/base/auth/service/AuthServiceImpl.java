@@ -356,7 +356,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var token = core.getToken(code, login);
-        Redis.deleteKey(key);
         return ReplyHelper.created(token);
     }
 
