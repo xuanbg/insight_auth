@@ -148,6 +148,7 @@ public class Core {
 
         var sms = new SmsCode();
         sms.setChannel(smsChannel);
+        sms.setType(5);
         sms.setMobile(mobile);
         sms.setCode(smsCode);
         client.sendSmsCode(sms);
