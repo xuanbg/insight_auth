@@ -38,12 +38,6 @@ public class AuthServiceImpl implements AuthService {
     private Boolean autoReg;
 
     /**
-     * 扫码授权URL
-     */
-    @Value("${insight.auth.url}")
-    private String authUrl;
-
-    /**
      * 构造函数
      *
      * @param mapper AuthMapper
