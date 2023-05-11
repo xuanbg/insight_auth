@@ -200,6 +200,6 @@ public class AuthController {
     @GetMapping("/v1.0/navigators/{id}/functions")
     public List<FuncDto> getModuleFunctions(@RequestHeader("loginInfo") String loginInfo, @PathVariable("id") Long moduleId) {
         var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
-        return service.getModuleFunctions(info.getId(), info.getTenantId(), moduleId);
+        return service.getModuleFunctions(info.getTenantId(), info.getId(), moduleId);
     }
 }
