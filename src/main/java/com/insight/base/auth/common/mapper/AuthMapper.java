@@ -56,7 +56,7 @@ public interface AuthMapper {
      * @param appId 应用ID
      * @return 应用信息
      */
-    @Select("SELECT * FROM ibs_application WHERE id = #{appId};")
+    @Select("select * from ibs_application where id = #{appId};")
     Application getApp(Long appId);
 
     /**
@@ -65,7 +65,7 @@ public interface AuthMapper {
      * @param appId 应用ID
      * @return 应用信息
      */
-    @Select("SELECT * FROM ibt_tenant_app WHERE app_id = #{appId};")
+    @Select("select * from ibt_tenant_app where app_id = #{appId};")
     List<TenantApp> getApps(Long appId);
 
     /**
@@ -160,13 +160,18 @@ public interface AuthMapper {
      * @param tenantId 租户ID
      * @return 授权信息集合
      */
-    @Select("<script>select substring_index(substring_index(f.auth_codes, ',', h.help_topic_id + 1), ',', - 1) as auth_code " +
-            "from ibs_function f join ibs_navigator n on n.id = f.nav_id and n.app_id = #{appId} " +
-            "join ibr_role_permit p on p.function_id = f.id join ibv_user_roles r on r.role_id = p.role_id and r.user_id = #{userId} " +
-            "<if test = 'tenantId != null'>and r.tenant_id = #{tenantId} </if>" +
-            "<if test = 'tenantId == null'>and r.tenant_id is null </if>" +
-            "join mysql.help_topic h on h.help_topic_id &lt; (length(f.auth_codes) - length(replace(f.auth_codes, ',', '')) + 1)" +
-            "group by n.app_id, f.nav_id, auth_code having min(p.permit) > 0</script>")
+    @Select("""
+            <script>select substring_index(substring_index(f.auth_codes, ',', h.help_topic_id + 1), ',', - 1) as auth_code
+            from ibs_function f
+              join ibs_navigator n on n.id = f.nav_id and n.app_id = #{appId}
+              join ibr_role_permit p on p.function_id = f.id
+              join ibv_user_roles r on r.role_id = p.role_id and r.user_id = #{userId}
+              <if test = 'tenantId != null'>and r.tenant_id = #{tenantId}</if>
+              <if test = 'tenantId == null'>and r.tenant_id is null</if>
+              join mysql.help_topic h on h.help_topic_id &lt; (length(f.auth_codes) - length(replace(f.auth_codes, ',', '')) + 1)
+            group by n.app_id, f.nav_id, auth_code
+            having min(p.permit) > 0;</script>
+            """)
     List<String> getAuthInfos(Long appId, Long tenantId, Long userId);
 
     /**
@@ -176,9 +181,11 @@ public interface AuthMapper {
      * @param userId 用户ID
      * @return 用户绑定租户集合
      */
-    @Select("select t.id, t.`name` from ibt_tenant t " +
-            "join ibt_tenant_app a on a.tenant_id = t.id and a.app_id = #{appId} " +
-            "join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId};")
+    @Select("""
+            select t.id, t.`name` from ibt_tenant t
+              join ibt_tenant_app a on a.tenant_id = t.id and a.app_id = #{appId}
+              join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId};
+            """)
     List<MemberDto> getTenants(Long appId, Long userId);
 
     /**
@@ -188,10 +195,19 @@ public interface AuthMapper {
      * @param tenantId 租户ID
      * @return 机构DTO
      */
-    @Select("with recursive org as (select o.id, o.tenant_id, o.type, o.parent_id, o.code, o.name from ibo_organize o " +
-            "join ibo_organize_member m on m.post_id = o.id and m.user_id = #{userId} where o.tenant_id = #{tenantId} " +
-            "union select p.id, p.tenant_id, p.type, p.parent_id, p.code, p.name from ibo_organize p join org s on s.parent_id = p.id) " +
-            "select o.id, t.area_code as code, o.name from org o join ibt_tenant t on t.id = o.tenant_id " +
-            "where o.type = 0 order by o.code desc limit 1")
+    @Select("""
+            with recursive org as (select o.id, o.tenant_id, o.type, o.parent_id, o.code, o.name
+              from ibo_organize o
+              join ibo_organize_member m on m.post_id = o.id and m.user_id = #{userId}
+              where o.tenant_id = #{tenantId} union
+              select p.id, p.tenant_id, p.type, p.parent_id, p.code, p.name
+              from ibo_organize p
+                join org s on s.parent_id = p.id)
+            select o.id, t.area_code as code, o.name
+            from org o
+              join ibt_tenant t on t.id = o.tenant_id
+            where o.type = 0
+            order by o.code desc limit 1
+            """)
     BaseVo getLoginOrg(long userId, long tenantId);
 }
