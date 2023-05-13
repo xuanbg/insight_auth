@@ -133,7 +133,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var key = "Code:" + code;
-        if (!Redis.hasKey(key)){
+        if (!Redis.hasKey(key)) {
             throw new BusinessException("Code已失效，请重新获取Code");
         }
 
@@ -343,7 +343,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getTokenWithCode(LoginDto login) {
         var code = login.getCode();
-        var key ="Code:" + code;
+        var key = "Code:" + code;
         var id = Redis.get(key);
         if (Util.isEmpty(id)) {
             throw new BusinessException(427, "Code已失效，请刷新");
@@ -426,7 +426,15 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public List<NavDto> getNavigators(Long appId, Long tenantId, Long userId) {
-        return mapper.getNavigators(appId, tenantId, userId);
+        var list = mapper.getNavigators(appId, tenantId, userId);
+        for (var nav : list) {
+            if (nav.getType() > 1) {
+                var funs = mapper.getModuleFunctions(nav.getId(), tenantId, userId);
+                nav.setFunctions(funs);
+            }
+        }
+
+        return list;
     }
 
     /**

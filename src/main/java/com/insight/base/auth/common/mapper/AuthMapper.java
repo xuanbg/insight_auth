@@ -106,15 +106,29 @@ public interface AuthMapper {
      * @return Navigation对象集合
      */
     @Results({@Result(property = "moduleInfo", column = "module_info", javaType = ModuleInfo.class, typeHandler = JsonTypeHandler.class)})
-    @Select("select * from (select distinct g.id, g.parent_id, g.`type`, g.`index`, g.`name`, g.module_info from ibs_navigator g " +
-            "join ibs_navigator m on m.parent_id = g.id join ibs_function f on f.nav_id = m.id " +
-            "join (select distinct a.function_id from ibr_role_permit a join ibv_user_roles r on r.role_id = a.role_id " +
-            "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) " +
-            "group by a.function_id having min(a.permit)> 0) a on a.function_id = f.id where g.app_id = #{appId} union " +
-            "select m.id, m.parent_id, m.`type`, m.`index`, m.`name`, m.module_info from ibs_navigator m join ibs_function f on f.nav_id = m.id " +
-            "join (select distinct a.function_id from ibr_role_permit a join ibv_user_roles r on r.role_id = a.role_id " +
-            "where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId}) group by a.function_id " +
-            "having min(a.permit)> 0) a on a.function_id = f.id where m.app_id = #{appId}) l order by l.parent_id, l.`index`;")
+    @Select("""
+            select * from (
+              select distinct g.id, g.parent_id, g.`type`, g.`index`, g.`name`, g.module_info
+              from ibs_navigator g
+                join ibs_navigator m on m.parent_id = g.id join ibs_function f on f.nav_id = m.id
+                join (select distinct a.function_id
+                  from ibr_role_permit a
+                    join ibv_user_roles r on r.role_id = a.role_id
+                  where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId})
+                  group by a.function_id having min(a.permit)> 0) a on a.function_id = f.id
+              where g.app_id = #{appId} union
+              select m.id, m.parent_id, m.`type`, m.`index`, m.`name`, m.module_info
+              from ibs_navigator m
+                join ibs_function f on f.nav_id = m.id
+                join (select distinct a.function_id
+                  from ibr_role_permit a
+                    join ibv_user_roles r on r.role_id = a.role_id
+                  where user_id = #{userId} and (tenant_id is null or tenant_id = #{tenantId})
+                  group by a.function_id
+                  having min(a.permit)> 0) a on a.function_id = f.id
+              where m.app_id = #{appId}) t
+            order by t.parent_id, t.`index`;
+            """)
     List<NavDto> getNavigators(Long appId, Long tenantId, Long userId);
 
     /**
@@ -126,10 +140,16 @@ public interface AuthMapper {
      * @return Function对象集合
      */
     @Results({@Result(property = "funcInfo", column = "func_info", javaType = FuncInfo.class, typeHandler = JsonTypeHandler.class)})
-    @Select("select f.id, f.nav_id, f.`type`, f.`index`, f.`name`, f.auth_codes, f.func_info, a.permit from ibs_function f " +
-            "left join (select a.function_id, min(a.permit) as permit from ibr_role_permit a join ibv_user_roles r " +
-            "on r.role_id = a.role_id and r.user_id = #{userId} and (r.tenant_id is null or r.tenant_id = #{tenantId}) " +
-            "group by a.function_id) a on a.function_id = f.id where f.nav_id = #{moduleId} order by f.`index`;")
+    @Select("""
+            select f.id, f.nav_id, f.`type`, f.`index`, f.`name`, f.auth_codes, f.func_info, a.permit
+            from ibs_function f
+              left join (select a.function_id, min(a.permit) as permit
+                from ibr_role_permit a
+                  join ibv_user_roles r on r.role_id = a.role_id and r.user_id = #{userId} and (r.tenant_id is null or r.tenant_id = #{tenantId})
+                group by a.function_id) a on a.function_id = f.id
+            where f.nav_id = #{moduleId}
+            order by f.`index`;
+            """)
     List<FuncDto> getModuleFunctions(Long moduleId, Long tenantId, Long userId);
 
     /**
