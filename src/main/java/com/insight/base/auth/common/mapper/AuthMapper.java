@@ -62,11 +62,12 @@ public interface AuthMapper {
     /**
      * 查询指定应用ID的应用信息
      *
-     * @param appId 应用ID
+     * @param tenantId 租户ID
+     * @param appId    应用ID
      * @return 应用信息
      */
-    @Select("select * from ibt_tenant_app where app_id = #{appId};")
-    List<TenantApp> getApps(Long appId);
+    @Select("select * from ibt_tenant_app where tenant_id = #{tenantId} and app_id = #{appId};")
+    TenantApp getApps(Long tenantId, Long appId);
 
     /**
      * 获取微信OpenID

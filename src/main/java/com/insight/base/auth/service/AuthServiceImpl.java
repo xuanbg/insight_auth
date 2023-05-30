@@ -219,7 +219,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var user = core.getUser(userId);
-        core.checkExpired(login, userId);
+        core.checkExpired(login.getTenantId(), login.getAppId());
         core.checkType(login.getAppId(), user.getType());
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
 
@@ -228,19 +228,23 @@ public class AuthServiceImpl implements AuthService {
             user.setHeadImg(weChatUser.getHeadimgurl());
         }
 
-        var tenants = mapper.getTenantIds(userId);
-        if (tenants.size() == 1) {
-            login.setTenantId(tenants.get(0).getId());
-        } else if (tenants.size() > 1) {
-            var key = "Wechat:" + unionId;
-            Redis.set(key, Json.toJson(weChatUser), 30L, TimeUnit.MINUTES);
+        if (login.getTenantId() == null) {
+            var tenants = mapper.getTenantIds(userId);
+            if (tenants.size() == 1) {
+                login.setTenantId(tenants.get(0).getId());
+            } else if (tenants.size() > 1) {
+                var key = "Wechat:" + unionId;
+                Redis.set(key, Json.toJson(weChatUser), 30L, TimeUnit.MINUTES);
 
-            var dto = new TenantDto();
-            dto.setUnionId(unionId);
-            dto.setTenants(tenants);
-            return ReplyHelper.isMultiTenant(dto);
+                var dto = new TenantDto();
+                dto.setUnionId(unionId);
+                dto.setTenants(tenants);
+                return ReplyHelper.isMultiTenant(dto);
+            }
         }
 
+        core.checkExpired(login.getTenantId(), login.getAppId());
+        core.checkType(login.getAppId(), user.getType());
         var token = core.creatorToken(Util.uuid(), login, user);
         return ReplyHelper.created(token);
     }
@@ -267,6 +271,8 @@ public class AuthServiceImpl implements AuthService {
             user.setHeadImg(weChatUser.getHeadimgurl());
         }
 
+        core.checkExpired(login.getTenantId(), login.getAppId());
+        core.checkType(login.getAppId(), user.getType());
         var token = core.creatorToken(Util.uuid(), login, user);
         return ReplyHelper.created(token);
     }
@@ -321,7 +327,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("用户不存在,请联系管理员创建用户");
         }
 
-        core.checkExpired(login, userId);
+        core.checkExpired(login.getTenantId(), login.getAppId());
         core.checkType(login.getAppId(), user.getType());
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
 
@@ -369,6 +375,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         token.setAppId(appId);
+        core.checkExpired(token.getTenantId(), appId);
+        core.checkType(appId, token.getType());
         var dto = core.creatorToken(token, fingerprint);
         return ReplyHelper.created(dto);
     }

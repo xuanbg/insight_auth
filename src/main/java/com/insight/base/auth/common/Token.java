@@ -68,6 +68,15 @@ public class Token extends TokenData {
     }
 
     /**
+     * 获取用户类型
+     *
+     * @return 用户类型
+     */
+    public Integer getType() {
+        return userInfo.getType();
+    }
+
+    /**
      * 获取Long值
      *
      * @param field Redis field

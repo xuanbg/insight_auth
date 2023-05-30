@@ -160,11 +160,10 @@ public class Core {
     /**
      * 应用是否过期
      *
-     * @param login  登录信息
-     * @param userId 用户ID
+     * @param tenantId 租户ID
+     * @param appId    应用ID
      */
-    public void checkExpired(LoginDto login, Long userId) {
-        var appId = login.getAppId();
+    public void checkExpired(Long tenantId, Long appId) {
         var key = "App:" + appId;
         if (!Redis.hasKey(key)) {
             var app = mapper.getApp(appId);
@@ -180,15 +179,22 @@ public class Core {
             Redis.setHash(key, "RefreshType", app.getAutoRefresh());
         }
 
-        var tenantId = login.getTenantId();
         if (tenantId == null) {
             return;
         }
 
         var date = Redis.get("App:" + appId, tenantId.toString());
         if (date == null) {
-            mapper.getApps(appId).forEach(i -> Redis.setHash(key, i.getTenantId().toString(), i.getExpireDate()));
+            var data = mapper.getApps(tenantId, appId);
+            if (data == null) {
+                throw new BusinessException("应用未授权, 请先为租户授权此应用");
+            }
+
+            Redis.setHash(key, data.getTenantId().toString(), data.getExpireDate());
             date = Redis.get("App:" + appId, tenantId.toString());
+            if (date == null) {
+                throw new BusinessException("应用已过期,请续租");
+            }
         }
 
         var expire = LocalDate.parse(date);
@@ -426,7 +432,7 @@ public class Core {
         }
 
         var user = getUser(userId);
-        checkExpired(login, userId);
+        checkExpired(login.getTenantId(), login.getAppId());
         checkType(login.getAppId(), user.getType());
         return creatorToken(code, login, user);
     }
