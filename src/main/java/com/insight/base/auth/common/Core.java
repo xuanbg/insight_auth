@@ -321,11 +321,9 @@ public class Core {
         var failureTime = token.getFailureTime();
         if (failureTime == null || now.isAfter(failureTime)) {
             token.setFailureTime(now.plusSeconds(TokenData.TIME_OUT + failure));
-            Redis.set("Token:" + tokenId, token.toString(), life > 0 ? TokenData.TIME_OUT + failure : -1);
-        } else {
-            Redis.set("Token:" + tokenId, token.toString());
         }
 
+        Redis.set("Token:" + tokenId, token.toString(), life > 0 ? TokenData.TIME_OUT + failure : -1);
         tokenDto.setUserInfo(token.getUserInfo());
         return tokenDto;
     }
