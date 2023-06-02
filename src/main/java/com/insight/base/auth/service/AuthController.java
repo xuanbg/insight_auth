@@ -20,7 +20,6 @@ import java.util.List;
  * @date 2017/12/18
  * @remark 租户服务控制器
  */
-@CrossOrigin
 @RestController
 @RequestMapping("/base/auth")
 public class AuthController {
