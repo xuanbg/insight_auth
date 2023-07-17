@@ -155,12 +155,90 @@ public class Core {
     }
 
     /**
+     * 获取Token
+     *
+     * @param code  Code
+     * @param login 用户登录数据
+     * @return Reply
+     */
+    public TokenDto getToken(String code, LoginDto login) {
+        var userId = getId(code);
+        if (userId == null) {
+            throw new BusinessException("发生了一点小意外,请重新提交");
+        }
+
+        var user = getUser(userId);
+        return creatorToken(login, userId);
+    }
+
+    /**
+     * 生成令牌数据包
+     *
+     * @param login  登录信息
+     * @param userId 用户Id
+     * @return 令牌数据包
+     */
+    public TokenDto creatorToken(LoginDto login, Long userId) {
+        return creatorToken(login.getTenantId(), userId, login.getAppId(), login.getFingerprint());
+    }
+
+    /**
+     * 生成令牌数据包
+     *
+     * @param tenantId    租户ID
+     * @param userId      用户ID
+     * @param appId       应用ID
+     * @param fingerprint 用户特征串
+     * @return 令牌数据包
+     */
+    public TokenDto creatorToken(Long tenantId, Long userId, Long appId, String fingerprint) {
+        var key = "UserToken:" + userId;
+        var tokenId = HashOps.get(key, appId);
+        if (KeyOps.hasKey("Token:" + tokenId)) {
+            var token = getToken(tokenId);
+            // 单设备登录删除原Token, 创建新Token. 非单设备登录使用原Token
+            if (token.getSignInOne()) {
+                KeyOps.delete("Token:" + tokenId);
+                tokenId = null;
+            } else {
+                return initPackage(tokenId, token, fingerprint);
+            }
+        }
+
+        var user = getUser(userId);
+        checkExpired(tenantId, appId);
+        checkType(appId, user.getType());
+
+        // 加载用户授权码
+        var token = new Token(appId, tenantId, user);
+        if (tenantId != null) {
+            token.setTenantName(mapper.getTenant(tenantId));
+            var org = mapper.getLoginOrg(user.getId(), tenantId);
+            if (org != null) {
+                token.setOrgId(org.getId());
+                token.setOrgName(org.getName());
+            }
+        }
+
+        var permitFuns = mapper.getAuthInfos(appId, tenantId, user.getId());
+        token.setPermitFuncs(permitFuns);
+
+        // 缓存用户Token
+        if (Util.isEmpty(tokenId)) {
+            tokenId = Util.uuid();
+            HashOps.put(key, appId.toString(), tokenId);
+        }
+
+        return initPackage(tokenId, token, fingerprint);
+    }
+
+    /**
      * 应用是否过期
      *
      * @param tenantId 租户ID
      * @param appId    应用ID
      */
-    public void checkExpired(Long tenantId, Long appId) {
+    private void checkExpired(Long tenantId, Long appId) {
         var key = "App:" + appId;
         if (!KeyOps.hasKey(key)) {
             var app = mapper.getApp(appId);
@@ -206,7 +284,7 @@ public class Core {
      * @param appId    应用ID
      * @param userType 用户类型
      */
-    public void checkType(Long appId, Integer userType) {
+    private void checkType(Long appId, Integer userType) {
         var data = HashOps.get("App:" + appId, "Type");
         if (data == null) {
             throw new BusinessException("应用类型数据不存在");
@@ -216,83 +294,6 @@ public class Core {
         if (type > 0 && !userType.equals(type)) {
             throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
         }
-    }
-
-    /**
-     * 获取Token
-     *
-     * @param code  Code
-     * @param login 用户登录数据
-     * @return Reply
-     */
-    public TokenDto getToken(String code, LoginDto login) {
-        var userId = getId(code);
-        if (userId == null) {
-            throw new BusinessException("发生了一点小意外,请重新提交");
-        }
-
-        var user = getUser(userId);
-        checkExpired(login.getTenantId(), login.getAppId());
-        checkType(login.getAppId(), user.getType());
-        return creatorToken(login, userId);
-    }
-
-    /**
-     * 生成令牌数据包
-     *
-     * @param login  登录信息
-     * @param userId 用户Id
-     * @return 令牌数据包
-     */
-    public TokenDto creatorToken(LoginDto login, Long userId) {
-        return creatorToken(login.getTenantId(), userId, login.getAppId(), login.getFingerprint());
-    }
-
-    /**
-     * 生成令牌数据包
-     *
-     * @param tenantId    租户ID
-     * @param userId      用户ID
-     * @param appId       应用ID
-     * @param fingerprint 用户特征串
-     * @return 令牌数据包
-     */
-    public TokenDto creatorToken(Long tenantId, Long userId, Long appId, String fingerprint) {
-        var key = "UserToken:" + userId;
-        var tokenId = HashOps.get(key, appId);
-        if (KeyOps.hasKey("Token:" + tokenId)) {
-            var token = getToken(tokenId);
-            // 单设备登录删除原Token, 创建新Token. 非单设备登录使用原Token
-            if (token.getSignInOne()) {
-                KeyOps.delete("Token:" + tokenId);
-                tokenId = null;
-            } else {
-                return initPackage(tokenId, token, fingerprint);
-            }
-        }
-
-        // 加载用户授权码
-        var user = getUser(userId);
-        var token = new Token(appId, tenantId, user);
-        if (tenantId != null) {
-            token.setTenantName(mapper.getTenant(tenantId));
-            var org = mapper.getLoginOrg(user.getId(), tenantId);
-            if (org != null) {
-                token.setOrgId(org.getId());
-                token.setOrgName(org.getName());
-            }
-        }
-
-        var permitFuns = mapper.getAuthInfos(appId, tenantId, user.getId());
-        token.setPermitFuncs(permitFuns);
-
-        // 缓存用户Token
-        if (Util.isEmpty(tokenId)) {
-            tokenId = Util.uuid();
-            HashOps.put(key, appId.toString(), tokenId);
-        }
-
-        return initPackage(tokenId, token, fingerprint);
     }
 
     /**
@@ -319,7 +320,11 @@ public class Core {
         var now = LocalDateTime.now();
         token.setExpiryTime(now.plusSeconds(TokenData.TIME_OUT + life));
 
-        StringOps.set("Token:" + tokenId, token.toString(), life > 0 ? TokenData.TIME_OUT + life : -1);
+        if (life > 0) {
+            StringOps.set("Token:" + tokenId, token.toString(), TokenData.TIME_OUT + life);
+        } else {
+            StringOps.set("Token:" + tokenId, token.toString());
+        }
         tokenDto.setUserInfo(token.getUserInfo());
         return tokenDto;
     }

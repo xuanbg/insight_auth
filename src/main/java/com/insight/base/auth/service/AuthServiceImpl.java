@@ -221,8 +221,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var user = core.getUser(userId);
-        core.checkExpired(login.getTenantId(), login.getAppId());
-        core.checkType(login.getAppId(), user.getType());
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
 
         var key = "User:" + userId;
@@ -273,8 +271,6 @@ public class AuthServiceImpl implements AuthService {
             HashOps.put(key, "headImg", weChatUser.getHeadimgurl());
         }
 
-        core.checkExpired(login.getTenantId(), login.getAppId());
-        core.checkType(login.getAppId(), user.getType());
         var token = core.creatorToken(login, userId);
         return ReplyHelper.created(token);
     }
@@ -329,8 +325,6 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("用户不存在,请联系管理员创建用户");
         }
 
-        core.checkExpired(login.getTenantId(), login.getAppId());
-        core.checkType(login.getAppId(), user.getType());
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
 
         key = "User:" + userId;
