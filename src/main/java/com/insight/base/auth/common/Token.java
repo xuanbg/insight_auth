@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.user.UserBase;
-import com.insight.utils.redis.Redis;
+import com.insight.utils.redis.HashOps;
 
 import java.time.LocalDateTime;
 
@@ -49,8 +49,8 @@ public class Token extends TokenData {
         setPermitLife(getLongValue("PermitLife"));
         setLife(getLongValue("TokenLife"));
         setVerifySource(getBooleanValue("VerifySource"));
-        setSignInOne(getBooleanValue("SignInType"));
-        setAutoRefresh(getBooleanValue("RefreshType"));
+        setSignInOne(getBooleanValue("SignInOne"));
+        setAutoRefresh(getBooleanValue("AutoRefresh"));
         setSecretKey(Util.uuid());
     }
 
@@ -71,7 +71,7 @@ public class Token extends TokenData {
      */
     @JsonIgnore
     private Long getLongValue(String field) {
-        String value = Redis.get(key, field);
+        String value = HashOps.get(key, field);
         return Util.isNotEmpty(value) ? Long.valueOf(value) : null;
     }
 
@@ -83,7 +83,7 @@ public class Token extends TokenData {
      */
     @JsonIgnore
     private Boolean getBooleanValue(String field) {
-        String value = Redis.get(key, field);
+        String value = HashOps.get(key, field);
         return Util.isNotEmpty(value) ? Boolean.valueOf(value) : null;
     }
 

@@ -172,8 +172,8 @@ public class Core {
             HashOps.put(key, "VerifySource", app.getVerifySource());
             HashOps.put(key, "PermitLife", app.getPermitLife());
             HashOps.put(key, "TokenLife", app.getTokenLife());
-            HashOps.put(key, "SignInType", app.getSigninOne());
-            HashOps.put(key, "RefreshType", app.getAutoRefresh());
+            HashOps.put(key, "SignInOne", app.getSigninOne());
+            HashOps.put(key, "AutoRefresh", app.getAutoRefresh());
         }
 
         if (tenantId == null) {
@@ -262,28 +262,37 @@ public class Core {
         var tokenId = HashOps.get(key, appId);
         if (KeyOps.hasKey("Token:" + tokenId)) {
             var token = getToken(tokenId);
-            return initPackage(tokenId, token, fingerprint);
-        } else {
-            // 加载用户授权码
-            var user = getUser(userId);
-            var token = new Token(appId, tenantId, user);
-            if (tenantId != null) {
-                token.setTenantName(mapper.getTenant(tenantId));
-                var org = mapper.getLoginOrg(user.getId(), tenantId);
-                if (org != null) {
-                    token.setOrgId(org.getId());
-                    token.setOrgName(org.getName());
-                }
+            // 单设备登录删除原Token, 创建新Token. 非单设备登录使用原Token
+            if (token.getSignInOne()) {
+                KeyOps.delete("Token:" + tokenId);
+                tokenId = null;
+            } else {
+                return initPackage(tokenId, token, fingerprint);
             }
-
-            var permitFuns = mapper.getAuthInfos(appId, tenantId, user.getId());
-            token.setPermitFuncs(permitFuns);
-
-            // 缓存用户Token
-            var code = Util.uuid();
-            HashOps.put(key, appId.toString(), code);
-            return initPackage(code, token, fingerprint);
         }
+
+        // 加载用户授权码
+        var user = getUser(userId);
+        var token = new Token(appId, tenantId, user);
+        if (tenantId != null) {
+            token.setTenantName(mapper.getTenant(tenantId));
+            var org = mapper.getLoginOrg(user.getId(), tenantId);
+            if (org != null) {
+                token.setOrgId(org.getId());
+                token.setOrgName(org.getName());
+            }
+        }
+
+        var permitFuns = mapper.getAuthInfos(appId, tenantId, user.getId());
+        token.setPermitFuncs(permitFuns);
+
+        // 缓存用户Token
+        if (Util.isEmpty(tokenId)) {
+            tokenId = Util.uuid();
+            HashOps.put(key, appId.toString(), tokenId);
+        }
+
+        return initPackage(tokenId, token, fingerprint);
     }
 
     /**
