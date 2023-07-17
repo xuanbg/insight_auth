@@ -6,14 +6,15 @@ import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.*;
-import com.insight.utils.encrypt.Encryptor;
 import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.message.SmsCode;
 import com.insight.utils.pojo.user.User;
 import com.insight.utils.pojo.wechat.WechatUser;
-import com.insight.utils.redis.Redis;
+import com.insight.utils.redis.HashOps;
+import com.insight.utils.redis.KeyOps;
+import com.insight.utils.redis.StringOps;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -75,13 +76,13 @@ public class Core {
      * @return 用户ID
      */
     public Long getUserId(String account) {
-        var value = Redis.get("ID:" + account);
+        var value = StringOps.get("ID:" + account);
         if (Util.isNotEmpty(value)) {
             return Long.valueOf(value);
         }
 
         synchronized (this) {
-            value = Redis.get("ID:" + account);
+            value = StringOps.get("ID:" + account);
             if (Util.isNotEmpty(value)) {
                 return Long.valueOf(value);
             }
@@ -93,31 +94,28 @@ public class Core {
 
             // 缓存用户ID到Redis
             var userId = user.getId();
-            Redis.set("ID:" + user.getAccount(), userId.toString());
+            StringOps.set("ID:" + user.getAccount(), userId.toString());
 
             var mobile = user.getMobile();
             if (Util.isNotEmpty(mobile)) {
-                Redis.set("ID:" + mobile, userId.toString());
+                StringOps.set("ID:" + mobile, userId.toString());
             }
 
             var mail = user.getEmail();
             if (Util.isNotEmpty(mail)) {
-                Redis.set("ID:" + mail, userId.toString());
+                StringOps.set("ID:" + mail, userId.toString());
             }
 
             var unionId = user.getUnionId();
             if (Util.isNotEmpty(unionId)) {
-                Redis.set("ID:" + unionId, userId.toString());
+                StringOps.set("ID:" + unionId, userId.toString());
             }
 
-            // 解密用户密码
-            var pw = user.getPassword();
-            var password = pw.length() > 32 ? Encryptor.rsaDecrypt(pw, PRIVATE_KEY) : pw;
-            user.setPassword(password);
+            user.setPassword(user.getPassword());
 
             var key = "User:" + userId;
-            Redis.setHash(key, Json.toStringValueMap(user), -1L);
-            Redis.setHash(key, "FailureCount", 0);
+            HashOps.putAll(key, Json.toMap(user));
+            HashOps.put(key, "FailureCount", 0);
             return userId;
         }
     }
@@ -132,7 +130,6 @@ public class Core {
      */
     public String getGeneralCode(Long userId, String account, String password) {
         var key = Util.md5(account + password);
-
         return generateCode(userId, key, GENERAL_CODE_LEFT);
     }
 
@@ -165,33 +162,33 @@ public class Core {
      */
     public void checkExpired(Long tenantId, Long appId) {
         var key = "App:" + appId;
-        if (!Redis.hasKey(key)) {
+        if (!KeyOps.hasKey(key)) {
             var app = mapper.getApp(appId);
             if (app == null) {
                 throw new BusinessException("未找指定的应用");
             }
 
-            Redis.setHash(key, "Type", app.getType());
-            Redis.setHash(key, "VerifySource", app.getVerifySource());
-            Redis.setHash(key, "PermitLife", app.getPermitLife());
-            Redis.setHash(key, "TokenLife", app.getTokenLife());
-            Redis.setHash(key, "SignInType", app.getSigninOne());
-            Redis.setHash(key, "RefreshType", app.getAutoRefresh());
+            HashOps.put(key, "Type", app.getType());
+            HashOps.put(key, "VerifySource", app.getVerifySource());
+            HashOps.put(key, "PermitLife", app.getPermitLife());
+            HashOps.put(key, "TokenLife", app.getTokenLife());
+            HashOps.put(key, "SignInType", app.getSigninOne());
+            HashOps.put(key, "RefreshType", app.getAutoRefresh());
         }
 
         if (tenantId == null) {
             return;
         }
 
-        var date = Redis.get("App:" + appId, tenantId.toString());
+        var date = HashOps.get("App:" + appId, tenantId.toString());
         if (date == null) {
             var data = mapper.getApps(tenantId, appId);
             if (data == null) {
                 throw new BusinessException("应用未授权, 请先为租户授权此应用");
             }
 
-            Redis.setHash(key, data.getTenantId().toString(), data.getExpireDate());
-            date = Redis.get("App:" + appId, tenantId.toString());
+            HashOps.put(key, data.getTenantId().toString(), data.getExpireDate());
+            date = HashOps.get("App:" + appId, tenantId.toString());
             if (date == null) {
                 throw new BusinessException("应用已过期,请续租");
             }
@@ -210,7 +207,7 @@ public class Core {
      * @param userType 用户类型
      */
     public void checkType(Long appId, Integer userType) {
-        var data = Redis.get("App:" + appId, "Type");
+        var data = HashOps.get("App:" + appId, "Type");
         if (data == null) {
             throw new BusinessException("应用类型数据不存在");
         }
@@ -222,68 +219,71 @@ public class Core {
     }
 
     /**
-     * 生成令牌数据包
+     * 获取Token
      *
      * @param code  Code
-     * @param login 登录信息
-     * @param user  用户信息
-     * @return 令牌数据包
+     * @param login 用户登录数据
+     * @return Reply
      */
-    public TokenDto creatorToken(String code, LoginDto login, User user) {
-        var fingerprint = login.getFingerprint();
-        var appId = login.getAppId();
-        var tenantId = login.getTenantId();
-
-        // 加载用户授权码
-        var userId = user.getId();
-        var token = new Token(appId, tenantId, user);
-        if (tenantId != null) {
-            token.setTenantName(mapper.getTenant(tenantId));
-            var org = mapper.getLoginOrg(userId, tenantId);
-            if (org != null) {
-                token.setOrgId(org.getId());
-                token.setOrgName(org.getName());
-            }
+    public TokenDto getToken(String code, LoginDto login) {
+        var userId = getId(code);
+        if (userId == null) {
+            throw new BusinessException("发生了一点小意外,请重新提交");
         }
 
-        var permitFuns = mapper.getAuthInfos(appId, tenantId, userId);
-        token.setPermitFuncs(permitFuns);
-
-        // 缓存用户Token
-        var key = "UserToken:" + userId;
-        Redis.setHash(key, appId.toString(), code);
-        return initPackage(code, token, fingerprint);
+        var user = getUser(userId);
+        checkExpired(login.getTenantId(), login.getAppId());
+        checkType(login.getAppId(), user.getType());
+        return creatorToken(login, userId);
     }
 
     /**
      * 生成令牌数据包
      *
-     * @param token       令牌
-     * @param fingerprint 用户特征串
+     * @param login  登录信息
+     * @param userId 用户Id
      * @return 令牌数据包
      */
-    public TokenDto creatorToken(Token token, String fingerprint) {
-        var tokenId = Util.uuid();
-        var key = "UserToken:" + token.getUserId();
-        Redis.setHash(key, token.getAppId().toString(), tokenId);
-
-        var permitFuns = mapper.getAuthInfos(token.getAppId(), token.getTenantId(), token.getUserId());
-        token.setSecretKey(Util.uuid());
-        token.setPermitFuncs(permitFuns);
-        return initPackage(tokenId, token, fingerprint);
+    public TokenDto creatorToken(LoginDto login, Long userId) {
+        return creatorToken(login.getTenantId(), userId, login.getAppId(), login.getFingerprint());
     }
 
     /**
-     * 刷新Secret过期时间
+     * 生成令牌数据包
      *
-     * @param tokenId     令牌ID
-     * @param token       令牌
+     * @param tenantId    租户ID
+     * @param userId      用户ID
+     * @param appId       应用ID
      * @param fingerprint 用户特征串
      * @return 令牌数据包
      */
-    public TokenDto refreshToken(String tokenId, Token token, String fingerprint) {
-        token.setSecretKey(Util.uuid());
-        return initPackage(tokenId, token, fingerprint);
+    public TokenDto creatorToken(Long tenantId, Long userId, Long appId, String fingerprint) {
+        var key = "UserToken:" + userId;
+        var tokenId = HashOps.get(key, appId);
+        if (KeyOps.hasKey("Token:" + tokenId)) {
+            var token = getToken(tokenId);
+            return initPackage(tokenId, token, fingerprint);
+        } else {
+            // 加载用户授权码
+            var user = getUser(userId);
+            var token = new Token(appId, tenantId, user);
+            if (tenantId != null) {
+                token.setTenantName(mapper.getTenant(tenantId));
+                var org = mapper.getLoginOrg(user.getId(), tenantId);
+                if (org != null) {
+                    token.setOrgId(org.getId());
+                    token.setOrgName(org.getName());
+                }
+            }
+
+            var permitFuns = mapper.getAuthInfos(appId, tenantId, user.getId());
+            token.setPermitFuncs(permitFuns);
+
+            // 缓存用户Token
+            var code = Util.uuid();
+            HashOps.put(key, appId.toString(), code);
+            return initPackage(code, token, fingerprint);
+        }
     }
 
     /**
@@ -310,20 +310,7 @@ public class Core {
         var now = LocalDateTime.now();
         token.setExpiryTime(now.plusSeconds(TokenData.TIME_OUT + life));
 
-        var failure = life * 12;
-        var refreshToken = new TokenKey();
-        refreshToken.setId(tokenId);
-        refreshToken.setSecret(token.getRefreshKey());
-        tokenDto.setRefreshToken(Json.toBase64(refreshToken));
-        tokenDto.setFailure(failure);
-
-        // 缓存令牌数据
-        var failureTime = token.getFailureTime();
-        if (failureTime == null || now.isAfter(failureTime)) {
-            token.setFailureTime(now.plusSeconds(TokenData.TIME_OUT + failure));
-        }
-
-        Redis.set("Token:" + tokenId, token.toString(), life > 0 ? TokenData.TIME_OUT + failure : -1);
+        StringOps.set("Token:" + tokenId, token.toString(), life > 0 ? TokenData.TIME_OUT + life : -1);
         tokenDto.setUserInfo(token.getUserInfo());
         return tokenDto;
     }
@@ -336,7 +323,7 @@ public class Core {
      */
     public Token getToken(String tokenId) {
         var key = "Token:" + tokenId;
-        var json = Redis.get(key);
+        var json = StringOps.get(key);
         if (Util.isEmpty(json)) {
             throw new BusinessException(421, "指定的Token不存在");
         }
@@ -354,11 +341,11 @@ public class Core {
      */
     public void deleteToken(String tokenId) {
         var key = "Token:" + tokenId;
-        if (!Redis.hasKey(key)) {
+        if (!KeyOps.hasKey(key)) {
             return;
         }
 
-        Redis.deleteKey(key);
+        KeyOps.delete(key);
     }
 
     /**
@@ -374,11 +361,10 @@ public class Core {
         var signature = Util.md5(key + code);
 
         // 用签名作为Key缓存Code
-        Redis.set("Sign:" + signature, code, seconds);
+        StringOps.set("Sign:" + signature, code, seconds);
 
         // 用Code作为Key缓存用户ID
-        Redis.set("Code:" + code, userId.toString(), seconds + 1);
-
+        StringOps.set("Code:" + code, userId.toString(), seconds + 1);
         return code;
     }
 
@@ -390,12 +376,12 @@ public class Core {
      */
     public String getCode(String sign) {
         var key = "Sign:" + sign;
-        var code = Redis.get(key);
+        var code = StringOps.get(key);
         if (code == null || code.isEmpty()) {
             return null;
         }
 
-        Redis.deleteKey(key);
+        KeyOps.delete(key);
         return code;
     }
 
@@ -407,32 +393,13 @@ public class Core {
      */
     public Long getId(String code) {
         var key = "Code:" + code;
-        var val = Redis.get(key);
+        var val = StringOps.get(key);
         if (Util.isEmpty(val)) {
             return null;
         }
 
-        Redis.deleteKey(key);
+        KeyOps.delete(key);
         return Long.valueOf(val);
-    }
-
-    /**
-     * 获取Token
-     *
-     * @param code  Code
-     * @param login 用户登录数据
-     * @return Reply
-     */
-    public TokenDto getToken(String code, LoginDto login) {
-        var userId = getId(code);
-        if (userId == null) {
-            throw new BusinessException("发生了一点小意外,请重新提交");
-        }
-
-        var user = getUser(userId);
-        checkExpired(login.getTenantId(), login.getAppId());
-        checkType(login.getAppId(), user.getType());
-        return creatorToken(code, login, user);
     }
 
     /**
@@ -442,7 +409,7 @@ public class Core {
      */
     public int getFailureCount(Long userId) {
         var key = "User:" + userId;
-        var value = Redis.get(key, "LastFailureTime");
+        var value = HashOps.get(key, "LastFailureTime");
         if (value == null || value.isEmpty()) {
             return 0;
         }
@@ -451,11 +418,11 @@ public class Core {
         var resetTime = lastFailureTime.plusMinutes(10);
         var now = LocalDateTime.now();
 
-        var failureCount = Integer.parseInt(Redis.get(key, "FailureCount"));
+        var failureCount = Integer.parseInt(HashOps.get(key, "FailureCount"));
         if (failureCount > 0 && now.isAfter(resetTime)) {
             failureCount = 0;
-            Redis.setHash(key, "FailureCount", 0);
-            Redis.setHash(key, "LastFailureTime", DateTime.formatCurrentDate());
+            HashOps.put(key, "FailureCount", 0);
+            HashOps.put(key, "LastFailureTime", DateTime.formatCurrentDate());
         }
 
         return failureCount;
@@ -469,7 +436,7 @@ public class Core {
      */
     public WechatUser getWeChatInfo(String code, String weChatAppId) {
         var key = "WeChatApp:" + weChatAppId;
-        var secret = Redis.get(key, "secret");
+        var secret = HashOps.get(key, "secret");
 
         return WechatHelper.getUserInfo(code, weChatAppId, secret);
     }
@@ -500,9 +467,9 @@ public class Core {
         mapper.updateUnionId(userId, unionId, nickname);
 
         var key = "User:" + userId;
-        Redis.setHash(key, "unionId", unionId);
-        Redis.setHash(key, "nickname", nickname);
-        Redis.set("ID:" + unionId, userId.toString());
+        HashOps.put(key, "unionId", unionId);
+        HashOps.put(key, "nickname", nickname);
+        StringOps.set("ID:" + unionId, userId.toString());
     }
 
     /**
@@ -533,15 +500,15 @@ public class Core {
         user.setCreatedTime(LocalDateTime.now());
 
         // 缓存用户ID到Redis
-        Redis.set("ID:" + user.getMobile(), userId.toString());
+        StringOps.set("ID:" + user.getMobile(), userId.toString());
         var unionId = user.getUnionId();
         if (unionId != null && !unionId.isEmpty()) {
-            Redis.set("ID:" + unionId, userId.toString());
+            StringOps.set("ID:" + unionId, userId.toString());
         }
 
         var key = "User:" + userId;
-        Redis.setHash(key, Json.toStringValueMap(user), -1L);
-        Redis.setHash(key, "FailureCount", 0);
+        HashOps.putAll(key, Json.toMap(user));
+        HashOps.put(key, "FailureCount", 0);
 
         RabbitClient.addUser(user);
         return userId;
@@ -554,10 +521,12 @@ public class Core {
      * @return 用户数据
      */
     public User getUser(Long userId) {
-        var data = Redis.getEntity("User:" + userId);
-        var user = Json.clone(data, User.class);
+        var key = "User:" + userId;
+        if (!KeyOps.hasKey(key)) {
+            throw new BusinessException("用户不存在");
+        }
 
-        // 验证用户
+        var user = HashOps.entries(key, User.class);
         if (user.getInvalid()) {
             throw new BusinessException("用户被禁止使用");
         }

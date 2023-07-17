@@ -14,7 +14,9 @@ import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.user.MemberDto;
 import com.insight.utils.pojo.user.User;
 import com.insight.utils.pojo.wechat.WechatUser;
-import com.insight.utils.redis.Redis;
+import com.insight.utils.redis.HashOps;
+import com.insight.utils.redis.KeyOps;
+import com.insight.utils.redis.StringOps;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -84,15 +86,15 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var key = "User:" + userId;
-        if (!Redis.hasKey(key)) {
-            Redis.deleteKey("ID:" + account);
+        if (!KeyOps.hasKey(key)) {
+            KeyOps.delete("ID:" + account);
             throw new BusinessException("发生了一点小意外,请重新提交");
         }
 
         // 生成Code
         String code;
         if (dto.getType() == 0) {
-            var password = Redis.get(key, "password");
+            var password = HashOps.get(key, "password");
             if (!Util.isNotEmpty(password)) {
                 throw new BusinessException("账号或密码错误");
             }
@@ -115,7 +117,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String getAuthCode() {
         var code = Util.uuid();
-        Redis.set("Code:" + code, "", 300L);
+        StringOps.set("Code:" + code, "", 300L);
 
         return code;
     }
@@ -133,11 +135,11 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var key = "Code:" + code;
-        if (!Redis.hasKey(key)) {
+        if (!KeyOps.hasKey(key)) {
             throw new BusinessException("Code已失效，请重新获取Code");
         }
 
-        Redis.set(key, info.getId().toString(), 30L);
+        StringOps.set(key, info.getId().toString(), 30L);
     }
 
     /**
@@ -148,10 +150,10 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String getSubmitToken(String key) {
-        var id = Redis.get("SubmitToken:" + key);
+        var id = StringOps.get("SubmitToken:" + key);
         if (!Util.isNotEmpty(id)) {
             id = Util.uuid();
-            Redis.set("SubmitToken:" + key, id, 1L, TimeUnit.HOURS);
+            StringOps.set("SubmitToken:" + key, id, 1L, TimeUnit.HOURS);
         }
 
         return id;
@@ -175,8 +177,8 @@ public class AuthServiceImpl implements AuthService {
         var account = login.getAccount();
         var userId = core.getUserId(account);
         var key = "User:" + userId;
-        if (!Redis.hasKey(key)) {
-            Redis.deleteKey("ID:" + account);
+        if (!KeyOps.hasKey(key)) {
+            KeyOps.delete("ID:" + account);
             throw new BusinessException("发生了一点小意外,请重新提交");
         }
 
@@ -185,8 +187,8 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("错误次数过多,账号已被锁定!请于10分钟后再试");
         }
 
-        Redis.setHash(key, "FailureCount", failureCount + 1);
-        Redis.setHash(key, "LastFailureTime", DateTime.formatCurrentTime());
+        HashOps.put(key, "FailureCount", failureCount + 1);
+        HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
 
         throw new BusinessException("账号或密码错误");
     }
@@ -223,9 +225,10 @@ public class AuthServiceImpl implements AuthService {
         core.checkType(login.getAppId(), user.getType());
         core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
 
-        user.setNickname(weChatUser.getNickname());
+        var key = "User:" + userId;
+        HashOps.put(key, "nickname", weChatUser.getNickname());
         if (Util.isEmpty(user.getHeadImg())) {
-            user.setHeadImg(weChatUser.getHeadimgurl());
+            HashOps.put(key, "headImg", weChatUser.getHeadimgurl());
         }
 
         if (login.getTenantId() == null) {
@@ -233,8 +236,8 @@ public class AuthServiceImpl implements AuthService {
             if (tenants.size() == 1) {
                 login.setTenantId(tenants.get(0).getId());
             } else if (tenants.size() > 1) {
-                var key = "Wechat:" + unionId;
-                Redis.set(key, Json.toJson(weChatUser), 30L, TimeUnit.MINUTES);
+                key = "Wechat:" + unionId;
+                StringOps.set(key, Json.toJson(weChatUser), 30L, TimeUnit.MINUTES);
 
                 var dto = new TenantDto();
                 dto.setUnionId(unionId);
@@ -243,9 +246,7 @@ public class AuthServiceImpl implements AuthService {
             }
         }
 
-        core.checkExpired(login.getTenantId(), login.getAppId());
-        core.checkType(login.getAppId(), user.getType());
-        var token = core.creatorToken(Util.uuid(), login, user);
+        var token = core.creatorToken(login, userId);
         return ReplyHelper.created(token);
     }
 
@@ -258,7 +259,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getTokenWithUnionId(LoginDto login) {
         var unionId = login.getUnionId();
-        var json = Redis.get("Wechat:" + unionId);
+        var json = StringOps.get("Wechat:" + unionId);
         var weChatUser = Json.toBean(json, WechatUser.class);
         if (weChatUser == null) {
             throw new BusinessException("微信授权已过期，请重新登录");
@@ -266,14 +267,15 @@ public class AuthServiceImpl implements AuthService {
 
         var userId = core.getUserId(unionId);
         var user = core.getUser(userId);
-        user.setNickname(weChatUser.getNickname());
+        var key = "User:" + userId;
+        HashOps.put(key, "nickname", weChatUser.getNickname());
         if (Util.isEmpty(user.getHeadImg())) {
-            user.setHeadImg(weChatUser.getHeadimgurl());
+            HashOps.put(key, "headImg", weChatUser.getHeadimgurl());
         }
 
         core.checkExpired(login.getTenantId(), login.getAppId());
         core.checkType(login.getAppId(), user.getType());
-        var token = core.creatorToken(Util.uuid(), login, user);
+        var token = core.creatorToken(login, userId);
         return ReplyHelper.created(token);
     }
 
@@ -293,7 +295,7 @@ public class AuthServiceImpl implements AuthService {
         // 从缓存读取微信用户信息
         var unionId = login.getUnionId();
         var key = "Wechat:" + unionId;
-        var json = Redis.get(key);
+        var json = StringOps.get(key);
         var weChatUser = Json.toBean(json, WechatUser.class);
         if (weChatUser == null) {
             throw new BusinessException("微信授权已过期，请重新登录");
@@ -307,7 +309,7 @@ public class AuthServiceImpl implements AuthService {
             var uid = user.getUnionId();
             if (Util.isNotEmpty(uid)) {
                 if (login.getReplace()) {
-                    Redis.deleteKey("ID:" + uid);
+                    KeyOps.delete("ID:" + uid);
                 } else {
                     throw new BusinessException("手机号 " + mobile + " 的用户已绑定其他微信号，请使用正确的微信号登录");
                 }
@@ -331,12 +333,13 @@ public class AuthServiceImpl implements AuthService {
         core.checkType(login.getAppId(), user.getType());
         core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
 
-        user.setNickname(weChatUser.getNickname());
+        key = "User:" + userId;
+        HashOps.put(key, "nickname", weChatUser.getNickname());
         if (Util.isEmpty(user.getHeadImg())) {
-            user.setHeadImg(weChatUser.getHeadimgurl());
+            HashOps.put(key, "headImg", weChatUser.getHeadimgurl());
         }
 
-        var token = core.creatorToken(Util.uuid(), login, user);
+        var token = core.creatorToken(login, userId);
         return ReplyHelper.created(token);
     }
 
@@ -350,7 +353,7 @@ public class AuthServiceImpl implements AuthService {
     public Reply getTokenWithCode(LoginDto login) {
         var code = login.getCode();
         var key = "Code:" + code;
-        var id = Redis.get(key);
+        var id = StringOps.get(key);
         if (Util.isEmpty(id)) {
             throw new BusinessException(427, "Code已失效，请刷新");
         }
@@ -374,30 +377,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(421, "非法的Token");
         }
 
-        token.setAppId(appId);
-        core.checkExpired(token.getTenantId(), appId);
-        core.checkType(appId, token.getType());
-        var dto = core.creatorToken(token, fingerprint);
-        return ReplyHelper.created(dto);
-    }
-
-    /**
-     * 刷新访问令牌过期时间
-     *
-     * @param fingerprint 用户特征串
-     * @param accessToken 刷新令牌
-     * @return Reply
-     */
-    @Override
-    public Reply refreshToken(String fingerprint, TokenKey accessToken) {
-        // 验证令牌
-        var tokenId = accessToken.getId();
-        var token = core.getToken(tokenId);
-        if (token.refreshKeyIsInvalid(accessToken)) {
-            throw new BusinessException("未提供RefreshToken");
-        }
-
-        var dto = core.refreshToken(tokenId, token, fingerprint);
+        var dto = core.creatorToken(token.getTenantId(), token.getUserId(), appId, fingerprint);
         return ReplyHelper.created(dto);
     }
 

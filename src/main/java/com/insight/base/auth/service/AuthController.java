@@ -138,23 +138,6 @@ public class AuthController {
     }
 
     /**
-     * 刷新Token，延长过期时间至2小时后
-     *
-     * @param fingerprint 用户特征串
-     * @param token       刷新令牌字符串
-     * @return Reply
-     */
-    @PutMapping("/v1.0/tokens")
-    public Reply refreshToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader("Authorization") String token) {
-        var refreshToken = Json.toToken(token);
-        if (refreshToken == null) {
-            throw new BusinessException("未提供RefreshToken");
-        }
-
-        return service.refreshToken(fingerprint, refreshToken);
-    }
-
-    /**
      * 用户账号离线
      *
      * @param token 访问令牌字符串

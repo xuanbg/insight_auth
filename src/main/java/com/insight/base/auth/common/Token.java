@@ -3,7 +3,6 @@ package com.insight.base.auth.common;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.TokenData;
-import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.user.UserBase;
 import com.insight.utils.redis.Redis;
 
@@ -53,18 +52,6 @@ public class Token extends TokenData {
         setSignInOne(getBooleanValue("SignInType"));
         setAutoRefresh(getBooleanValue("RefreshType"));
         setSecretKey(Util.uuid());
-        setRefreshKey(Util.uuid());
-    }
-
-    /**
-     * 验证刷新密钥
-     *
-     * @param token 用户令牌
-     * @return 是否通过验证
-     */
-    @JsonIgnore
-    public boolean refreshKeyIsInvalid(TokenKey token) {
-        return token == null || !token.getSecret().equals(getRefreshKey());
     }
 
     /**

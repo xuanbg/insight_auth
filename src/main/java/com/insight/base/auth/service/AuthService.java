@@ -109,15 +109,6 @@ public interface AuthService {
     Reply getToken(String fingerprint, TokenKey token, Long appId);
 
     /**
-     * 刷新访问令牌过期时间
-     *
-     * @param fingerprint 用户特征串
-     * @param token       刷新令牌
-     * @return Reply
-     */
-    Reply refreshToken(String fingerprint, TokenKey token);
-
-    /**
      * 用户账号离线
      *
      * @param tokenId 令牌ID
