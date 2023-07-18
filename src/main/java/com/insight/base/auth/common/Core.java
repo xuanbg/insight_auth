@@ -265,11 +265,8 @@ public class Core {
                 throw new BusinessException("应用未授权, 请先为租户授权此应用");
             }
 
-            HashOps.put(key, data.getTenantId(), data.getExpireDate());
-            date = HashOps.get(key, tenantId);
-            if (date == null) {
-                throw new BusinessException("应用已过期,请续租");
-            }
+            date = data.getExpireDate().toString();
+            HashOps.put(key, tenantId, date);
         }
 
         var expire = LocalDate.parse(date);
