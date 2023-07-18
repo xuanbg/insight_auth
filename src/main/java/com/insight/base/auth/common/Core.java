@@ -197,11 +197,11 @@ public class Core {
         if (KeyOps.hasKey("Token:" + tokenId)) {
             var token = getToken(tokenId);
             // 单设备登录删除原Token, 创建新Token. 非单设备登录使用原Token
-            if (token.getSignInOne()) {
+            if (token.sourceNotMatch(fingerprint)) {
                 KeyOps.delete("Token:" + tokenId);
                 tokenId = null;
             } else {
-                return initPackage(tokenId, token, fingerprint);
+                return initPackage(tokenId, token);
             }
         }
 
@@ -222,6 +222,7 @@ public class Core {
 
         var permitFuns = mapper.getAuthInfos(appId, tenantId, user.getId());
         token.setPermitFuncs(permitFuns);
+        token.setFingerprint(fingerprint);
 
         // 缓存用户Token
         if (Util.isEmpty(tokenId)) {
@@ -229,7 +230,7 @@ public class Core {
             HashOps.put(key, appId.toString(), tokenId);
         }
 
-        return initPackage(tokenId, token, fingerprint);
+        return initPackage(tokenId, token);
     }
 
     /**
@@ -247,7 +248,6 @@ public class Core {
             }
 
             HashOps.put(key, "Type", app.getType());
-            HashOps.put(key, "VerifySource", app.getVerifySource());
             HashOps.put(key, "PermitLife", app.getPermitLife());
             HashOps.put(key, "TokenLife", app.getTokenLife());
             HashOps.put(key, "SignInOne", app.getSigninOne());
@@ -299,12 +299,11 @@ public class Core {
     /**
      * 初始化令牌数据包
      *
-     * @param tokenId     令牌ID
-     * @param token       令牌数据
-     * @param fingerprint 用户特征串
+     * @param tokenId 令牌ID
+     * @param token   令牌数据
      * @return 令牌数据包
      */
-    private TokenDto initPackage(String tokenId, Token token, String fingerprint) {
+    private TokenDto initPackage(String tokenId, Token token) {
         var tokenDto = new TokenDto();
 
         // 生成令牌数据
@@ -315,16 +314,15 @@ public class Core {
         tokenDto.setAccessToken(Json.toBase64(accessToken));
         tokenDto.setExpire(life);
 
-        var hashKey = tokenDto.getAccessToken() + fingerprint;
-        token.setHash(Util.md5(hashKey));
-        var now = LocalDateTime.now();
-        token.setExpiryTime(now.plusSeconds(TokenData.TIME_OUT + life));
+        token.setExpiryTime(LocalDateTime.now().plusSeconds(TokenData.TIME_OUT + life));
 
+        var key = "Token:" + tokenId;
         if (life > 0) {
-            StringOps.set("Token:" + tokenId, token.toString(), TokenData.TIME_OUT + life);
+            StringOps.set(key, token.toString(), TokenData.TIME_OUT + life);
         } else {
-            StringOps.set("Token:" + tokenId, token.toString());
+            StringOps.set(key, token.toString());
         }
+
         tokenDto.setUserInfo(token.getUserInfo());
         return tokenDto;
     }

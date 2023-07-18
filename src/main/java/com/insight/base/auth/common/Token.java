@@ -48,7 +48,6 @@ public class Token extends TokenData {
         setPermitTime(LocalDateTime.now());
         setPermitLife(getLongValue("PermitLife"));
         setLife(getLongValue("TokenLife"));
-        setVerifySource(getBooleanValue("VerifySource"));
         setSignInOne(getBooleanValue("SignInOne"));
         setAutoRefresh(getBooleanValue("AutoRefresh"));
         setSecretKey(Util.uuid());
@@ -64,12 +63,32 @@ public class Token extends TokenData {
     }
 
     /**
+     * 来源不匹配
+     *
+     * @param fingerprint 特征字符串
+     * @return 是否不同来源
+     */
+    @JsonIgnore
+    public Boolean sourceNotMatch(String fingerprint) {
+        return getSignInOne() && Util.isNotEmpty(fingerprint) && !fingerprint.equals(getFingerprint());
+    }
+
+    @JsonIgnore
+    public UserBase getUserInfo() {
+        return userInfo;
+    }
+
+    @JsonIgnore
+    public void setUserInfo(UserBase userInfo) {
+        this.userInfo = userInfo;
+    }
+
+    /**
      * 获取Long值
      *
      * @param field Redis field
      * @return Long值
      */
-    @JsonIgnore
     private Long getLongValue(String field) {
         String value = HashOps.get(key, field);
         return Util.isNotEmpty(value) ? Long.valueOf(value) : null;
@@ -81,20 +100,9 @@ public class Token extends TokenData {
      * @param field Redis field
      * @return Boolean值
      */
-    @JsonIgnore
     private Boolean getBooleanValue(String field) {
         String value = HashOps.get(key, field);
         return Util.isNotEmpty(value) ? Boolean.valueOf(value) : null;
-    }
-
-    @JsonIgnore
-    public UserBase getUserInfo() {
-        return userInfo;
-    }
-
-    @JsonIgnore
-    public void setUserInfo(UserBase userInfo) {
-        this.userInfo = userInfo;
     }
 }
 
