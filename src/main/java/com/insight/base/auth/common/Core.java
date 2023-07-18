@@ -227,7 +227,7 @@ public class Core {
         // 缓存用户Token
         if (Util.isEmpty(tokenId)) {
             tokenId = Util.uuid();
-            HashOps.put(key, appId.toString(), tokenId);
+            HashOps.put(key, appId, tokenId);
         }
 
         return initPackage(tokenId, token);
@@ -258,15 +258,15 @@ public class Core {
             return;
         }
 
-        var date = HashOps.get("App:" + appId, tenantId.toString());
+        var date = HashOps.get(key, tenantId);
         if (date == null) {
             var data = mapper.getApps(tenantId, appId);
             if (data == null) {
                 throw new BusinessException("应用未授权, 请先为租户授权此应用");
             }
 
-            HashOps.put(key, data.getTenantId().toString(), data.getExpireDate());
-            date = HashOps.get("App:" + appId, tenantId.toString());
+            HashOps.put(key, data.getTenantId(), data.getExpireDate());
+            date = HashOps.get(key, tenantId);
             if (date == null) {
                 throw new BusinessException("应用已过期,请续租");
             }
