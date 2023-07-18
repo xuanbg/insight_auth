@@ -17,19 +17,9 @@ public class TokenDto extends BaseXo {
     private String accessToken;
 
     /**
-     * 刷新令牌(Base64编码)
-     */
-    private String refreshToken;
-
-    /**
      * 令牌过期秒数
      */
     private Long expire;
-
-    /**
-     * 令牌失效秒数
-     */
-    private Long failure;
 
     /**
      * 用户信息
@@ -49,28 +39,12 @@ public class TokenDto extends BaseXo {
         this.accessToken = accessToken;
     }
 
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-
     public Long getExpire() {
         return expire;
     }
 
     public void setExpire(Long expire) {
         this.expire = expire;
-    }
-
-    public Long getFailure() {
-        return failure;
-    }
-
-    public void setFailure(Long failure) {
-        this.failure = failure;
     }
 
     public UserBase getUserInfo() {
