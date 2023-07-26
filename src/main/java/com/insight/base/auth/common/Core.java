@@ -282,17 +282,7 @@ public class Core {
      * @return 令牌数据包
      */
     private TokenDto initPackage(String tokenId, Token token) {
-        var tokenDto = new TokenDto();
-
-        // 生成令牌数据
-        long life = token.getLife();
-        var accessToken = new TokenKey();
-        accessToken.setId(tokenId);
-        accessToken.setSecret(token.getSecretKey());
-        tokenDto.setAccessToken(Json.toBase64(accessToken));
-        tokenDto.setExpire(life);
-
-        // 加载用户授权码
+        var life = token.getLife();
         var tenantId = token.getTenantId();
         if (tenantId != null) {
             token.setTenantName(mapper.getTenant(tenantId));
@@ -303,16 +293,12 @@ public class Core {
             }
         }
 
+        // 加载用户授权码
         var permitFuns = mapper.getAuthInfos(token.getAppId(), tenantId, token.getUserId());
         token.setPermitFuncs(permitFuns);
         token.setExpiryTime(LocalDateTime.now().plusSeconds(TokenData.TIME_OUT + life));
 
-        // 缓存用户Token
-        if (Util.isEmpty(tokenId)) {
-            tokenId = Util.uuid();
-            HashOps.put("UserToken:" + token.getUserId(), token.getAppId(), tokenId);
-        }
-
+        // 缓存令牌数据
         var key = "Token:" + tokenId;
         if (life > 0) {
             StringOps.set(key, token.toString(), TokenData.TIME_OUT + life);
@@ -320,6 +306,20 @@ public class Core {
             StringOps.set(key, token.toString());
         }
 
+        // 记录用户Token
+        if (Util.isEmpty(tokenId)) {
+            tokenId = Util.uuid();
+            HashOps.put("UserToken:" + token.getUserId(), token.getAppId(), tokenId);
+        }
+
+        // 生成令牌数据
+        var accessToken = new TokenKey();
+        accessToken.setId(tokenId);
+        accessToken.setSecret(token.getSecretKey());
+
+        var tokenDto = new TokenDto();
+        tokenDto.setAccessToken(Json.toBase64(accessToken));
+        tokenDto.setExpire(life);
         tokenDto.setUserInfo(token.getUserInfo());
         return tokenDto;
     }
