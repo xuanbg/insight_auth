@@ -209,27 +209,8 @@ public class Core {
         checkExpired(tenantId, appId);
         checkType(appId, user.getType());
 
-        // 加载用户授权码
         var token = new Token(appId, tenantId, user);
-        if (tenantId != null) {
-            token.setTenantName(mapper.getTenant(tenantId));
-            var org = mapper.getLoginOrg(user.getId(), tenantId);
-            if (org != null) {
-                token.setOrgId(org.getId());
-                token.setOrgName(org.getName());
-            }
-        }
-
-        var permitFuns = mapper.getAuthInfos(appId, tenantId, user.getId());
-        token.setPermitFuncs(permitFuns);
         token.setFingerprint(fingerprint);
-
-        // 缓存用户Token
-        if (Util.isEmpty(tokenId)) {
-            tokenId = Util.uuid();
-            HashOps.put(key, appId, tokenId);
-        }
-
         return initPackage(tokenId, token);
     }
 
@@ -311,7 +292,26 @@ public class Core {
         tokenDto.setAccessToken(Json.toBase64(accessToken));
         tokenDto.setExpire(life);
 
+        // 加载用户授权码
+        var tenantId = token.getTenantId();
+        if (tenantId != null) {
+            token.setTenantName(mapper.getTenant(tenantId));
+            var org = mapper.getLoginOrg(token.getUserId(), tenantId);
+            if (org != null) {
+                token.setOrgId(org.getId());
+                token.setOrgName(org.getName());
+            }
+        }
+
+        var permitFuns = mapper.getAuthInfos(token.getAppId(), tenantId, token.getUserId());
+        token.setPermitFuncs(permitFuns);
         token.setExpiryTime(LocalDateTime.now().plusSeconds(TokenData.TIME_OUT + life));
+
+        // 缓存用户Token
+        if (Util.isEmpty(tokenId)) {
+            tokenId = Util.uuid();
+            HashOps.put("UserToken:" + token.getUserId(), token.getAppId(), tokenId);
+        }
 
         var key = "Token:" + tokenId;
         if (life > 0) {
