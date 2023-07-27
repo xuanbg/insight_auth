@@ -194,7 +194,7 @@ public class Core {
     public TokenDto creatorToken(Long tenantId, Long userId, Long appId, String fingerprint) {
         var key = "UserToken:" + userId;
         var tokenId = HashOps.get(key, appId);
-        if (KeyOps.hasKey("Token:" + tokenId)) {
+        if (Util.isNotEmpty(tokenId) && KeyOps.hasKey("Token:" + tokenId)) {
             var token = getToken(tokenId);
             // 单设备登录删除原Token, 创建新Token. 非单设备登录使用原Token
             if (token.sourceNotMatch(fingerprint)) {
@@ -211,7 +211,7 @@ public class Core {
 
         var token = new Token(appId, tenantId, user);
         token.setFingerprint(fingerprint);
-        return initPackage(tokenId, token);
+        return initPackage(tokenId == null ? Util.uuid() : tokenId, token);
     }
 
     /**
@@ -300,16 +300,11 @@ public class Core {
 
         // 缓存令牌数据
         var key = "Token:" + tokenId;
+        HashOps.put("UserToken:" + token.getUserId(), token.getAppId(), tokenId);
         if (life > 0) {
             StringOps.set(key, token.toString(), TokenData.TIME_OUT + life);
         } else {
             StringOps.set(key, token.toString());
-        }
-
-        // 记录用户Token
-        if (Util.isEmpty(tokenId)) {
-            tokenId = Util.uuid();
-            HashOps.put("UserToken:" + token.getUserId(), token.getAppId(), tokenId);
         }
 
         // 生成令牌数据
