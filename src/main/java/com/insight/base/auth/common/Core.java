@@ -192,14 +192,13 @@ public class Core {
      * @return 令牌数据包
      */
     public TokenDto creatorToken(Long tenantId, Long userId, Long appId, String fingerprint) {
-        var key = "UserToken:" + userId;
-        var tokenId = HashOps.get(key, appId);
+        var tokenId = HashOps.get("UserToken:" + userId, appId);
         if (Util.isNotEmpty(tokenId) && KeyOps.hasKey("Token:" + tokenId)) {
             var token = getToken(tokenId);
+
             // 单设备登录删除原Token, 创建新Token. 非单设备登录使用原Token
             if (token.sourceNotMatch(fingerprint)) {
                 KeyOps.delete("Token:" + tokenId);
-                tokenId = null;
             } else {
                 return initPackage(tokenId, token);
             }
@@ -211,7 +210,7 @@ public class Core {
 
         var token = new Token(appId, tenantId, user);
         token.setFingerprint(fingerprint);
-        return initPackage(tokenId == null ? Util.uuid() : tokenId, token);
+        return initPackage(Util.uuid(), token);
     }
 
     /**
@@ -282,11 +281,12 @@ public class Core {
      * @return 令牌数据包
      */
     private TokenDto initPackage(String tokenId, Token token) {
-        var life = token.getLife();
+        // 加载用户登录信息
         var tenantId = token.getTenantId();
+        var userId = token.getUserId();
         if (tenantId != null) {
             token.setTenantName(mapper.getTenant(tenantId));
-            var org = mapper.getLoginOrg(token.getUserId(), tenantId);
+            var org = mapper.getLoginOrg(userId, tenantId);
             if (org != null) {
                 token.setOrgId(org.getId());
                 token.setOrgName(org.getName());
@@ -294,17 +294,17 @@ public class Core {
         }
 
         // 加载用户授权码
-        var permitFuns = mapper.getAuthInfos(token.getAppId(), tenantId, token.getUserId());
+        var life = token.getLife();
+        var permitFuns = mapper.getAuthInfos(token.getAppId(), tenantId, userId);
         token.setPermitFuncs(permitFuns);
         token.setExpiryTime(LocalDateTime.now().plusSeconds(TokenData.TIME_OUT + life));
 
         // 缓存令牌数据
-        var key = "Token:" + tokenId;
-        HashOps.put("UserToken:" + token.getUserId(), token.getAppId(), tokenId);
+        HashOps.put("UserToken:" + userId, token.getAppId(), tokenId);
         if (life > 0) {
-            StringOps.set(key, token.toString(), TokenData.TIME_OUT + life);
+            StringOps.set("Token:" + tokenId, token.toString(), TokenData.TIME_OUT + life);
         } else {
-            StringOps.set(key, token.toString());
+            StringOps.set("Token:" + tokenId, token.toString());
         }
 
         // 生成令牌数据
