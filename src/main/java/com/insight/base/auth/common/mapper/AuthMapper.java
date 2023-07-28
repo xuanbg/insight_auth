@@ -38,7 +38,7 @@ public interface AuthMapper {
      * @param userId 用户ID
      * @return 租户ID集合
      */
-    @Select("select t.* from ibt_tenant t join ibt_tenant_user r on r.tenant_id = t.id where r.user_id = #{userId};")
+    @Select("select distinct t.* from ibt_tenant t join ibt_tenant_user r on r.tenant_id = t.id where r.user_id = #{userId};")
     List<BaseVo> getTenantIds(Long userId);
 
     /**
@@ -66,7 +66,7 @@ public interface AuthMapper {
      * @param appId    应用ID
      * @return 应用信息
      */
-    @Select("select * from ibt_tenant_app where tenant_id = #{tenantId} and app_id = #{appId};")
+    @Select("select distinct * from ibt_tenant_app where tenant_id = #{tenantId} and app_id = #{appId};")
     TenantApp getApps(Long tenantId, Long appId);
 
     /**
@@ -142,7 +142,7 @@ public interface AuthMapper {
      */
     @Results({@Result(property = "funcInfo", column = "func_info", javaType = FuncInfo.class, typeHandler = JsonTypeHandler.class)})
     @Select("""
-            select f.id, f.nav_id, f.`type`, f.`index`, f.`name`, f.auth_codes, f.func_info, a.permit
+            select distinct f.id, f.nav_id, f.`type`, f.`index`, f.`name`, f.auth_codes, f.func_info, a.permit
             from ibs_function f
               left join (select a.function_id, min(a.permit) as permit
                 from ibr_role_permit a
@@ -183,7 +183,7 @@ public interface AuthMapper {
      * @return 用户绑定租户集合
      */
     @Select("""
-            select t.id, t.`name` from ibt_tenant t
+            select distinct t.id, t.`name` from ibt_tenant t
               join ibt_tenant_app a on a.tenant_id = t.id and a.app_id = #{appId}
               join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId};
             """)
@@ -204,7 +204,7 @@ public interface AuthMapper {
               select p.id, p.tenant_id, p.type, p.parent_id, p.code, p.name
               from ibo_organize p
                 join org s on s.parent_id = p.id)
-            select o.id, t.area_code as code, o.name
+            select distinct o.id, t.area_code as code, o.name
             from org o
               join ibt_tenant t on t.id = o.tenant_id
             where o.type = 0
