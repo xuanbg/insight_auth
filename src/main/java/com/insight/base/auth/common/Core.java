@@ -234,7 +234,7 @@ public class Core {
             HashOps.put(key, "AutoRefresh", app.getAutoRefresh());
         }
 
-        if (tenantId == null) {
+        if (tenantId == null || "0".equals(HashOps.get(key, "Type"))) {
             return;
         }
 

@@ -40,11 +40,12 @@ public class Token extends TokenData {
      */
     public Token(Long appId, Long tenantId, UserBase user) {
         key = "App:" + appId;
+        var type = HashOps.get(key, "Type");
         userInfo = user;
 
         setAppId(appId);
         setUserId(user.getId());
-        setTenantId(tenantId);
+        setTenantId("0".equals(type) ? null : tenantId);
         setPermitTime(LocalDateTime.now());
         setPermitLife(getLongValue("PermitLife"));
         setLife(getLongValue("TokenLife"));
