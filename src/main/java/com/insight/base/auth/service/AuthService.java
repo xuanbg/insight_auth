@@ -101,13 +101,12 @@ public interface AuthService {
     /**
      * 获取指定应用的Token
      *
-     * @param tenantId    租户ID
      * @param appId       应用ID
      * @param fingerprint 用户特征串
      * @param accessToken 令牌
      * @return Reply
      */
-    Reply getToken(Long tenantId, Long appId, String fingerprint, TokenKey accessToken);
+    Reply getToken(Long appId, String fingerprint, TokenKey accessToken);
 
     /**
      * 用户账号离线

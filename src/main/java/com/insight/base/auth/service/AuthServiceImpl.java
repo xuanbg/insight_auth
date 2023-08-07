@@ -359,20 +359,18 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 获取指定应用的Token
      *
-     * @param tenantId    租户ID
      * @param appId       应用ID
      * @param fingerprint 用户特征串
      * @param accessToken 令牌
      * @return Reply
      */
     @Override
-    public Reply getToken(Long tenantId, Long appId, String fingerprint, TokenKey accessToken) {
+    public Reply getToken(Long appId, String fingerprint, TokenKey accessToken) {
         var token = core.getToken(accessToken.getId());
         if (!token.verifySecretKey(accessToken.getSecret())) {
             throw new BusinessException(421, "非法的Token");
         }
 
-        token.setTenantId(tenantId);
         token.setAppId(appId);
         var dto = core.creatorToken(token, fingerprint);
         return ReplyHelper.created(dto);
