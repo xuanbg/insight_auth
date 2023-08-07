@@ -203,6 +203,10 @@ public class Core {
      * @return 令牌数据包
      */
     private TokenDto creatorToken(Long tenantId, Long userId, Long appId, String fingerprint) {
+        if ("0".equals(HashOps.get("App:" + appId, "Type"))) {
+            tenantId = null;
+        }
+
         var tokenId = HashOps.get("UserToken:" + userId, appId);
         if (Util.isNotEmpty(tokenId) && KeyOps.hasKey("Token:" + tokenId)) {
             var token = getToken(tokenId);
@@ -303,6 +307,10 @@ public class Core {
                 token.setOrgId(org.getId());
                 token.setOrgName(org.getName());
             }
+        } else {
+            token.setTenantName(null);
+            token.setOrgId(null);
+            token.setOrgName(null);
         }
 
         // 加载用户授权码
