@@ -200,6 +200,7 @@ public class Core {
             if (token.sourceNotMatch(fingerprint)) {
                 KeyOps.delete("Token:" + tokenId);
             } else {
+                token.setTenantId(tenantId);
                 return initPackage(tokenId, token);
             }
         }
