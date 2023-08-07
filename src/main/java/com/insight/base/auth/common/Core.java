@@ -185,13 +185,24 @@ public class Core {
     /**
      * 生成令牌数据包
      *
+     * @param token       令牌
+     * @param fingerprint 用户特征串
+     * @return 令牌数据包
+     */
+    public TokenDto creatorToken(Token token, String fingerprint) {
+        return creatorToken(token.getTenantId(), token.getUserId(), token.getAppId(), fingerprint);
+    }
+
+    /**
+     * 生成令牌数据包
+     *
      * @param tenantId    租户ID
      * @param userId      用户ID
      * @param appId       应用ID
      * @param fingerprint 用户特征串
      * @return 令牌数据包
      */
-    public TokenDto creatorToken(Long tenantId, Long userId, Long appId, String fingerprint) {
+    private TokenDto creatorToken(Long tenantId, Long userId, Long appId, String fingerprint) {
         var tokenId = HashOps.get("UserToken:" + userId, appId);
         if (Util.isNotEmpty(tokenId) && KeyOps.hasKey("Token:" + tokenId)) {
             var token = getToken(tokenId);
