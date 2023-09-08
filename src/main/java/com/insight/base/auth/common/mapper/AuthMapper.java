@@ -29,8 +29,12 @@ public interface AuthMapper {
      * @param key 关键词(ID/账号/手机号/E-mail/微信unionId)
      * @return 用户实体
      */
-    @Results({@Result(property = "openId", column = "open_id", javaType = Map.class, typeHandler = JsonTypeHandler.class)})
-    @Select("select * from ibu_user WHERE account = #{key} or mobile = #{key} or email = #{key} or union_id = #{key} limit 1;")
+    @Select("""
+            select id, type, code, name, account, mobile, email, nickname, union_id, password, pay_password, head_img, builtin, invalid
+            from ibu_user
+            where account = #{key} or mobile = #{key} or email = #{key} or union_id = #{key}
+            limit 1;
+            """)
     User getUser(String key);
 
     /**
