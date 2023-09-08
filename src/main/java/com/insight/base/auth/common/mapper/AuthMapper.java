@@ -110,7 +110,7 @@ public interface AuthMapper {
      * @return 用户ID
      */
     @Select("select user_id from ibu_user_device where device_id = #{deviceId};")
-    Long getUserIdByDeviceId(String deviceId);
+    List<Long> getUserIdByDeviceId(String deviceId);
 
     /**
      * 新增用户设备记录
