@@ -1,5 +1,6 @@
 package com.insight.base.auth.common.dto;
 
+import com.insight.utils.Util;
 import com.insight.utils.pojo.base.BaseXo;
 import jakarta.validation.constraints.NotNull;
 
@@ -131,7 +132,7 @@ public class LoginDto extends BaseXo {
     }
 
     public String getDeviceId() {
-        return deviceId == null || deviceId.isEmpty() ? null : deviceId;
+        return Util.isEmpty(deviceId) ? null : deviceId;
     }
 
     public void setDeviceId(String deviceId) {

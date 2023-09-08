@@ -99,6 +99,24 @@ public interface AuthMapper {
     void updateUnionId(Long userId, String unionId, String nickname);
 
     /**
+     * 通过设备ID查询用户ID
+     *
+     * @param deviceId 设备ID
+     * @return 用户ID
+     */
+    @Select("select user_id from ibu_user_device where device_id = #{deviceId};")
+    Long getUserIdByDeviceId(String deviceId);
+
+    /**
+     * 新增用户设备记录
+     *
+     * @param id       用户ID
+     * @param deviceId 设备ID
+     */
+    @Insert("insert ibu_user_device (user_id, device_id) values (#{id}, #{deviceId});")
+    void addUserDeviceId(Long id, String deviceId);
+
+    /**
      * 获取用户可用的导航栏
      *
      * @param tenantId 租户ID

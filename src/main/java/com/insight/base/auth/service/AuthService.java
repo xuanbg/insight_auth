@@ -103,10 +103,11 @@ public interface AuthService {
      *
      * @param appId       应用ID
      * @param fingerprint 用户特征串
+     * @param deviceId    设备ID
      * @param accessToken 令牌
      * @return Reply
      */
-    Reply getToken(Long appId, String fingerprint, TokenKey accessToken);
+    Reply getToken(Long appId, String fingerprint, String deviceId, TokenKey accessToken);
 
     /**
      * 用户账号离线

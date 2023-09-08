@@ -179,7 +179,7 @@ public class Core {
      * @return 令牌数据包
      */
     public TokenDto creatorToken(LoginDto login, Long userId) {
-        return creatorToken(login.getTenantId(), userId, login.getAppId(), login.getFingerprint());
+        return creatorToken(login.getAppId(), login.getTenantId(), userId, login.getFingerprint(), login.getDeviceId());
     }
 
     /**
@@ -187,43 +187,60 @@ public class Core {
      *
      * @param token       令牌
      * @param fingerprint 用户特征串
+     * @param deviceId    设备ID
      * @return 令牌数据包
      */
-    public TokenDto creatorToken(Token token, String fingerprint) {
-        return creatorToken(token.getTenantId(), token.getUserId(), token.getAppId(), fingerprint);
+    public TokenDto creatorToken(Token token, String fingerprint, String deviceId) {
+        return creatorToken(token.getAppId(), token.getTenantId(), token.getUserId(), fingerprint, deviceId);
     }
 
     /**
      * 生成令牌数据包
      *
+     * @param appId       应用ID
      * @param tenantId    租户ID
      * @param userId      用户ID
-     * @param appId       应用ID
      * @param fingerprint 用户特征串
+     * @param deviceId    设备ID
      * @return 令牌数据包
      */
-    private TokenDto creatorToken(Long tenantId, Long userId, Long appId, String fingerprint) {
-        if ("0".equals(HashOps.get("App:" + appId, "Type"))) {
-            tenantId = null;
+    private TokenDto creatorToken(Long appId, Long tenantId, Long userId, String fingerprint, String deviceId) {
+        var appType = checkExpired(tenantId, appId);
+
+        // 验证设备ID
+        if (Util.isNotEmpty(deviceId)) {
+            var signInOne = Boolean.parseBoolean(HashOps.get("App:" + appId, "SignInOne"));
+            var uid = mapper.getUserIdByDeviceId(deviceId);
+            if (uid == null) {
+                mapper.addUserDeviceId(userId, deviceId);
+            } else if (signInOne && !userId.equals(uid)) {
+                throw new BusinessException("当前应用禁止使用其他用户的设备");
+            }
         }
 
+        var user = getUser(userId);
+        if (appType == 0) {
+            tenantId = null;
+        } else if (appType != user.getType()) {
+            throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
+        }
+
+        // 取回Token
         var tokenId = HashOps.get("UserToken:" + userId, appId);
-        if (Util.isNotEmpty(tokenId) && KeyOps.hasKey("Token:" + tokenId)) {
+        var tokenKey = "Token:" + tokenId;
+        if (Util.isNotEmpty(tokenId) && KeyOps.hasKey(tokenKey)) {
             var token = getToken(tokenId);
 
             // 单设备登录删除原Token, 创建新Token. 非单设备登录使用原Token
             if (token.sourceNotMatch(fingerprint)) {
-                KeyOps.delete("Token:" + tokenId);
+                KeyOps.delete(tokenKey);
             } else {
                 token.setTenantId(tenantId);
                 return initPackage(tokenId, token);
             }
         }
 
-        var user = getUser(userId);
-        checkExpired(tenantId, appId);
-        checkType(appId, user.getType());
-
+        // 创建新的Token
         var token = new Token(appId, tenantId, user);
         token.setFingerprint(fingerprint);
         return initPackage(Util.uuid(), token);
@@ -235,7 +252,7 @@ public class Core {
      * @param tenantId 租户ID
      * @param appId    应用ID
      */
-    private void checkExpired(Long tenantId, Long appId) {
+    private int checkExpired(Long tenantId, Long appId) {
         var key = "App:" + appId;
         if (!KeyOps.hasKey(key)) {
             var app = mapper.getApp(appId);
@@ -250,8 +267,9 @@ public class Core {
             HashOps.put(key, "AutoRefresh", app.getAutoRefresh());
         }
 
-        if (tenantId == null || "0".equals(HashOps.get(key, "Type"))) {
-            return;
+        var type = Integer.parseInt(HashOps.get(key, "Type"));
+        if (tenantId == null || type == 0) {
+            return type;
         }
 
         var date = HashOps.get(key, tenantId);
@@ -269,24 +287,8 @@ public class Core {
         if (LocalDate.now().isAfter(expire)) {
             throw new BusinessException("应用已过期,请续租");
         }
-    }
 
-    /**
-     * 检查用户类型和应用是否匹配
-     *
-     * @param appId    应用ID
-     * @param userType 用户类型
-     */
-    private void checkType(Long appId, Integer userType) {
-        var data = HashOps.get("App:" + appId, "Type");
-        if (data == null) {
-            throw new BusinessException("应用类型数据不存在");
-        }
-
-        var type = Integer.parseInt(data);
-        if (type > 0 && !userType.equals(type)) {
-            throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
-        }
+        return type;
     }
 
     /**
