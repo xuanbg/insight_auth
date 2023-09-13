@@ -210,11 +210,12 @@ public class Core {
         // 验证设备ID
         if (Util.isNotEmpty(deviceId)) {
             var signInOne = Boolean.parseBoolean(HashOps.get("App:" + appId, "SignInOne"));
-            var ids = mapper.getUserIdByDeviceId(deviceId);
-            if (Util.isEmpty(ids)) {
+            var uid = mapper.getUserIdByDeviceId(tenantId, deviceId);
+            if (uid == null) {
                 mapper.addUserDeviceId(userId, deviceId);
-            } else if (signInOne && ids.stream().noneMatch(userId::equals)) {
-                throw new BusinessException("当前应用禁止使用其他用户的设备");
+            } else if (signInOne && !uid.equals(userId)) {
+                var user = mapper.getUserById(uid);
+                throw new BusinessException("当前应用禁止使用%s(%s)的设备".formatted(user.getName(), user.getCode()));
             }
         }
 

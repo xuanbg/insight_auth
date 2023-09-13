@@ -6,7 +6,7 @@ import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.utils.pojo.app.Application;
 import com.insight.utils.pojo.app.FuncInfo;
 import com.insight.utils.pojo.app.ModuleInfo;
-import com.insight.utils.pojo.base.BaseVo;
+import com.insight.utils.pojo.base.DataBase;
 import com.insight.utils.pojo.base.JsonTypeHandler;
 import com.insight.utils.pojo.user.MemberDto;
 import com.insight.utils.pojo.user.User;
@@ -44,7 +44,7 @@ public interface AuthMapper {
      * @return 租户ID集合
      */
     @Select("select distinct t.* from ibt_tenant t join ibt_tenant_user r on r.tenant_id = t.id where r.user_id = #{userId};")
-    List<BaseVo> getTenantIds(Long userId);
+    List<DataBase> getTenantIds(Long userId);
 
     /**
      * 获取指定ID的租户
@@ -106,11 +106,19 @@ public interface AuthMapper {
     /**
      * 通过设备ID查询用户ID
      *
+     * @param tenantId 租户ID
      * @param deviceId 设备ID
      * @return 用户ID
      */
-    @Select("select user_id from ibu_user_device where device_id = #{deviceId};")
-    List<Long> getUserIdByDeviceId(String deviceId);
+    @Select("""
+            select d.user_id
+            from ibu_user_device d
+            join ibt_tenant_user t on t.user_id = d.user_id
+              and t.tenant_id = #{tenantId}
+            where d.device_id = #{deviceId}
+            limit 1;
+            """)
+    Long getUserIdByDeviceId(Long tenantId, String deviceId);
 
     /**
      * 新增用户设备记录
@@ -120,6 +128,15 @@ public interface AuthMapper {
      */
     @Insert("insert ibu_user_device (user_id, device_id) values (#{id}, #{deviceId});")
     void addUserDeviceId(Long id, String deviceId);
+
+    /**
+     * 根据用户ID获取用户
+     *
+     * @param id 用户ID
+     * @return 用户数据
+     */
+    @Select("select  * from ibu_user where id = #{id};")
+    User getUserById(Long id);
 
     /**
      * 获取用户可用的导航栏
@@ -233,5 +250,5 @@ public interface AuthMapper {
             where o.type = 0
             order by o.code desc limit 1
             """)
-    BaseVo getLoginOrg(long userId, long tenantId);
+    DataBase getLoginOrg(long userId, long tenantId);
 }

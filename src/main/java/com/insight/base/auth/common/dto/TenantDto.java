@@ -1,7 +1,7 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.utils.pojo.base.BaseVo;
 import com.insight.utils.pojo.base.BaseXo;
+import com.insight.utils.pojo.base.DataBase;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class TenantDto extends BaseXo {
     /**
      * 租户集合
      */
-    private List<BaseVo> tenants;
+    private List<DataBase> tenants;
 
     public String getUnionId() {
         return unionId;
@@ -30,11 +30,11 @@ public class TenantDto extends BaseXo {
         this.unionId = unionId;
     }
 
-    public List<BaseVo> getTenants() {
+    public List<DataBase> getTenants() {
         return tenants;
     }
 
-    public void setTenants(List<BaseVo> tenants) {
+    public void setTenants(List<DataBase> tenants) {
         this.tenants = tenants;
     }
 }
