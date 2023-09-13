@@ -215,7 +215,7 @@ public class Core {
                 mapper.addUserDeviceId(userId, deviceId);
             } else if (signInOne && !uid.equals(userId)) {
                 var user = mapper.getUserById(uid);
-                throw new BusinessException("当前应用禁止使用%s(%s)的设备".formatted(user.getName(), user.getCode()));
+                throw new BusinessException("当前的账号与所使用的设备不匹配! 该设备属于%s(%s)".formatted(user.getName(), user.getCode()));
             }
         }
 
