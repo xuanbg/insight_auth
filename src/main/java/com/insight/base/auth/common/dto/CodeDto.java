@@ -10,7 +10,7 @@ import com.insight.utils.pojo.base.BaseXo;
 public class CodeDto extends BaseXo {
 
     /**
-     * 登录类型 0.密码登录, 1.验证码登录, 2.扫码授权登录, 3.获取临时访问令牌
+     * 登录类型 0.密码登录, 1.验证码登录, 2.APP扫码授权登录, 3.获取临时访问令牌
      */
     private Integer type;
 

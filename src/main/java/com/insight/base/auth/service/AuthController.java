@@ -75,7 +75,7 @@ public class AuthController {
     }
 
     /**
-     * 扫码授权
+     * APP扫码授权
      *
      * @param loginInfo 用户信息
      * @param code      授权识别码
@@ -97,12 +97,12 @@ public class AuthController {
     public Reply generateToken(@RequestHeader("fingerprint") String fingerprint, @RequestHeader(value = "Authorization", required = false) String token, @Valid @RequestBody LoginDto login) {
         login.setFingerprint(fingerprint);
 
-        // 账号/密码或短信验证码登录
+        // 账号密码或短信验证码登录
         if (Util.isNotEmpty(login.getAccount()) && Util.isNotEmpty(login.getSignature())) {
             return service.generateToken(login);
         }
 
-        // 微信授权/扫码登录
+        // 微信授权登录
         if (Util.isNotEmpty(login.getWeChatAppId())) {
             if (Util.isNotEmpty(login.getCode())) {
                 return service.getTokenWithWeChat(login);
@@ -119,7 +119,7 @@ public class AuthController {
             }
         }
 
-        // 扫码授权登录
+        // APP扫码授权登录
         if (Util.isNotEmpty(login.getCode())) {
             return service.getTokenWithCode(login);
         }

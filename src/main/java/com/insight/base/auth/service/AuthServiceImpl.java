@@ -139,7 +139,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("Code已失效，请重新获取Code");
         }
 
-        StringOps.set(key, info.getId().toString(), 30L);
+        StringOps.set(key, info.getTenantId(), 30L);
     }
 
     /**
@@ -338,7 +338,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 扫码授权获取Token
+     * APP扫码授权获取Token
      *
      * @param login 用户登录数据
      * @return Reply
@@ -347,11 +347,12 @@ public class AuthServiceImpl implements AuthService {
     public Reply getTokenWithCode(LoginDto login) {
         var code = login.getCode();
         var key = "Code:" + code;
-        var id = StringOps.get(key);
-        if (Util.isEmpty(id)) {
+        var tenantId = StringOps.get(key);
+        if (Util.isEmpty(tenantId)) {
             throw new BusinessException(427, "Code已失效，请刷新");
         }
 
+        login.setTenantId(Long.valueOf(tenantId));
         var token = core.getToken(code, login);
         return ReplyHelper.created(token);
     }

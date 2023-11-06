@@ -6,6 +6,7 @@ import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.user.UserBase;
 import com.insight.utils.redis.HashOps;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -18,11 +19,13 @@ public class Token extends TokenData {
     /**
      * Redis KEY
      */
-    private String key;
+    @JsonIgnore
+    private String appKey;
 
     /**
      * 用户信息
      */
+    @JsonIgnore
     private UserBase userInfo;
 
     /**
@@ -39,13 +42,14 @@ public class Token extends TokenData {
      * @param user     用户数据
      */
     public Token(Long appId, Long tenantId, UserBase user) {
-        key = "App:" + appId;
-        var type = HashOps.get(key, "Type");
         userInfo = user;
+        appKey = "App:" + appId;
 
+        var type = HashOps.get(appKey, "Type");
         setAppId(appId);
         setUserId(user.getId());
         setTenantId("0".equals(type) ? null : tenantId);
+        setExpireDate(getDateValue(tenantId));
         setPermitTime(LocalDateTime.now());
         setPermitLife(getLongValue("PermitLife"));
         setLife(getLongValue("TokenLife"));
@@ -74,12 +78,10 @@ public class Token extends TokenData {
         return getSignInOne() && Util.isNotEmpty(fingerprint) && !fingerprint.equals(getFingerprint());
     }
 
-    @JsonIgnore
     public UserBase getUserInfo() {
         return userInfo;
     }
 
-    @JsonIgnore
     public void setUserInfo(UserBase userInfo) {
         this.userInfo = userInfo;
     }
@@ -90,9 +92,20 @@ public class Token extends TokenData {
      * @param field Redis field
      * @return Long值
      */
-    private Long getLongValue(String field) {
-        String value = HashOps.get(key, field);
+    private Long getLongValue(Object field) {
+        String value = HashOps.get(appKey, field);
         return Util.isNotEmpty(value) ? Long.valueOf(value) : null;
+    }
+
+    /**
+     * 获取日期值
+     *
+     * @param field Redis field
+     * @return 日期值
+     */
+    private LocalDate getDateValue(Object field) {
+        String value = HashOps.get(appKey, field);
+        return Util.isNotEmpty(value) ? LocalDate.parse(value) : null;
     }
 
     /**
@@ -101,8 +114,8 @@ public class Token extends TokenData {
      * @param field Redis field
      * @return Boolean值
      */
-    private Boolean getBooleanValue(String field) {
-        String value = HashOps.get(key, field);
+    private Boolean getBooleanValue(Object field) {
+        String value = HashOps.get(appKey, field);
         return Util.isNotEmpty(value) ? Boolean.valueOf(value) : null;
     }
 }
