@@ -49,7 +49,7 @@ public class Token extends TokenData {
         setAppId(appId);
         setUserId(user.getId());
         setTenantId("0".equals(type) ? null : tenantId);
-        setExpireDate(getDateValue(tenantId));
+        setExpireDate(tenantId == null ? null : getDateValue(tenantId));
         setPermitTime(LocalDateTime.now());
         setPermitLife(getLongValue("PermitLife"));
         setLife(getLongValue("TokenLife"));
