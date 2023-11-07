@@ -353,7 +353,10 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(427, "Code已失效，请刷新");
         }
 
-        var token = core.getToken(tokenId);
+        var data = core.getToken(tokenId);
+        login.setTenantId(data.getTenantId());
+
+        var token = core.creatorToken(login, data.getUserId());
         return ReplyHelper.created(token);
     }
 
