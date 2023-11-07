@@ -155,6 +155,25 @@ public class Core {
     }
 
     /**
+     * 获取缓存中的令牌数据
+     *
+     * @param tokenId 令牌ID
+     * @return 缓存中的令牌
+     */
+    public Token getToken(String tokenId) {
+        var key = "Token:" + tokenId;
+        var json = StringOps.get(key);
+        if (Util.isEmpty(json)) {
+            throw new BusinessException(421, "指定的Token不存在");
+        }
+
+        var token = Json.toBean(json, Token.class);
+        var user = getUser(token.getUserId());
+        token.setUserInfo(user);
+        return token;
+    }
+
+    /**
      * 获取Token
      *
      * @param code  Code
@@ -340,25 +359,6 @@ public class Core {
         tokenDto.setExpire(life);
         tokenDto.setUserInfo(token.getUserInfo());
         return tokenDto;
-    }
-
-    /**
-     * 获取缓存中的令牌数据
-     *
-     * @param tokenId 令牌ID
-     * @return 缓存中的令牌
-     */
-    public Token getToken(String tokenId) {
-        var key = "Token:" + tokenId;
-        var json = StringOps.get(key);
-        if (Util.isEmpty(json)) {
-            throw new BusinessException(421, "指定的Token不存在");
-        }
-
-        var token = Json.toBean(json, Token.class);
-        var user = getUser(token.getUserId());
-        token.setUserInfo(user);
-        return token;
     }
 
     /**
