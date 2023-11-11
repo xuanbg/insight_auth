@@ -70,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public String generateCode(CodeDto dto) {
+    public Reply generateCode(CodeDto dto) {
         var account = dto.getAccount();
         var userId = core.getUserId(account);
         if (userId == null) {
@@ -92,20 +92,21 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 生成Code
-        String code;
         if (dto.getType() == 0) {
             var password = HashOps.get(key, "password");
             if (!Util.isNotEmpty(password)) {
                 throw new BusinessException("账号或密码错误");
             }
 
-            return core.getGeneralCode(userId, account, password);
+            var code = core.getGeneralCode(userId, account, password);
+            return ReplyHelper.created(code);
         } else {
             if (!account.matches("^1[0-9]{10}")) {
                 throw new BusinessException("请使用正确的手机号");
             }
 
-            return core.getSmsCode(userId, account);
+            var code = core.getSmsCode(userId, account);
+            return ReplyHelper.created(code);
         }
     }
 
@@ -115,11 +116,11 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public String getAuthCode() {
+    public Reply getAuthCode() {
         var code = Util.uuid();
         StringOps.set("Code:" + code, "", 300L);
 
-        return code;
+        return ReplyHelper.created(code);
     }
 
     /**
@@ -150,14 +151,14 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public String getSubmitToken(String key) {
+    public Reply getSubmitToken(String key) {
         var id = StringOps.get("SubmitToken:" + key);
         if (!Util.isNotEmpty(id)) {
             id = Util.uuid();
             StringOps.set("SubmitToken:" + key, id, 1L, TimeUnit.HOURS);
         }
 
-        return id;
+        return ReplyHelper.created(id);
     }
 
     /**

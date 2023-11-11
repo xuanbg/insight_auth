@@ -33,14 +33,14 @@ public interface AuthService {
      * @param dto CodeDTO
      * @return Reply
      */
-    String generateCode(CodeDto dto);
+    Reply generateCode(CodeDto dto);
 
     /**
      * 获取授权码
      *
      * @return Reply
      */
-    String getAuthCode();
+    Reply getAuthCode();
 
     /**
      * 扫码授权
@@ -56,7 +56,7 @@ public interface AuthService {
      * @param key 接口Hash
      * @return Reply
      */
-    String getSubmitToken(String key);
+    Reply getSubmitToken(String key);
 
     /**
      * 生成Token

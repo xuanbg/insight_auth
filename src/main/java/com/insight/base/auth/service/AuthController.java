@@ -53,7 +53,7 @@ public class AuthController {
      * @return Reply
      */
     @PostMapping("/v1.0/codes")
-    public String getCode(@Valid @RequestBody CodeDto dto) {
+    public Reply getCode(@Valid @RequestBody CodeDto dto) {
         switch (dto.getType()) {
             case 0, 1 -> {
                 if (Util.isEmpty(dto.getAccount())) {
