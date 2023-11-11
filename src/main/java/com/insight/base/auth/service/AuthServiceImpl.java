@@ -414,15 +414,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public List<NavDto> getNavigators(Long appId, Long tenantId, Long userId) {
-        var list = mapper.getNavigators(appId, tenantId, userId);
-        for (var nav : list) {
-            if (nav.getType() > 1) {
-                var funs = mapper.getModuleFunctions(nav.getId(), tenantId, userId);
-                nav.setFunctions(funs);
-            }
-        }
-
-        return list;
+        return mapper.getNavigators(appId, tenantId, userId);
     }
 
     /**
