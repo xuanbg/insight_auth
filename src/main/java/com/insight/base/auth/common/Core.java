@@ -227,7 +227,7 @@ public class Core {
         var appType = checkExpired(tenantId, appId);
 
         // 验证设备ID
-        if (Util.isNotEmpty(deviceId)) {
+        if (Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {
             var signInOne = Boolean.parseBoolean(HashOps.get("App:" + appId, "SignInOne"));
             var uid = mapper.getUserIdByDeviceId(tenantId, deviceId);
             if (uid == null) {
