@@ -224,7 +224,10 @@ public class Core {
      * @return 令牌数据包
      */
     private TokenDto creatorToken(Long appId, Long tenantId, Long userId, String fingerprint, String deviceId) {
-        var appType = checkExpired(tenantId, appId);
+        var appType = checkApp(tenantId, appId);
+        if (appType == 0) {
+            tenantId = null;
+        }
 
         // 验证设备ID
         if (Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {
@@ -238,10 +241,10 @@ public class Core {
             }
         }
 
+        // 验证应用
         var user = getUser(userId);
-        if (appType == 0) {
-            tenantId = null;
-        } else if (appType != user.getType()) {
+        var limitType = Boolean.parseBoolean(HashOps.get("App:" + appId, "LimitType"));
+        if (limitType && appType != user.getType()) {
             throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
         }
 
@@ -267,12 +270,12 @@ public class Core {
     }
 
     /**
-     * 应用是否过期
+     * 验证应用数据
      *
      * @param tenantId 租户ID
      * @param appId    应用ID
      */
-    private int checkExpired(Long tenantId, Long appId) {
+    private int checkApp(Long tenantId, Long appId) {
         var key = "App:" + appId;
         if (!KeyOps.hasKey(key)) {
             var app = mapper.getApp(appId);
@@ -285,6 +288,7 @@ public class Core {
             HashOps.put(key, "TokenLife", app.getTokenLife());
             HashOps.put(key, "SignInOne", app.getSigninOne());
             HashOps.put(key, "AutoRefresh", app.getAutoRefresh());
+            HashOps.put(key, "LimitType", app.getLimitType());
         }
 
         var type = Integer.parseInt(HashOps.get(key, "Type"));

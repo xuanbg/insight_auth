@@ -55,6 +55,7 @@ public class Token extends TokenData {
         setLife(getLongValue("TokenLife"));
         setSignInOne(getBooleanValue("SignInOne"));
         setAutoRefresh(getBooleanValue("AutoRefresh"));
+        setLimitType(getBooleanValue("LimitType"));
         setSecretKey(Util.uuid());
     }
 
