@@ -13,11 +13,6 @@ import com.insight.utils.pojo.user.UserBase;
 public class Token extends TokenData {
 
     /**
-     * 类型: 0.常规应用, 1.限定应用(与用户类型匹配)
-     */
-    private Integer limitType;
-
-    /**
      * 用户信息
      */
     @JsonIgnore
@@ -41,11 +36,7 @@ public class Token extends TokenData {
      */
     @JsonIgnore
     public Boolean typeNotMatch() {
-        return userInfo != null && limitType > 0 && !limitType.equals(userInfo.getType());
-    }
-
-    public void setLimitType(Integer limitType) {
-        this.limitType = limitType;
+        return userInfo != null && getLimitType() > 0 && !getLimitType().equals(userInfo.getType());
     }
 
     public UserBase getUserInfo() {

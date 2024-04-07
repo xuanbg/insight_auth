@@ -251,6 +251,10 @@ public class Core {
             if (token.sourceNotMatch(fingerprint)) {
                 KeyOps.delete(tokenKey);
             } else {
+                if (token.typeNotMatch()) {
+                    throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
+                }
+
                 token.setTenantId(tenantId);
                 return initPackage(tokenId, token);
             }
@@ -287,6 +291,7 @@ public class Core {
             return app;
         }
 
+        // 验证应用授权
         var data = mapper.getAppExpireDate(tenantId, appId);
         if (data == null) {
             throw new BusinessException("应用未授权, 请先为租户授权此应用");
