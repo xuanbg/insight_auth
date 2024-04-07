@@ -34,9 +34,18 @@ public class Token extends TokenData {
         return getSignInOne() && Util.isNotEmpty(fingerprint) && !fingerprint.equals(getFingerprint());
     }
 
+    /**
+     * 类型不匹配
+     *
+     * @return 是否不同类型
+     */
     @JsonIgnore
     public Boolean typeNotMatch() {
         return userInfo != null && !type.equals(userInfo.getType());
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 
     public UserBase getUserInfo() {
