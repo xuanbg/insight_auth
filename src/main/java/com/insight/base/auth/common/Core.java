@@ -6,6 +6,7 @@ import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.*;
+import com.insight.utils.pojo.app.AppBase;
 import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
@@ -224,8 +225,8 @@ public class Core {
      * @return 令牌数据包
      */
     private TokenDto creatorToken(Long appId, Long tenantId, Long userId, String fingerprint, String deviceId) {
-        var appType = checkApp(tenantId, appId);
-        if (appType == 0) {
+        var app = checkApp(tenantId, appId);
+        if (app.getType() == 0) {
             tenantId = null;
         }
 
@@ -239,13 +240,6 @@ public class Core {
                 var user = mapper.getUserById(uid);
                 throw new BusinessException("当前的账号与所使用的设备不匹配! 该设备属于%s(%s)".formatted(user.getName(), user.getCode()));
             }
-        }
-
-        // 验证应用
-        var user = getUser(userId);
-        var limitType = Boolean.parseBoolean(HashOps.get("App:" + appId, "LimitType"));
-        if (limitType && appType != user.getType()) {
-            throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
         }
 
         // 取回Token
@@ -264,8 +258,18 @@ public class Core {
         }
 
         // 创建新的Token
-        var token = new Token(appId, tenantId, user);
+        var user = getUser(userId);
+        var token = app.convert(Token.class);
+        if (token.typeNotMatch()) {
+            throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
+        }
+
+        token.setUserInfo(user);
+        token.setAppId(appId);
+        token.setTenantId(tenantId);
+        token.setPermitTime(LocalDateTime.now());
         token.setFingerprint(fingerprint);
+        token.setSecretKey(Util.uuid());
         return initPackage(Util.uuid(), token);
     }
 
@@ -275,7 +279,7 @@ public class Core {
      * @param tenantId 租户ID
      * @param appId    应用ID
      */
-    private int checkApp(Long tenantId, Long appId) {
+    private AppBase checkApp(Long tenantId, Long appId) {
         var key = "App:" + appId;
         if (!KeyOps.hasKey(key)) {
             var app = mapper.getApp(appId);
@@ -283,22 +287,17 @@ public class Core {
                 throw new BusinessException("未找指定的应用");
             }
 
-            HashOps.put(key, "Type", app.getType());
-            HashOps.put(key, "PermitLife", app.getPermitLife());
-            HashOps.put(key, "TokenLife", app.getTokenLife());
-            HashOps.put(key, "SignInOne", app.getSigninOne());
-            HashOps.put(key, "AutoRefresh", app.getAutoRefresh());
-            HashOps.put(key, "LimitType", app.getLimitType());
+            HashOps.putAll(key, app);
         }
 
-        var type = Integer.parseInt(HashOps.get(key, "Type"));
-        if (tenantId == null || type == 0) {
-            return type;
+        var app = HashOps.entries(key, AppBase.class);
+        if (app.getType() == 0) {
+            return app;
         }
 
         var date = HashOps.get(key, tenantId);
         if (date == null) {
-            var data = mapper.getApps(tenantId, appId);
+            var data = mapper.getAppExpireDate(tenantId, appId);
             if (data == null) {
                 throw new BusinessException("应用未授权, 请先为租户授权此应用");
             }
@@ -312,7 +311,7 @@ public class Core {
             throw new BusinessException("应用已过期,请续租");
         }
 
-        return type;
+        return app;
     }
 
     /**

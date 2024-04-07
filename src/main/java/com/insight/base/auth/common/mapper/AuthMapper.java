@@ -3,7 +3,7 @@ package com.insight.base.auth.common.mapper;
 import com.insight.base.auth.common.dto.FuncDto;
 import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.entity.TenantApp;
-import com.insight.utils.pojo.app.Application;
+import com.insight.utils.pojo.app.AppBase;
 import com.insight.utils.pojo.app.FuncInfo;
 import com.insight.utils.pojo.app.ModuleInfo;
 import com.insight.utils.pojo.base.DataBase;
@@ -62,7 +62,7 @@ public interface AuthMapper {
      * @return 应用信息
      */
     @Select("select * from ibs_application where id = #{appId};")
-    Application getApp(Long appId);
+    AppBase getApp(Long appId);
 
     /**
      * 查询指定应用ID的应用信息
@@ -72,7 +72,7 @@ public interface AuthMapper {
      * @return 应用信息
      */
     @Select("select distinct * from ibt_tenant_app where tenant_id = #{tenantId} and app_id = #{appId};")
-    TenantApp getApps(Long tenantId, Long appId);
+    TenantApp getAppExpireDate(Long tenantId, Long appId);
 
     /**
      * 获取微信OpenID
