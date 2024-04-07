@@ -232,11 +232,10 @@ public class Core {
 
         // 验证设备ID
         if (Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {
-            var signInOne = Boolean.parseBoolean(HashOps.get("App:" + appId, "SignInOne"));
             var uid = mapper.getUserIdByDeviceId(tenantId, deviceId);
             if (uid == null) {
                 mapper.addUserDeviceId(userId, deviceId);
-            } else if (signInOne && !uid.equals(userId)) {
+            } else if (app.getSigninOne() && !uid.equals(userId)) {
                 var user = mapper.getUserById(uid);
                 throw new BusinessException("当前的账号与所使用的设备不匹配! 该设备属于%s(%s)".formatted(user.getName(), user.getCode()));
             }
@@ -258,13 +257,12 @@ public class Core {
         }
 
         // 创建新的Token
-        var user = getUser(userId);
         var token = app.convert(Token.class);
+        token.setUserInfo(getUser(userId));
         if (token.typeNotMatch()) {
             throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
         }
 
-        token.setUserInfo(user);
         token.setAppId(appId);
         token.setTenantId(tenantId);
         token.setPermitTime(LocalDateTime.now());

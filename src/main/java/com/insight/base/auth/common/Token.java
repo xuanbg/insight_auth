@@ -15,7 +15,7 @@ public class Token extends TokenData {
     /**
      * 类型: 0.常规应用, 1.限定应用(与用户类型匹配)
      */
-    private Integer type;
+    private Integer limitType;
 
     /**
      * 用户信息
@@ -41,11 +41,11 @@ public class Token extends TokenData {
      */
     @JsonIgnore
     public Boolean typeNotMatch() {
-        return userInfo != null && !type.equals(userInfo.getType());
+        return userInfo != null && limitType > 0 && !limitType.equals(userInfo.getType());
     }
 
-    public void setType(Integer type) {
-        this.type = type;
+    public void setLimitType(Integer limitType) {
+        this.limitType = limitType;
     }
 
     public UserBase getUserInfo() {
@@ -56,6 +56,5 @@ public class Token extends TokenData {
         this.userInfo = userInfo;
         setUserId(userInfo.getId());
     }
-
 }
 
