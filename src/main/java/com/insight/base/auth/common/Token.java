@@ -36,7 +36,7 @@ public class Token extends TokenData {
      */
     @JsonIgnore
     public Boolean typeNotMatch() {
-        return userInfo != null && getLimitType() > 0 && !getLimitType().equals(userInfo.getType());
+        return userInfo != null && getLimitType() != null && !getLimitType().equals(userInfo.getType());
     }
 
     public UserBase getUserInfo() {
