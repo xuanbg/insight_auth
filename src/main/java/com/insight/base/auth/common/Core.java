@@ -278,34 +278,21 @@ public class Core {
      * @param appId    应用ID
      */
     private AppBase checkApp(Long tenantId, Long appId) {
-        var key = "App:" + appId;
-        if (!KeyOps.hasKey(key)) {
-            var app = mapper.getApp(appId);
-            if (app == null) {
-                throw new BusinessException("未找指定的应用");
-            }
-
-            HashOps.putAll(key, app);
+        var app = mapper.getApp(appId);
+        if (app == null) {
+            throw new BusinessException("未找指定的应用");
         }
 
-        var app = HashOps.entries(key, AppBase.class);
         if (app.getType() == 0) {
             return app;
         }
 
-        var date = HashOps.get(key, tenantId);
-        if (date == null) {
-            var data = mapper.getAppExpireDate(tenantId, appId);
-            if (data == null) {
-                throw new BusinessException("应用未授权, 请先为租户授权此应用");
-            }
-
-            date = data.getExpireDate().toString();
-            HashOps.put(key, tenantId, date);
+        var data = mapper.getAppExpireDate(tenantId, appId);
+        if (data == null) {
+            throw new BusinessException("应用未授权, 请先为租户授权此应用");
         }
 
-        var expire = LocalDate.parse(date);
-        if (LocalDate.now().isAfter(expire)) {
+        if (LocalDate.now().isAfter(data.getExpireDate())) {
             throw new BusinessException("应用已过期,请续租");
         }
 
