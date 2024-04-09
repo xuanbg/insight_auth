@@ -270,6 +270,7 @@ public class Core {
         token.setAppId(appId);
         token.setTenantId(tenantId);
         token.setPermitTime(LocalDateTime.now());
+        token.setLife(app.getTokenLife());
         token.setFingerprint(fingerprint);
         token.setSecretKey(Util.uuid());
         return initPackage(Util.uuid(), token);
