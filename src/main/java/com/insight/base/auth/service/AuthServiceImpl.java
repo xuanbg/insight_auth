@@ -377,7 +377,7 @@ public class AuthServiceImpl implements AuthService {
                 throw new BusinessException(421, "非法的Token");
             }
 
-            token.setAppId(appId);
+            key.setAppId(appId);
             var dto = core.creatorToken(key, fingerprint, deviceId);
             return ReplyHelper.created(dto);
         } else {
