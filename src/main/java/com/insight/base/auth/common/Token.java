@@ -5,6 +5,8 @@ import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.user.UserBase;
 
+import java.util.Objects;
+
 /**
  * @author 宣炳刚
  * @date 2018/1/4
@@ -13,10 +15,23 @@ import com.insight.utils.pojo.user.UserBase;
 public class Token extends TokenData {
 
     /**
+     * 限定用户类型
+     */
+    private Integer limitType;
+
+    /**
      * 用户信息
      */
     @JsonIgnore
     private UserBase userInfo;
+
+    public Integer getLimitType() {
+        return limitType;
+    }
+
+    public void setLimitType(Integer limitType) {
+        this.limitType = limitType;
+    }
 
     /**
      * 来源不匹配
@@ -36,7 +51,7 @@ public class Token extends TokenData {
      */
     @JsonIgnore
     public Boolean typeNotMatch() {
-        return userInfo != null && getLimitType() != null && !getLimitType().equals(userInfo.getType());
+        return userInfo != null && limitType != null && !Objects.equals(limitType, userInfo.getType());
     }
 
     public UserBase getUserInfo() {

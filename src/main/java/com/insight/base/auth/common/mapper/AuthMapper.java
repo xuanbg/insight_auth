@@ -6,6 +6,7 @@ import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.utils.pojo.app.AppBase;
 import com.insight.utils.pojo.app.FuncInfo;
 import com.insight.utils.pojo.app.ModuleInfo;
+import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.DataBase;
 import com.insight.utils.pojo.base.JsonTypeHandler;
 import com.insight.utils.pojo.user.MemberDto;
@@ -67,12 +68,11 @@ public interface AuthMapper {
     /**
      * 查询指定应用ID的应用信息
      *
-     * @param tenantId 租户ID
-     * @param appId    应用ID
+     * @param key 用户关键信息
      * @return 应用信息
      */
     @Select("select distinct * from ibt_tenant_app where tenant_id = #{tenantId} and app_id = #{appId};")
-    TenantApp getAppExpireDate(Long tenantId, Long appId);
+    TenantApp getAppExpireDate(TokenKey key);
 
     /**
      * 获取微信OpenID
@@ -141,9 +141,7 @@ public interface AuthMapper {
     /**
      * 获取用户可用的导航栏
      *
-     * @param tenantId 租户ID
-     * @param appId    应用程序ID
-     * @param userId   用户ID
+     * @param key 用户关键信息
      * @return Navigation对象集合
      */
     @Results({@Result(property = "moduleInfo", column = "module_info", javaType = ModuleInfo.class, typeHandler = JsonTypeHandler.class)})
@@ -170,7 +168,7 @@ public interface AuthMapper {
               where m.app_id = #{appId}) t
             order by t.parent_id, t.`index`;
             """)
-    List<NavDto> getNavigators(Long appId, Long tenantId, Long userId);
+    List<NavDto> getNavigators(TokenKey key);
 
     /**
      * 获取指定模块的全部可用功能集合及对指定用户的授权情况
@@ -196,9 +194,7 @@ public interface AuthMapper {
     /**
      * 获取用户授权信息
      *
-     * @param appId    应用ID
-     * @param userId   用户ID
-     * @param tenantId 租户ID
+     * @param key 用户关键信息
      * @return 授权信息集合
      */
     @Select("""
@@ -213,7 +209,7 @@ public interface AuthMapper {
             group by n.app_id, f.nav_id, auth_code
             having min(p.permit) > 0;</script>
             """)
-    List<String> getAuthInfos(Long appId, Long tenantId, Long userId);
+    List<String> getAuthInfos(TokenKey key);
 
     /**
      * 获取用户可选租户
@@ -250,5 +246,5 @@ public interface AuthMapper {
             where o.type = 0
             order by o.code desc limit 1
             """)
-    DataBase getLoginOrg(long userId, long tenantId);
+    DataBase getLoginOrg(Long tenantId, Long userId);
 }

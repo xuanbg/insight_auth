@@ -7,6 +7,7 @@ import com.insight.base.auth.common.dto.NavDto;
 import com.insight.utils.Json;
 import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.LoginInfo;
+import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.user.MemberDto;
@@ -145,7 +146,7 @@ public class AuthController {
     @DeleteMapping("/v1.0/tokens")
     public void deleteToken(@RequestHeader(value = "Authorization") String token) {
         var accessToken = Json.toToken(token);
-        service.deleteToken(accessToken.getId());
+        service.deleteToken(accessToken);
     }
 
     /**
@@ -157,7 +158,7 @@ public class AuthController {
     @GetMapping("/v1.0/tokens/permits")
     public List<String> getPermits(@RequestHeader("loginInfo") String loginInfo) {
         var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
-        return service.getPermits(info.getAppId(), info.getTenantId(), info.getId());
+        return service.getPermits(new TokenKey(info.getAppId(), info.getTenantId(), info.getId()));
     }
 
     /**
@@ -169,7 +170,7 @@ public class AuthController {
     @GetMapping("/v1.0/navigators")
     public List<NavDto> getNavigators(@RequestHeader("loginInfo") String loginInfo) {
         var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
-        return service.getNavigators(info.getAppId(), info.getTenantId(), info.getId());
+        return service.getNavigators(new TokenKey(info.getAppId(), info.getTenantId(), info.getId()));
     }
 
     /**

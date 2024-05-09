@@ -104,37 +104,33 @@ public interface AuthService {
      * @param appId       应用ID
      * @param fingerprint 用户特征串
      * @param deviceId    设备ID
-     * @param accessToken 令牌
+     * @param key         令牌
      * @return Reply
      */
-    Reply getToken(Long appId, String fingerprint, String deviceId, TokenKey accessToken);
+    Reply getToken(Long appId, String fingerprint, String deviceId, TokenKey key);
 
     /**
      * 用户账号离线
      *
-     * @param tokenId 令牌ID
+     * @param key 用户关键信息
      */
-    void deleteToken(String tokenId);
+    void deleteToken(TokenKey key);
 
     /**
      * 获取用户授权码
      *
-     * @param tenantId 租户ID
-     * @param appId    应用程序ID
-     * @param userId   用户ID
+     * @param key 用户关键信息
      * @return 授权码集合
      */
-    List<String> getPermits(Long appId, Long tenantId, Long userId);
+    List<String> getPermits(TokenKey key);
 
     /**
      * 获取用户导航栏
      *
-     * @param tenantId 租户ID
-     * @param appId    应用程序ID
-     * @param userId   用户ID
+     * @param key 用户关键信息
      * @return 导航数据集合
      */
-    List<NavDto> getNavigators(Long appId, Long tenantId, Long userId);
+    List<NavDto> getNavigators(TokenKey key);
 
     /**
      * 获取业务模块的功能(及对用户的授权情况)

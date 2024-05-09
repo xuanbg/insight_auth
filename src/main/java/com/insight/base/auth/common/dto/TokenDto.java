@@ -1,6 +1,5 @@
 package com.insight.base.auth.common.dto;
 
-import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.base.BaseXo;
 import com.insight.utils.pojo.user.UserBase;
 
@@ -26,11 +25,6 @@ public class TokenDto extends BaseXo {
      */
     private UserBase userInfo;
 
-    /**
-     * 登录信息
-     */
-    private LoginInfo loginInfo;
-
     public String getAccessToken() {
         return accessToken;
     }
@@ -53,13 +47,5 @@ public class TokenDto extends BaseXo {
 
     public void setUserInfo(UserBase userInfo) {
         this.userInfo = userInfo;
-    }
-
-    public LoginInfo getLoginInfo() {
-        return loginInfo;
-    }
-
-    public void setLoginInfo(LoginInfo loginInfo) {
-        this.loginInfo = loginInfo;
     }
 }

@@ -140,8 +140,8 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("Code已失效，请重新获取Code");
         }
 
-        var tokenId = HashOps.get("UserToken:" + info.getId(), info.getAppId());
-        StringOps.set(key, tokenId, 30L);
+        var tokenKey = new TokenKey(info.getAppId(), info.getTenantId(), info.getId());
+        StringOps.set(key, tokenKey, 30L);
     }
 
     /**
@@ -347,18 +347,17 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply getTokenWithCode(LoginDto login) {
-        var code = login.getCode();
-        var key = "Code:" + code;
-        var tokenId = StringOps.get(key);
-        if (Util.isEmpty(tokenId)) {
+        var key = "Code:" + login.getCode();
+        if (KeyOps.hasKey(key)) {
+            var tokenKey = StringOps.get(key, TokenKey.class);
+            var data = core.getToken(tokenKey);
+            login.setTenantId(data.getTenantId());
+
+            var token = core.creatorToken(login, data.getUserId());
+            return ReplyHelper.created(token);
+        } else {
             throw new BusinessException(427, "Code已失效，请刷新");
         }
-
-        var data = core.getToken(tokenId);
-        login.setTenantId(data.getTenantId());
-
-        var token = core.creatorToken(login, data.getUserId());
-        return ReplyHelper.created(token);
     }
 
     /**
@@ -367,58 +366,58 @@ public class AuthServiceImpl implements AuthService {
      * @param appId       应用ID
      * @param fingerprint 用户特征串
      * @param deviceId    设备ID
-     * @param accessToken 令牌
+     * @param key         令牌
      * @return Reply
      */
     @Override
-    public Reply getToken(Long appId, String fingerprint, String deviceId, TokenKey accessToken) {
-        var token = core.getToken(accessToken.getId());
-        if (!token.verifySecretKey(accessToken.getSecret())) {
+    public Reply getToken(Long appId, String fingerprint, String deviceId, TokenKey key) {
+        if (KeyOps.hasKey(key.getKey())) {
+            var token = core.getToken(key);
+            if (!token.verify(key.getSecret())) {
+                throw new BusinessException(421, "非法的Token");
+            }
+
+            token.setAppId(appId);
+            var dto = core.creatorToken(key, fingerprint, deviceId);
+            return ReplyHelper.created(dto);
+        } else {
             throw new BusinessException(421, "非法的Token");
         }
-
-        token.setAppId(appId);
-        var dto = core.creatorToken(token, fingerprint, deviceId);
-        return ReplyHelper.created(dto);
     }
 
     /**
      * 用户账号离线
      *
-     * @param tokenId 令牌ID
+     * @param key 用户关键信息
      */
     @Override
-    public void deleteToken(String tokenId) {
-        core.deleteToken(tokenId);
+    public void deleteToken(TokenKey key) {
+        core.deleteToken(key);
     }
 
     /**
      * 获取用户授权码
      *
-     * @param tenantId 租户ID
-     * @param appId    应用程序ID
-     * @param userId   用户ID
+     * @param key 用户关键信息
      * @return 授权码集合
      */
     @Override
-    public List<String> getPermits(Long appId, Long tenantId, Long userId) {
-        return mapper.getAuthInfos(appId, tenantId, userId);
+    public List<String> getPermits(TokenKey key) {
+        return mapper.getAuthInfos(key);
     }
 
     /**
      * 获取用户导航栏
      *
-     * @param tenantId 租户ID
-     * @param appId    应用程序ID
-     * @param userId   用户ID
+     * @param key 用户关键信息
      * @return 导航数据集合
      */
     @Override
-    public List<NavDto> getNavigators(Long appId, Long tenantId, Long userId) {
-        var list = mapper.getNavigators(appId, tenantId, userId);
+    public List<NavDto> getNavigators(TokenKey key) {
+        var list = mapper.getNavigators(key);
         for (var nav : list) {
             if (nav.getType() > 1) {
-                var funs = mapper.getModuleFunctions(nav.getId(), tenantId, userId);
+                var funs = mapper.getModuleFunctions(nav.getId(), key.getTenantId(), key.getUserId());
                 nav.setFunctions(funs);
             }
         }
