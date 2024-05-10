@@ -132,7 +132,7 @@ public class AuthController {
                 throw new BusinessException("错误的AccessToken");
             }
 
-            return service.getToken(login.getAppId(), fingerprint, login.getDeviceId(), accessToken);
+            return service.getToken(login, accessToken);
         }
 
         throw new BusinessException("接口参数错误");
