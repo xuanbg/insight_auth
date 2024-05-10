@@ -141,7 +141,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var tokenKey = new TokenKey(info.getAppId(), info.getTenantId(), info.getId());
-        StringOps.set(key, tokenKey, 30L);
+        StringOps.set(key, tokenKey.toString(), 30L);
     }
 
     /**
@@ -348,16 +348,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getTokenWithCode(LoginDto login) {
         var key = "Code:" + login.getCode();
-        if (KeyOps.hasKey(key)) {
-            var tokenKey = StringOps.get(key, TokenKey.class);
-            var data = core.getToken(tokenKey);
-            login.setTenantId(data.getTenantId());
-
-            var token = core.creatorToken(login, data.getUserId());
-            return ReplyHelper.created(token);
-        } else {
+        var tokenKey = StringOps.get(key, TokenKey.class);
+        if (tokenKey == null) {
             throw new BusinessException(427, "Code已失效，请刷新");
         }
+
+        var data = core.getToken(tokenKey);
+        login.setTenantId(data.getTenantId());
+
+        var token = core.creatorToken(login, data.getUserId());
+        return ReplyHelper.created(token);
     }
 
     /**
