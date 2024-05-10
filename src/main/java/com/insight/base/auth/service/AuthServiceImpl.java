@@ -237,7 +237,7 @@ public class AuthServiceImpl implements AuthService {
                 login.setTenantId(tenants.get(0).getId());
             } else if (tenants.size() > 1) {
                 key = "Wechat:" + unionId;
-                StringOps.set(key, Json.toJson(weChatUser), 30L, TimeUnit.MINUTES);
+                StringOps.set(key, weChatUser, 30L, TimeUnit.MINUTES);
 
                 var dto = new TenantDto();
                 dto.setUnionId(unionId);

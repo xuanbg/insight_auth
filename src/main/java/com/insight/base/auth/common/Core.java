@@ -94,21 +94,21 @@ public class Core {
 
             // 缓存用户ID到Redis
             var userId = user.getId();
-            StringOps.set("ID:" + user.getAccount(), userId.toString());
+            StringOps.set("ID:" + user.getAccount(), userId);
 
             var mobile = user.getMobile();
             if (Util.isNotEmpty(mobile)) {
-                StringOps.set("ID:" + mobile, userId.toString());
+                StringOps.set("ID:" + mobile, userId);
             }
 
             var mail = user.getEmail();
             if (Util.isNotEmpty(mail)) {
-                StringOps.set("ID:" + mail, userId.toString());
+                StringOps.set("ID:" + mail, userId);
             }
 
             var unionId = user.getUnionId();
             if (Util.isNotEmpty(unionId)) {
-                StringOps.set("ID:" + unionId, userId.toString());
+                StringOps.set("ID:" + unionId, userId);
             }
 
             user.setPassword(user.getPassword());
@@ -240,9 +240,7 @@ public class Core {
         if (KeyOps.hasKey(key.getKey())) {
             // 单设备登录删除原Token, 创建新Token. 非单设备登录使用原Token
             var token = getToken(key);
-            if (token.sourceNotMatch(fingerprint)) {
-                KeyOps.delete(key.getKey());
-            } else {
+            if (!token.sourceNotMatch(fingerprint)) {
                 token.setLimitType(app.getLimitType());
                 return initPackage(token);
             }
@@ -255,6 +253,7 @@ public class Core {
         token.setPermitTime(LocalDateTime.now());
         token.setLife(app.getTokenLife());
         token.setFingerprint(fingerprint);
+        token.setSecret(Util.uuid());
         return initPackage(token);
     }
 
@@ -287,15 +286,13 @@ public class Core {
         var life = token.getLife();
         var permitFuns = mapper.getAuthInfos(token);
         token.setPermitFuncs(permitFuns);
-
         token.setExpiryTime(LocalDateTime.now().plusSeconds(TokenData.TIME_OUT + life));
-        token.setSecret(Util.uuid());
 
         // 缓存令牌数据
         if (life > 0) {
-            StringOps.set(token.getKey(), token.toString(), TokenData.TIME_OUT + life);
+            StringOps.set(token.getKey(), token, TokenData.TIME_OUT + life);
         } else {
-            StringOps.set(token.getKey(), token.toString());
+            StringOps.set(token.getKey(), token);
         }
 
         // 生成令牌数据
@@ -336,7 +333,7 @@ public class Core {
         StringOps.set("Sign:" + signature, code, seconds);
 
         // 用Code作为Key缓存用户ID
-        StringOps.set("Code:" + code, userId.toString(), seconds + 1);
+        StringOps.set("Code:" + code, userId, seconds + 1);
         return code;
     }
 
@@ -441,7 +438,7 @@ public class Core {
         var key = "User:" + userId;
         HashOps.put(key, "unionId", unionId);
         HashOps.put(key, "nickname", nickname);
-        StringOps.set("ID:" + unionId, userId.toString());
+        StringOps.set("ID:" + unionId, userId);
     }
 
     /**
@@ -472,10 +469,10 @@ public class Core {
         user.setCreatedTime(LocalDateTime.now());
 
         // 缓存用户ID到Redis
-        StringOps.set("ID:" + user.getMobile(), userId.toString());
+        StringOps.set("ID:" + user.getMobile(), userId);
         var unionId = user.getUnionId();
         if (unionId != null && !unionId.isEmpty()) {
-            StringOps.set("ID:" + unionId, userId.toString());
+            StringOps.set("ID:" + unionId, userId);
         }
 
         var key = "User:" + userId;
