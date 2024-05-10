@@ -141,7 +141,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var tokenKey = new TokenKey(info.getAppId(), info.getTenantId(), info.getId());
-        StringOps.set(key, tokenKey.toString(), 30L);
+        StringOps.set(key, tokenKey, 30L);
     }
 
     /**
@@ -350,7 +350,7 @@ public class AuthServiceImpl implements AuthService {
         var key = "Code:" + login.getCode();
         var tokenKey = StringOps.get(key, TokenKey.class);
         if (tokenKey == null) {
-            throw new BusinessException(427, "Code已失效，请刷新");
+            throw new BusinessException(427, "请等待APP扫码");
         }
 
         var data = core.getToken(tokenKey);
