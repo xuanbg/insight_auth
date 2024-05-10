@@ -377,7 +377,7 @@ public class AuthServiceImpl implements AuthService {
 
             key.setAppId(login.getAppId());
             if (login.getTenantId() != null) {
-                token.setTenantId(login.getTenantId());
+                key.setTenantId(login.getTenantId());
             }
 
             var dto = core.creatorToken(key, login.getFingerprint(), login.getDeviceId());
