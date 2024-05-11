@@ -172,7 +172,7 @@ public class AuthServiceImpl implements AuthService {
         var code = core.getCode(login.getSignature());
         if (code != null) {
             var token = core.getToken(code, login);
-            return ReplyHelper.success(token);
+            return ReplyHelper.created(token);
         }
 
         // 处理错误
