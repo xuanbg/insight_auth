@@ -7,6 +7,7 @@ import com.insight.utils.DateTime;
 import com.insight.utils.ReplyHelper;
 import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.LoginInfo;
+import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.base.Reply;
@@ -343,7 +344,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(427, "请等待APP扫码");
         }
 
-        var token = core.getToken(tokenKey);
+        var token = StringOps.get(tokenKey.getKey(), TokenData.class);
         login.setTenantId(token.getTenantId());
 
         var dto = core.creatorToken(login, tokenKey.getUserId());
@@ -360,7 +361,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getToken(LoginDto login, TokenKey key) {
         if (KeyOps.hasKey(key.getKey())) {
-            var token = core.getToken(key);
+            var token = StringOps.get(key.getKey(), TokenData.class);
             if (!token.verify(key.getSecret())) {
                 throw new BusinessException(421, "非法的Token");
             }

@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 
 /**
@@ -155,20 +156,6 @@ public class Core {
     }
 
     /**
-     * 获取缓存中的令牌数据
-     *
-     * @param key 用户关键信息
-     * @return 缓存中的令牌
-     */
-    public Token getToken(TokenKey key) {
-        var token = StringOps.get(key.getKey(), Token.class);
-
-        var user = getUser(token.getUserId());
-        token.setUserInfo(user);
-        return token;
-    }
-
-    /**
      * 获取Token
      *
      * @param code  Code
@@ -232,36 +219,23 @@ public class Core {
             }
         }
 
-        // 取回Token
-        if (KeyOps.hasKey(key.getKey())) {
-            // 单设备登录删除原Token, 创建新Token. 非单设备登录使用原Token
-            var token = getToken(key);
-            if (!token.sourceNotMatch(fingerprint)) {
-                token.setLimitType(app.getLimitType());
-                return initPackage(token);
-            }
+        // 加载用户信息并验证用户类型是否与应用匹配
+        var userInfo = getUser(key.getUserId());
+        if (!Objects.equals(app.getLimitType(), userInfo.getType())) {
+            throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
         }
 
-        // 创建新的Token
-        var token = key.convert(Token.class);
-        token.setLimitType(app.getLimitType());
-        token.setUserInfo(getUser(token.getUserId()));
-        token.setPermitTime(LocalDateTime.now());
-        token.setLife(app.getTokenLife());
+        // 生成Token数据
+        var token = key.convert(TokenData.class);
         token.setFingerprint(fingerprint);
-        token.setSecret(Util.uuid());
-        return initPackage(token);
-    }
 
-    /**
-     * 初始化令牌数据包
-     *
-     * @param token 令牌数据
-     * @return 令牌数据包
-     */
-    private TokenDto initPackage(Token token) {
-        if (token.typeNotMatch()) {
-            throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
+        // 单设备登录重置Secret
+        if (KeyOps.hasKey(key.getKey())) {
+            var exist = StringOps.get(key.getKey(), TokenData.class);
+            var secret = app.getSigninOne() && !Objects.equals(fingerprint, exist.getFingerprint()) ? Util.uuid() : exist.getSecret();
+            token.setSecret(secret);
+        } else {
+            token.setSecret(Util.uuid());
         }
 
         // 加载用户登录信息
@@ -278,11 +252,16 @@ public class Core {
             token.setOrgName(null);
         }
 
-        // 加载用户授权码
-        var life = token.getLife();
+        // 设定令牌生命周期
+        var life = app.getTokenLife();
+        token.setLife(life);
+        token.setExpiryTime(LocalDateTime.now().plusSeconds(TokenData.TIME_OUT + life));
+
+        // 加载用户授权码和授权生命周期
         var permitFuns = mapper.getAuthInfos(token);
         token.setPermitFuncs(permitFuns);
-        token.setExpiryTime(LocalDateTime.now().plusSeconds(TokenData.TIME_OUT + life));
+        token.setPermitLife(app.getPermitLife());
+        token.setPermitTime(LocalDateTime.now());
 
         // 缓存令牌数据
         if (life > 0) {
@@ -292,10 +271,8 @@ public class Core {
         }
 
         // 生成令牌数据
-        var accessToken =Json.toBase64(token.convert(TokenKey.class));
-        var tokenDto = new TokenDto(accessToken, life);
-        tokenDto.setUserInfo(token.getUserInfo());
-        return tokenDto;
+        var accessToken = Json.toBase64(key);
+        return new TokenDto(accessToken, life, userInfo);
     }
 
     /**
