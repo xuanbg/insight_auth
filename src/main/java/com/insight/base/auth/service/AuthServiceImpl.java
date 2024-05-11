@@ -4,7 +4,6 @@ import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.DateTime;
-import com.insight.utils.Json;
 import com.insight.utils.ReplyHelper;
 import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.LoginInfo;
@@ -170,29 +169,22 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply generateToken(LoginDto login) {
         var code = core.getCode(login.getSignature());
-        if (code != null) {
+        if (code == null) {
+            var account = login.getAccount();
+            var userId = core.getUserId(account);
+            var failureCount = core.getFailureCount(userId);
+            if (failureCount > 5) {
+                throw new BusinessException("错误次数过多,账号已被锁定!请于10分钟后再试");
+            }
+
+            var key = "User:" + userId;
+            HashOps.put(key, "FailureCount", failureCount + 1);
+            HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
+            throw new BusinessException("账号或密码错误");
+        } else {
             var token = core.getToken(code, login);
             return ReplyHelper.created(token);
         }
-
-        // 处理错误
-        var account = login.getAccount();
-        var userId = core.getUserId(account);
-        var key = "User:" + userId;
-        if (!KeyOps.hasKey(key)) {
-            KeyOps.delete("ID:" + account);
-            throw new BusinessException("发生了一点小意外,请重新提交");
-        }
-
-        var failureCount = core.getFailureCount(userId);
-        if (failureCount > 5) {
-            throw new BusinessException("错误次数过多,账号已被锁定!请于10分钟后再试");
-        }
-
-        HashOps.put(key, "FailureCount", failureCount + 1);
-        HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
-
-        throw new BusinessException("账号或密码错误");
     }
 
     /**
@@ -259,8 +251,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Reply getTokenWithUnionId(LoginDto login) {
         var unionId = login.getUnionId();
-        var json = StringOps.get("Wechat:" + unionId);
-        var weChatUser = Json.toBean(json, WechatUser.class);
+        var weChatUser = StringOps.get("Wechat:" + unionId, WechatUser.class);
         if (weChatUser == null) {
             throw new BusinessException("微信授权已过期，请重新登录");
         }
@@ -293,8 +284,7 @@ public class AuthServiceImpl implements AuthService {
         // 从缓存读取微信用户信息
         var unionId = login.getUnionId();
         var key = "Wechat:" + unionId;
-        var json = StringOps.get(key);
-        var weChatUser = Json.toBean(json, WechatUser.class);
+        var weChatUser = StringOps.get(key, WechatUser.class);
         if (weChatUser == null) {
             throw new BusinessException("微信授权已过期，请重新登录");
         }
@@ -353,11 +343,11 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(427, "请等待APP扫码");
         }
 
-        var data = core.getToken(tokenKey);
-        login.setTenantId(data.getTenantId());
+        var token = core.getToken(tokenKey);
+        login.setTenantId(token.getTenantId());
 
-        var token = core.creatorToken(login, data.getUserId());
-        return ReplyHelper.created(token);
+        var dto = core.creatorToken(login, tokenKey.getUserId());
+        return ReplyHelper.created(dto);
     }
 
     /**

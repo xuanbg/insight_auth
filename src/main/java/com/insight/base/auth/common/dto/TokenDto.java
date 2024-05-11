@@ -25,6 +25,14 @@ public class TokenDto extends BaseXo {
      */
     private UserBase userInfo;
 
+    public TokenDto() {
+    }
+
+    public TokenDto(String accessToken, Long expire) {
+        this.accessToken = accessToken;
+        this.expire = expire;
+    }
+
     public String getAccessToken() {
         return accessToken;
     }

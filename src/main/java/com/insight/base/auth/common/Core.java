@@ -114,7 +114,7 @@ public class Core {
             user.setPassword(user.getPassword());
 
             var key = "User:" + userId;
-            HashOps.putAll(key, Json.toMap(user));
+            HashOps.putAll(key, user);
             HashOps.put(key, "FailureCount", 0);
             return userId;
         }
@@ -161,8 +161,8 @@ public class Core {
      * @return 缓存中的令牌
      */
     public Token getToken(TokenKey key) {
-        var json = StringOps.get(key.getKey());
-        var token = Json.toBean(json, Token.class);
+        var token = StringOps.get(key.getKey(), Token.class);
+
         var user = getUser(token.getUserId());
         token.setUserInfo(user);
         return token;
@@ -177,10 +177,6 @@ public class Core {
      */
     public TokenDto getToken(String code, LoginDto login) {
         var userId = getId(code);
-        if (userId == null) {
-            throw new BusinessException("发生了一点小意外,请重新提交");
-        }
-
         var user = getUser(userId);
         return creatorToken(login, userId);
     }
@@ -248,8 +244,8 @@ public class Core {
 
         // 创建新的Token
         var token = key.convert(Token.class);
-        token.setUserInfo(getUser(token.getUserId()));
         token.setLimitType(app.getLimitType());
+        token.setUserInfo(getUser(token.getUserId()));
         token.setPermitTime(LocalDateTime.now());
         token.setLife(app.getTokenLife());
         token.setFingerprint(fingerprint);
@@ -296,10 +292,8 @@ public class Core {
         }
 
         // 生成令牌数据
-        var tokenDto = new TokenDto();
         var accessToken =Json.toBase64(token.convert(TokenKey.class));
-        tokenDto.setAccessToken(accessToken);
-        tokenDto.setExpire(life);
+        var tokenDto = new TokenDto(accessToken, life);
         tokenDto.setUserInfo(token.getUserInfo());
         return tokenDto;
     }
@@ -476,7 +470,7 @@ public class Core {
         }
 
         var key = "User:" + userId;
-        HashOps.putAll(key, Json.toMap(user));
+        HashOps.putAll(key, user);
         HashOps.put(key, "FailureCount", 0);
 
         RabbitClient.addUser(user);
