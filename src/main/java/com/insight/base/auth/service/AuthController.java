@@ -129,7 +129,7 @@ public class AuthController {
         if (Util.isNotEmpty(token)) {
             var accessToken = Json.toToken(token);
             if (accessToken == null) {
-                throw new BusinessException("错误的AccessToken");
+                throw new BusinessException(421, "无效凭证");
             }
 
             return service.getToken(login, accessToken);
@@ -141,12 +141,12 @@ public class AuthController {
     /**
      * 用户账号离线
      *
-     * @param token 访问令牌字符串
+     * @param loginInfo 用户信息
      */
     @DeleteMapping("/v1.0/tokens")
-    public void deleteToken(@RequestHeader(value = "Authorization") String token) {
-        var accessToken = Json.toToken(token);
-        service.deleteToken(accessToken);
+    public void deleteToken(@RequestHeader("loginInfo") String loginInfo) {
+        var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
+        service.deleteToken(new TokenKey(info.getAppId(), info.getTenantId(), info.getId()));
     }
 
     /**
