@@ -228,14 +228,14 @@ public class Core {
         // 生成Token数据
         var token = key.convert(TokenData.class);
         token.setFingerprint(fingerprint);
+        token.setSecret(Util.uuid());
 
-        // 单设备登录重置Secret
-        if (KeyOps.hasKey(key.getKey())) {
-            var exist = StringOps.get(key.getKey(), TokenData.class);
-            var secret = app.getSigninOne() && !Objects.equals(fingerprint, exist.getFingerprint()) ? Util.uuid() : exist.getSecret();
-            token.setSecret(secret);
-        } else {
-            token.setSecret(Util.uuid());
+        // 存在令牌数据时, 应用不限制单设备登录或指纹相同, 重用令牌Secret
+        if (KeyOps.hasKey(token.getKey())) {
+            var exist = StringOps.get(token.getKey(), TokenData.class);
+            if (exist != null && (!app.getSigninOne() || exist.fingerprintIsMatch(fingerprint))) {
+                token.setSecret(exist.getSecret());
+            }
         }
 
         // 加载用户登录信息
@@ -256,6 +256,7 @@ public class Core {
         var life = app.getTokenLife();
         token.setLife(life);
         token.setExpiryTime(LocalDateTime.now().plusSeconds(TokenData.TIME_OUT + life));
+        token.setAutoRefresh(app.getAutoRefresh());
 
         // 加载用户授权码和授权生命周期
         var permitFuns = mapper.getAuthInfos(token);
