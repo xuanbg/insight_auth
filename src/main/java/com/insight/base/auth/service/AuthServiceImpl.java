@@ -99,14 +99,14 @@ public class AuthServiceImpl implements AuthService {
             }
 
             var code = core.getGeneralCode(userId, account, password);
-            return ReplyHelper.created(code);
+            return ReplyHelper.success(code);
         } else {
             if (!account.matches("^1[0-9]{10}")) {
                 throw new BusinessException("请使用正确的手机号");
             }
 
             var code = core.getSmsCode(userId, account);
-            return ReplyHelper.created(code);
+            return ReplyHelper.success(code);
         }
     }
 
