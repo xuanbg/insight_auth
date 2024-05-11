@@ -221,22 +221,22 @@ public class Core {
 
         // 加载用户信息并验证用户类型是否与应用匹配
         var userInfo = getUser(key.getUserId());
-        if (!Objects.equals(app.getLimitType(), userInfo.getType())) {
+        if (app.getLimitType() != null && !Objects.equals(app.getLimitType(), userInfo.getType())) {
             throw new BusinessException("当前用户与应用不匹配，请使用正确的用户进行登录");
+        }
+
+        // 存在令牌数据时, 应用不限制单设备登录或指纹相同, 重用令牌Secret
+        key.setSecret(Util.uuid());
+        if (KeyOps.hasKey(key.getKey())) {
+            var exist = StringOps.get(key.getKey(), TokenData.class);
+            if (exist != null && (!app.getSigninOne() || exist.fingerprintIsMatch(fingerprint))) {
+                key.setSecret(exist.getSecret());
+            }
         }
 
         // 生成Token数据
         var token = key.convert(TokenData.class);
         token.setFingerprint(fingerprint);
-        token.setSecret(Util.uuid());
-
-        // 存在令牌数据时, 应用不限制单设备登录或指纹相同, 重用令牌Secret
-        if (KeyOps.hasKey(token.getKey())) {
-            var exist = StringOps.get(token.getKey(), TokenData.class);
-            if (exist != null && (!app.getSigninOne() || exist.fingerprintIsMatch(fingerprint))) {
-                token.setSecret(exist.getSecret());
-            }
-        }
 
         // 加载用户登录信息
         if (token.getTenantId() != null) {
