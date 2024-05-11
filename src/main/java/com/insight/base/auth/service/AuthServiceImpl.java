@@ -355,7 +355,7 @@ public class AuthServiceImpl implements AuthService {
      * 获取指定应用的Token
      *
      * @param login 用户登录数据
-     * @param key         令牌
+     * @param key   令牌
      * @return Reply
      */
     @Override
@@ -364,6 +364,10 @@ public class AuthServiceImpl implements AuthService {
             var token = StringOps.get(key.getKey(), TokenData.class);
             if (!token.verify(key.getSecret())) {
                 throw new BusinessException(421, "无效凭证");
+            }
+
+            if (login.getTenantId() == null) {
+                login.setTenantId(key.getTenantId());
             }
 
             var dto = core.creatorToken(login, key.getUserId());
