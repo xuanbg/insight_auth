@@ -183,7 +183,7 @@ public class AuthServiceImpl implements AuthService {
             HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
             throw new BusinessException("账号或密码错误");
         } else {
-            var token = core.getToken(code, login);
+            var token = core.creatorToken(login, code);
             return ReplyHelper.created(token);
         }
     }
@@ -363,18 +363,13 @@ public class AuthServiceImpl implements AuthService {
         if (KeyOps.hasKey(key.getKey())) {
             var token = StringOps.get(key.getKey(), TokenData.class);
             if (!token.verify(key.getSecret())) {
-                throw new BusinessException(421, "非法的Token");
+                throw new BusinessException(421, "无效凭证");
             }
 
-            key.setAppId(login.getAppId());
-            if (login.getTenantId() != null) {
-                key.setTenantId(login.getTenantId());
-            }
-
-            var dto = core.creatorToken(key, login.getFingerprint(), login.getDeviceId());
+            var dto = core.creatorToken(login, key.getUserId());
             return ReplyHelper.created(dto);
         } else {
-            throw new BusinessException(421, "非法的Token");
+            throw new BusinessException(421, "无效凭证");
         }
     }
 

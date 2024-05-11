@@ -156,16 +156,14 @@ public class Core {
     }
 
     /**
-     * 获取Token
+     * 生成令牌数据包
      *
-     * @param code  Code
      * @param login 用户登录数据
+     * @param code  Code
      * @return Reply
      */
-    public TokenDto getToken(String code, LoginDto login) {
-        var userId = getId(code);
-        var user = getUser(userId);
-        return creatorToken(login, userId);
+    public TokenDto creatorToken(LoginDto login, String code) {
+        return creatorToken(login, getId(code));
     }
 
     /**
@@ -188,7 +186,7 @@ public class Core {
      * @param deviceId    设备ID
      * @return 令牌数据包
      */
-    public TokenDto creatorToken(TokenKey key, String fingerprint, String deviceId) {
+    private TokenDto creatorToken(TokenKey key, String fingerprint, String deviceId) {
         var app = mapper.getApp(key.getAppId());
         if (app == null) {
             throw new BusinessException("未找指定的应用");
@@ -204,7 +202,7 @@ public class Core {
             }
 
             if (LocalDate.now().isAfter(data.getExpireDate())) {
-                throw new BusinessException("应用已过期,请续租");
+                throw new BusinessException("应用授权已过期,请续租");
             }
         }
 
