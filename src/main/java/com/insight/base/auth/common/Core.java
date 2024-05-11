@@ -246,16 +246,12 @@ public class Core {
                 token.setOrgId(org.getId());
                 token.setOrgName(org.getName());
             }
-        } else {
-            token.setTenantName(null);
-            token.setOrgId(null);
-            token.setOrgName(null);
         }
 
         // 设定令牌生命周期
         var life = app.getTokenLife();
         token.setLife(life);
-        token.setExpiryTime(LocalDateTime.now().plusSeconds(TokenData.TIME_OUT + life));
+        token.setExpiryTime(LocalDateTime.now().plusSeconds(life + TokenData.TIME_OUT));
         token.setAutoRefresh(app.getAutoRefresh());
 
         // 加载用户授权码和授权生命周期
@@ -265,11 +261,8 @@ public class Core {
         token.setPermitTime(LocalDateTime.now());
 
         // 缓存令牌数据
-        if (life > 0) {
-            StringOps.set(token.getKey(), token, TokenData.TIME_OUT + life);
-        } else {
-            StringOps.set(token.getKey(), token);
-        }
+        var expiryTime = life > 0 ? life + TokenData.TIME_OUT : -1;
+        StringOps.set(token.getKey(), token, expiryTime);
 
         // 生成令牌数据
         var accessToken = Json.toBase64(key);
@@ -282,11 +275,9 @@ public class Core {
      * @param key 用户关键信息
      */
     public void deleteToken(TokenKey key) {
-        if (!KeyOps.hasKey(key.getKey())) {
-            return;
+        if (KeyOps.hasKey(key.getKey())) {
+            KeyOps.delete(key.getKey());
         }
-
-        KeyOps.delete(key.getKey());
     }
 
     /**
