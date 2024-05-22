@@ -219,9 +219,13 @@ public interface AuthMapper {
      * @return 用户绑定租户集合
      */
     @Select("""
-            select distinct t.id, t.`name` from ibt_tenant t
+            select distinct t.id, t.`name`
+            from ibt_tenant t
               join ibt_tenant_app a on a.tenant_id = t.id and a.app_id = #{appId}
-              join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId};
+              join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId}
+            where t.invalid = 0
+              and t.status = 1
+            order by t.id;
             """)
     List<MemberDto> getTenants(Long appId, Long userId);
 
