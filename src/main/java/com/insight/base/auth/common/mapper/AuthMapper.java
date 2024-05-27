@@ -106,19 +106,18 @@ public interface AuthMapper {
     /**
      * 通过设备ID查询用户ID
      *
-     * @param tenantId 租户ID
+     * @param user_id  用户户ID
      * @param deviceId 设备ID
      * @return 用户ID
      */
     @Select("""
-            select d.user_id
-            from ibu_user_device d
-            join ibt_tenant_user t on t.user_id = d.user_id
-              and t.tenant_id = #{tenantId}
-            where d.device_id = #{deviceId}
+            select user_id
+            from ibu_user_device
+            where device_id = #{deviceId}
+              and user_id != #{userId};
             limit 1;
             """)
-    Long getUserIdByDeviceId(Long tenantId, String deviceId);
+    Long getUserIdByDeviceId(Long user_id, String deviceId);
 
     /**
      * 新增用户设备记录

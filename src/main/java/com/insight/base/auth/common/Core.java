@@ -208,10 +208,10 @@ public class Core {
 
         // 验证设备ID绑定是否匹配
         if (Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {
-            var uid = mapper.getUserIdByDeviceId(key.getTenantId(), deviceId);
+            var uid = mapper.getUserIdByDeviceId(key.getUserId(), deviceId);
             if (uid == null) {
                 mapper.addUserDeviceId(key.getUserId(), deviceId);
-            } else if (app.getSigninOne() && !uid.equals(key.getUserId())) {
+            } else if (app.getSigninOne()) {
                 var user = mapper.getUserById(uid);
                 throw new BusinessException("当前的账号与所使用的设备不匹配! 该设备属于%s(%s)".formatted(user.getName(), user.getCode()));
             }
