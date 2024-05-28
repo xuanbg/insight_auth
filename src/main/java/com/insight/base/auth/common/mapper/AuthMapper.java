@@ -114,7 +114,7 @@ public interface AuthMapper {
             select user_id
             from ibu_user_device
             where device_id = #{deviceId}
-              and user_id != #{userId};
+              and user_id != #{userId}
             limit 1;
             """)
     Long getUserIdByDeviceId(Long user_id, String deviceId);
