@@ -106,7 +106,7 @@ public interface AuthMapper {
     /**
      * 通过设备ID查询用户ID
      *
-     * @param user_id  用户户ID
+     * @param userId  用户户ID
      * @param deviceId 设备ID
      * @return 用户ID
      */
@@ -117,7 +117,7 @@ public interface AuthMapper {
               and user_id != #{userId}
             limit 1;
             """)
-    Long getUserIdByDeviceId(Long user_id, String deviceId);
+    Long getUserIdByDeviceId(Long userId, String deviceId);
 
     /**
      * 新增用户设备记录
