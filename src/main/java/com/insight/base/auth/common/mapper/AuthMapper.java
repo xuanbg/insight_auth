@@ -115,7 +115,7 @@ public interface AuthMapper {
             select d.user_id
             from ibu_user_device d
               join ibt_tenant_user r on r.user_id = d.user_id
-                and r.tenant_id = #{tenantId};
+                and r.tenant_id = #{tenantId}
             where d.device_id = #{deviceId}
               and d.user_id != #{userId}
             limit 1;
