@@ -208,7 +208,7 @@ public class Core {
 
         // 验证设备ID绑定是否匹配
         if (Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {
-            var uid = mapper.getUserIdByDeviceId(key.getUserId(), deviceId);
+            var uid = mapper.getUserIdByDeviceId(key.getTenantId(), key.getUserId(), deviceId);
             if (uid == null) {
                 mapper.addUserDeviceId(key.getUserId(), deviceId);
             } else if (app.getSigninOne()) {
