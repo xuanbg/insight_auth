@@ -111,7 +111,7 @@ public interface AuthMapper {
      * @return 用户ID
      */
     @Select("""
-            select u.id, u.code, u,name, r.tenant_id
+            select u.id, u.code, u.name, r.tenant_id
             from ibu_user u
               join ibu_user_device d on d.user_id = u.id
                 and d.device_id = #{deviceId}
