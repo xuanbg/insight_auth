@@ -207,15 +207,20 @@ public class Core {
         }
 
         // 验证设备ID绑定是否匹配
-        if (Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {
-            var uid = mapper.getUserIdByDeviceId(key.getTenantId(), key.getUserId(), deviceId);
-            if (uid == null) {
+        if (app.getSigninOne() && Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {
+            var list = mapper.getUsers(deviceId);
+            if (list.isEmpty()) {
                 mapper.addUserDeviceId(key.getUserId(), deviceId);
-            } else if (app.getSigninOne()) {
-                var user = mapper.getUserById(uid);
-                throw new BusinessException("当前的账号与所使用的设备不匹配! 该设备属于%s(%s)".formatted(user.getName(), user.getCode()));
+            } else if (list.stream().noneMatch(i -> i.userEquals(key.getUserId()))) {
+                var other = list.get(0);
+                if (other.tenantEquals(key.getTenantId())) {
+                    throw new BusinessException("当前的账号与所使用的设备不匹配! 该设备属于%s(%s)".formatted(other.getName(), other.getCode()));
+                } else {
+                    mapper.addUserDeviceId(key.getUserId(), deviceId);
+                }
             }
         }
+
 
         // 加载用户信息并验证用户类型是否与应用匹配
         var userInfo = getUser(key.getUserId());

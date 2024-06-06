@@ -3,6 +3,7 @@ package com.insight.base.auth.common.mapper;
 import com.insight.base.auth.common.dto.FuncDto;
 import com.insight.base.auth.common.dto.NavDto;
 import com.insight.base.auth.common.entity.TenantApp;
+import com.insight.base.auth.common.entity.UserTenant;
 import com.insight.utils.pojo.app.AppBase;
 import com.insight.utils.pojo.app.FuncInfo;
 import com.insight.utils.pojo.app.ModuleInfo;
@@ -106,21 +107,17 @@ public interface AuthMapper {
     /**
      * 通过设备ID查询用户ID
      *
-     * @param tenantId 租户ID
-     * @param userId   用户户ID
      * @param deviceId 设备ID
      * @return 用户ID
      */
     @Select("""
-            select d.user_id
-            from ibu_user_device d
-              join ibt_tenant_user r on r.user_id = d.user_id
-                and r.tenant_id = #{tenantId}
-            where d.device_id = #{deviceId}
-              and d.user_id != #{userId}
-            limit 1;
+            select u.id, u.code, u,name, r.tenant_id
+            from ibu_user u
+              join ibu_user_device d on d.user_id = u.id
+                and d.device_id = #{deviceId}
+              join ibt_tenant_user r on r.user_id = u.id;
             """)
-    Long getUserIdByDeviceId(Long tenantId, Long userId, String deviceId);
+    List<UserTenant> getUsers(String deviceId);
 
     /**
      * 新增用户设备记录
