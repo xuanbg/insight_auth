@@ -203,15 +203,17 @@ public class Core {
                 }
             }
 
-            var data = mapper.getAppExpireDate(key);
-            if (data == null) {
-                throw new BusinessException("应用未授权, 请先为租户授权此应用");
-            }
+            if(key.getTenantId() != null) {
+                var data = mapper.getAppExpireDate(key);
+                if (data == null) {
+                    throw new BusinessException("应用未授权, 请先为租户授权此应用");
+                }
 
-            if (LocalDate.now().isAfter(data.getExpireDate())) {
-                throw new BusinessException("应用授权已过期,请续租");
+                if (LocalDate.now().isAfter(data.getExpireDate())) {
+                    throw new BusinessException("应用授权已过期,请续租");
+                }
             }
-        }
+       }
 
         // 验证设备ID绑定是否匹配
         if (app.getSigninOne() && Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {
