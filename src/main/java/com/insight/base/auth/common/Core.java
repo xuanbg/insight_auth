@@ -192,28 +192,31 @@ public class Core {
             throw new BusinessException("未找指定的应用");
         }
 
-        // 非平台应用验证应用授权
         if (app.getPlatform()) {
             key.setTenantId(null);
         } else {
-            if (key.getTenantId() == null) {
-                var tenants = mapper.getTenants(key.getAppId(), key.getUserId());
-                if (tenants.size() == 1) {
-                    key.setTenantId(tenants.get(0).getId());
-                }
+            var tenants = mapper.getTenants(key.getAppId(), key.getUserId());
+            if (Util.isEmpty(tenants)) {
+                throw new BusinessException("应用未授权, 请先为租户授权此应用");
             }
 
-            if(key.getTenantId() != null) {
-                var data = mapper.getAppExpireDate(key);
-                if (data == null) {
+            // 自动登录到唯一租户
+            if (key.getTenantId() == null && tenants.size() == 1) {
+                key.setTenantId(tenants.get(0).getId());
+            }
+
+            // 验证租户的应用授权是否在租期内
+            if (key.getTenantId() != null) {
+                var tenant = tenants.stream().filter(i -> i.equals(key.getTenantId())).findFirst().orElse(null);
+                if (tenant == null) {
                     throw new BusinessException("应用未授权, 请先为租户授权此应用");
                 }
 
-                if (LocalDate.now().isAfter(data.getExpireDate())) {
+                if (LocalDate.now().isAfter(tenant.getExpireDate())) {
                     throw new BusinessException("应用授权已过期,请续租");
                 }
             }
-       }
+        }
 
         // 验证设备ID绑定是否匹配
         if (app.getSigninOne() && Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {

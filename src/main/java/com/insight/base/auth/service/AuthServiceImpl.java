@@ -2,6 +2,7 @@ package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.dto.*;
+import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.DateTime;
 import com.insight.utils.ReplyHelper;
@@ -11,7 +12,6 @@ import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.base.Reply;
-import com.insight.utils.pojo.user.MemberDto;
 import com.insight.utils.pojo.user.User;
 import com.insight.utils.pojo.wechat.WechatUser;
 import com.insight.utils.redis.HashOps;
@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public List<MemberDto> getTenants(Long appId, String account) {
+    public List<TenantApp> getTenants(Long appId, String account) {
         var userId = core.getUserId(account);
         return mapper.getTenants(appId, userId);
     }

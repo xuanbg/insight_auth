@@ -10,7 +10,6 @@ import com.insight.utils.pojo.app.ModuleInfo;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.DataBase;
 import com.insight.utils.pojo.base.JsonTypeHandler;
-import com.insight.utils.pojo.user.MemberDto;
 import com.insight.utils.pojo.user.User;
 import org.apache.ibatis.annotations.*;
 
@@ -65,15 +64,6 @@ public interface AuthMapper {
      */
     @Select("select * from ibs_application where id = #{appId};")
     AppBase getApp(Long appId);
-
-    /**
-     * 查询指定应用ID的应用信息
-     *
-     * @param key 用户关键信息
-     * @return 应用信息
-     */
-    @Select("select distinct * from ibt_tenant_app where tenant_id = #{tenantId} and app_id = #{appId};")
-    TenantApp getAppExpireDate(TokenKey key);
 
     /**
      * 获取微信OpenID
@@ -218,7 +208,7 @@ public interface AuthMapper {
      * @return 用户绑定租户集合
      */
     @Select("""
-            select distinct t.id, t.`name`
+            select distinct t.id, t.`name`, a.expire_date
             from ibt_tenant t
               join ibt_tenant_app a on a.tenant_id = t.id and a.app_id = #{appId}
               join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId}
@@ -226,7 +216,7 @@ public interface AuthMapper {
               and t.status = 1
             order by t.id;
             """)
-    List<MemberDto> getTenants(Long appId, Long userId);
+    List<TenantApp> getTenants(Long appId, Long userId);
 
     /**
      * 获取用户登录的机构

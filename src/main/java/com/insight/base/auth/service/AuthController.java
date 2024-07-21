@@ -4,13 +4,13 @@ import com.insight.base.auth.common.dto.CodeDto;
 import com.insight.base.auth.common.dto.FuncDto;
 import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.NavDto;
+import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.utils.Json;
 import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
 import com.insight.utils.pojo.base.Reply;
-import com.insight.utils.pojo.user.MemberDto;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +43,7 @@ public class AuthController {
      * @return Reply
      */
     @GetMapping("/v1.0/{appId}/tenants")
-    public List<MemberDto> getTenants(@PathVariable Long appId, @RequestParam String account) {
+    public List<TenantApp> getTenants(@PathVariable Long appId, @RequestParam String account) {
         return service.getTenants(appId, account);
     }
 

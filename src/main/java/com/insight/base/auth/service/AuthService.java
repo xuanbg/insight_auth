@@ -4,10 +4,10 @@ import com.insight.base.auth.common.dto.CodeDto;
 import com.insight.base.auth.common.dto.FuncDto;
 import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.NavDto;
+import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.Reply;
-import com.insight.utils.pojo.user.MemberDto;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public interface AuthService {
      * @param account 登录账号
      * @return Reply
      */
-    List<MemberDto> getTenants(Long appId, String account);
+    List<TenantApp> getTenants(Long appId, String account);
 
     /**
      * 生成加密Code
