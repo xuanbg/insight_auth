@@ -195,7 +195,14 @@ public class Core {
         // 非平台应用验证应用授权
         if (app.getPlatform()) {
             key.setTenantId(null);
-        } else if (key.getTenantId() != null) {
+        } else {
+            if (key.getTenantId() == null) {
+                var tenants = mapper.getTenants(key.getAppId(), key.getUserId());
+                if (tenants.size() == 1) {
+                    key.setTenantId(tenants.get(0).getId());
+                }
+            }
+
             var data = mapper.getAppExpireDate(key);
             if (data == null) {
                 throw new BusinessException("应用未授权, 请先为租户授权此应用");
