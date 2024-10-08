@@ -112,6 +112,22 @@ public interface AuthMapper {
     List<UserTenant> getUsers(Long tenantId, String deviceId);
 
     /**
+     * 判断用户是否已绑定设备
+     *
+     * @param userId   用户ID
+     * @param deviceId 设备ID
+     * @return 布尔值
+     */
+    @Select("""
+            select count(*)
+            from ibu_user_device
+            where user_id = #{userId}
+              and device_id = #{deviceId}
+              and fixed = 1;
+            """)
+    boolean binding(Long userId, String deviceId);
+
+    /**
      * 新增用户设备记录
      *
      * @param id       用户ID
