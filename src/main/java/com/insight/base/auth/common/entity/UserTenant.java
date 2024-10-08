@@ -26,11 +26,6 @@ public class UserTenant extends BaseXo {
     private String name;
 
     /**
-     * 租户ID
-     */
-    private Long tenantId;
-
-    /**
      * 设备ID
      */
     private String deviceId;
@@ -57,14 +52,6 @@ public class UserTenant extends BaseXo {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getDeviceId() {
