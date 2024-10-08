@@ -119,7 +119,7 @@ public interface AuthMapper {
      * @return 用户租户信息
      */
     @Select("""
-            select u.id, u.code, u.name, r.tenant_id, d.device_id
+            select u.id, u.code, u.name, d.device_id
             from ibu_user_device d
               join ibu_user u on u.id = d.user_id
             where (d.user_id = #{userId} or d.device_id = #{deviceId})
