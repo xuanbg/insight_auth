@@ -220,16 +220,12 @@ public class Core {
 
         // 验证设备ID绑定是否匹配
         if (app.getSigninOne() && Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {
-            var list = mapper.getUsers(deviceId);
+            var list = mapper.getUsers(key.getTenantId(), deviceId);
             if (list.isEmpty()) {
                 mapper.addUserDeviceId(key.getUserId(), deviceId);
             } else if (list.stream().noneMatch(i -> i.userEquals(key.getUserId()))) {
                 var other = list.get(0);
-                if (other.tenantEquals(key.getTenantId())) {
-                    throw new BusinessException("当前的账号与所使用的设备不匹配! 该设备属于%s(%s)".formatted(other.getName(), other.getCode()));
-                } else {
-                    mapper.addUserDeviceId(key.getUserId(), deviceId);
-                }
+                throw new BusinessException("当前的账号与所使用的设备不匹配! 该设备属于%s(%s)".formatted(other.getName(), other.getCode()));
             }
         }
 

@@ -66,8 +66,4 @@ public class UserTenant extends BaseXo {
     public Boolean userEquals(Long id){
         return this.id.equals(id);
     }
-
-    public Boolean tenantEquals(Long id){
-        return tenantId.equals(id);
-    }
 }

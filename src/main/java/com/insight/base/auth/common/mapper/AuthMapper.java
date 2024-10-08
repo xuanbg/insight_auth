@@ -97,6 +97,7 @@ public interface AuthMapper {
     /**
      * 通过设备ID查询用户ID
      *
+     * @param tenantId 租户ID
      * @param deviceId 设备ID
      * @return 用户ID
      */
@@ -105,9 +106,10 @@ public interface AuthMapper {
             from ibu_user u
               join ibu_user_device d on d.user_id = u.id
                 and d.device_id = #{deviceId}
-              join ibt_tenant_user r on r.user_id = u.id;
+              join ibt_tenant_user r on r.user_id = u.id
+                and r.tenant_id = #{tenantId};
             """)
-    List<UserTenant> getUsers(String deviceId);
+    List<UserTenant> getUsers(Long tenantId, String deviceId);
 
     /**
      * 新增用户设备记录
