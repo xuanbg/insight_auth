@@ -219,13 +219,25 @@ public class Core {
         }
 
         // 验证设备ID绑定是否匹配
-        if (app.getSigninOne() && Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId) && !mapper.binding(key.getUserId(), deviceId)) {
-            var list = mapper.getUsers(key.getTenantId(), deviceId);
-            if (list.isEmpty()) {
-                mapper.addUserDeviceId(key.getUserId(), deviceId);
-            } else if (list.stream().noneMatch(i -> i.userEquals(key.getUserId()))) {
-                var other = list.get(0);
-                throw new BusinessException("当前的账号与所使用的设备不匹配! 该设备属于%s(%s)".formatted(other.getName(), other.getCode()));
+        if (app.getSigninOne() && Util.isNotEmpty(deviceId) && !"Unknown".equals(deviceId)) {
+            var binding = mapper.bindingUser(key.getUserId(), deviceId);
+            if (Util.isNotEmpty(binding)) {
+                if (binding.stream().noneMatch(i -> i.userEquals(key.getUserId(), deviceId))) {
+                    var device = binding.stream().filter(i -> i.userEquals(key.getUserId())).findFirst().orElse(null);
+                    if (device == null){
+                        throw new BusinessException("当前设备已绑定账号, 请使用正确的账号登录慧学堡!");
+                    }else {
+                        throw new BusinessException("%s的设备ID为: %s. 请使用正确的设备登录慧学堡!".formatted(device.getName(), device.getDeviceId()));
+                    }
+                }
+            } else {
+                var list = mapper.getUsers(key.getTenantId(), deviceId);
+                if (list.isEmpty()) {
+                    mapper.addUserDeviceId(key.getUserId(), deviceId);
+                } else if (list.stream().noneMatch(i -> i.userEquals(key.getUserId()))) {
+                    var other = list.get(0);
+                    throw new BusinessException("当前的账号与所使用的设备不匹配! 该设备属于%s(%s)".formatted(other.getName(), other.getCode()));
+                }
             }
         }
 

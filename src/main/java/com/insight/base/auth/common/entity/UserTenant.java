@@ -30,6 +30,11 @@ public class UserTenant extends BaseXo {
      */
     private Long tenantId;
 
+    /**
+     * 设备ID
+     */
+    private String deviceId;
+
     public Long getId() {
         return id;
     }
@@ -62,8 +67,21 @@ public class UserTenant extends BaseXo {
         this.tenantId = tenantId;
     }
 
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
+
     @JsonIgnore
-    public Boolean userEquals(Long id){
+    public Boolean userEquals(Long id) {
         return this.id.equals(id);
+    }
+
+    @JsonIgnore
+    public Boolean userEquals(Long id, String deviceId) {
+        return this.id.equals(id) && this.deviceId.equals(deviceId);
     }
 }

@@ -99,10 +99,10 @@ public interface AuthMapper {
      *
      * @param tenantId 租户ID
      * @param deviceId 设备ID
-     * @return 用户ID
+     * @return 用户租户信息
      */
     @Select("""
-            select u.id, u.code, u.name, r.tenant_id
+            select u.id, u.code, u.name, r.tenant_id, d.device_id
             from ibu_user u
               join ibu_user_device d on d.user_id = u.id
                 and d.device_id = #{deviceId}
@@ -116,16 +116,16 @@ public interface AuthMapper {
      *
      * @param userId   用户ID
      * @param deviceId 设备ID
-     * @return 布尔值
+     * @return 用户租户信息
      */
     @Select("""
-            select count(*)
-            from ibu_user_device
-            where user_id = #{userId}
-              and device_id = #{deviceId}
-              and fixed = 1;
+            select u.id, u.code, u.name, r.tenant_id, d.device_id
+            from ibu_user_device d
+              join ibu_user u on u.id = d.user_id
+            where (d.user_id = #{userId} or d.device_id = #{deviceId})
+              and d.fixed = 1;
             """)
-    boolean binding(Long userId, String deviceId);
+    List<UserTenant> bindingUser(Long userId, String deviceId);
 
     /**
      * 新增用户设备记录
