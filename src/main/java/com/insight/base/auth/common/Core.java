@@ -224,9 +224,9 @@ public class Core {
             if (Util.isNotEmpty(binding)) {
                 if (binding.stream().noneMatch(i -> i.userEquals(key.getUserId(), deviceId))) {
                     var device = binding.stream().filter(i -> i.userEquals(key.getUserId())).findFirst().orElse(null);
-                    if (device == null){
+                    if (device == null) {
                         throw new BusinessException("当前设备已绑定账号, 请使用正确的账号登录慧学堡!");
-                    }else {
+                    } else {
                         throw new BusinessException("%s的设备ID为: %s. 请使用正确的设备登录慧学堡!".formatted(device.getName(), device.getDeviceId()));
                     }
                 }
