@@ -230,9 +230,10 @@ public interface AuthMapper {
             from ibt_tenant t
               join ibt_tenant_app a on a.tenant_id = t.id and a.app_id = #{appId}
               join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId}
+              left join xjy_hxb3.nsb_school s on s.id = t.id
             where t.invalid = 0
               and t.status = 1
-            order by t.id;
+            order by s.`index`;
             """)
     List<TenantApp> getTenants(Long appId, Long userId);
 
