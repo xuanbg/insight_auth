@@ -169,15 +169,16 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Reply generateToken(LoginDto login) {
+        var account = login.getAccount();
+        var userId = core.getUserId(account);
+
+        var failureCount = core.getFailureCount(userId);
+        if (failureCount > 5) {
+            throw new BusinessException("错误次数过多,账号已被锁定!请于10分钟后再试");
+        }
+
         var code = core.getCode(login.getSignature());
         if (code == null) {
-            var account = login.getAccount();
-            var userId = core.getUserId(account);
-            var failureCount = core.getFailureCount(userId);
-            if (failureCount > 5) {
-                throw new BusinessException("错误次数过多,账号已被锁定!请于10分钟后再试");
-            }
-
             var key = "User:" + userId;
             HashOps.put(key, "FailureCount", failureCount + 1);
             HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
