@@ -376,7 +376,7 @@ public class Core {
         if (failureCount > 0 && now.isAfter(resetTime)) {
             failureCount = 0;
             HashOps.put(key, "FailureCount", 0);
-            HashOps.put(key, "LastFailureTime", DateTime.formatCurrentDate());
+            HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
         }
 
         return failureCount;
