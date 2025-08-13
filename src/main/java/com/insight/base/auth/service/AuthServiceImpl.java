@@ -172,19 +172,21 @@ public class AuthServiceImpl implements AuthService {
         var account = login.getAccount();
         var userId = core.getUserId(account);
 
-        var failureCount = core.getFailureCount(userId);
+        var failureCount = core.getFailureCount(userId) + 1;
         if (failureCount > 5) {
             throw new BusinessException("错误次数过多,账号已被锁定!请于10分钟后再试");
         }
 
         var code = core.getCode(login.getSignature());
+        var key = "User:" + userId;
         if (code == null) {
-            var key = "User:" + userId;
-            HashOps.put(key, "FailureCount", failureCount + 1);
+            HashOps.put(key, "FailureCount", failureCount);
             HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
             throw new BusinessException("账号或密码错误");
         } else {
             var token = core.creatorToken(login, code);
+            HashOps.put(key, "FailureCount", 0);
+            HashOps.delete(key, "LastFailureTime");
             return ReplyHelper.created(token);
         }
     }
