@@ -370,13 +370,14 @@ public class Core {
 
         var lastFailureTime = LocalDateTime.parse(value, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         var resetTime = lastFailureTime.plusMinutes(10);
-        var now = LocalDateTime.now();
 
         var failureCount = Integer.parseInt(HashOps.get(key, "FailureCount"));
-        if (failureCount > 0 && now.isAfter(resetTime)) {
+        if (failureCount > 0 && LocalDateTime.now().isAfter(resetTime)) {
             failureCount = 0;
             HashOps.put(key, "FailureCount", 0);
             HashOps.delete(key, "LastFailureTime");
+        } else {
+            HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
         }
 
         return failureCount;
