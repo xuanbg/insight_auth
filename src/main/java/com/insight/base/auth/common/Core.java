@@ -357,30 +357,27 @@ public class Core {
     }
 
     /**
-     * 用户是否失效状态
+     * 检查用户登录失败次数
      *
-     * @return 用户是否失效状态
+     * @param userId 用户ID
      */
-    public int getFailureCount(Long userId) {
+    public Integer checkFailureCount(Long userId) {
         var key = "User:" + userId;
-        var value = HashOps.get(key, "LastFailureTime");
-        if (value == null || value.isEmpty()) {
-            return 0;
-        }
-
-        var lastFailureTime = LocalDateTime.parse(value, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        var resetTime = lastFailureTime.plusMinutes(10);
-
         var failureCount = Integer.parseInt(HashOps.get(key, "FailureCount"));
-        if (failureCount > 0 && LocalDateTime.now().isAfter(resetTime)) {
-            failureCount = 0;
-            HashOps.put(key, "FailureCount", 0);
-            HashOps.delete(key, "LastFailureTime");
-        } else {
-            HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
+        if (failureCount < 5) {
+            return failureCount;
         }
 
-        return failureCount;
+        var lastFailureTime = LocalDateTime.parse(HashOps.get(key, "LastFailureTime"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        var resetTime = lastFailureTime.plusMinutes(10);
+        if (LocalDateTime.now().isBefore(resetTime)) {
+            var time = DateTime.getRemainSeconds(resetTime) / 60 + 1;
+            throw new BusinessException("错误次数过多,账号已被锁定!请于%d分钟后再试".formatted(time));
+        }
+
+        HashOps.put(key, "FailureCount", 0);
+        HashOps.delete(key, "LastFailureTime");
+        return 0;
     }
 
     /**
