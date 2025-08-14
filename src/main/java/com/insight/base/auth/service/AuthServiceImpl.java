@@ -178,7 +178,7 @@ public class AuthServiceImpl implements AuthService {
         if (code == null) {
             HashOps.put(key, "FailureCount", failureCount + 1);
             HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
-            throw new BusinessException("账号或密码错误");
+            throw new BusinessException("账号或密码错误! 如遗忘密码，请重置密码");
         }
 
         if (failureCount > 0) {
