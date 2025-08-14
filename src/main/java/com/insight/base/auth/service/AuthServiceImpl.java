@@ -94,8 +94,8 @@ public class AuthServiceImpl implements AuthService {
         // 生成Code
         if (dto.getType() == 0) {
             var password = HashOps.get(key, "password");
-            if (!Util.isNotEmpty(password)) {
-                throw new BusinessException("账号或密码错误");
+            if (Util.isEmpty(password)) {
+                throw new BusinessException("用户数据异常! 请联系管理员");
             }
 
             var code = core.getGeneralCode(userId, account, password);
