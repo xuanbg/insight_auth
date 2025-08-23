@@ -7,14 +7,15 @@ import com.insight.base.auth.common.entity.UserTenant;
 import com.insight.utils.pojo.app.AppBase;
 import com.insight.utils.pojo.app.FuncInfo;
 import com.insight.utils.pojo.app.ModuleInfo;
+import com.insight.utils.pojo.auth.OpenId;
 import com.insight.utils.pojo.auth.TokenKey;
+import com.insight.utils.pojo.base.ArrayTypeHandler;
 import com.insight.utils.pojo.base.DataBase;
 import com.insight.utils.pojo.base.JsonTypeHandler;
 import com.insight.utils.pojo.user.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author 宣炳刚
@@ -30,8 +31,9 @@ public interface AuthMapper {
      * @param key 关键词(ID/账号/手机号/E-mail/微信unionId)
      * @return 用户实体
      */
+    @Results({@Result(property = "openIds", column = "open_id", javaType = OpenId.class, typeHandler = ArrayTypeHandler.class)})
     @Select("""
-            select id, type, code, name, account, mobile, email, nickname, union_id, password, pay_password, head_img, builtin, invalid
+            select id, type, code, name, account, mobile, email, nickname, union_id, open_id, password, pay_password, head_img, builtin, invalid
             from ibu_user
             where account = #{key} or mobile = #{key} or email = #{key} or union_id = #{key}
             limit 1;
@@ -66,23 +68,17 @@ public interface AuthMapper {
     AppBase getApp(Long appId);
 
     /**
-     * 获取微信OpenID
-     *
-     * @param userId 用户ID
-     * @return 微信OpenID
-     */
-    @Results({@Result(property = "openId", column = "open_id", javaType = Map.class, typeHandler = JsonTypeHandler.class)})
-    @Select("select open_id from ibu_user where id = #{userId};")
-    Map<String, Map<String, String>> getOpenId(Long userId);
-
-    /**
      * 记录用户绑定的微信OpenID
      *
-     * @param userId 用户ID
-     * @param openId 微信OpenID
+     * @param userId  用户ID
+     * @param openIds OpenID集合
      */
-    @Update("update ibu_user set open_id = #{openId, typeHandler = com.insight.utils.pojo.base.JsonTypeHandler} where id = #{userId};")
-    void updateOpenId(Long userId, Map openId);
+    @Update("""
+            update ibu_user set
+              open_id = #{openIds, typeHandler = com.insight.utils.pojo.base.ArrayTypeHandler}
+            where id = #{userId};
+            """)
+    void updateOpenId(Long userId, List<OpenId> openIds);
 
     /**
      * 更新用户微信UnionID

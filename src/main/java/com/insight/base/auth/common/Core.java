@@ -6,6 +6,7 @@ import com.insight.base.auth.common.dto.LoginDto;
 import com.insight.base.auth.common.dto.TokenDto;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.utils.*;
+import com.insight.utils.pojo.auth.OpenId;
 import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
@@ -21,8 +22,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Objects;
 
 
@@ -397,15 +397,25 @@ public class Core {
      * 记录用户绑定的微信OpenID
      *
      * @param userId 用户ID
-     * @param openId 微信OpenID
-     * @param appId  微信AppID
+     * @param openId OpenID
      */
-    public void bindOpenId(Long userId, String openId, String appId) {
-        var map = mapper.getOpenId(userId);
-        Map<String, String> ids = map == null ? new HashMap<>(16) : map.get("openId");
+    public void bindOpenId(Long userId, OpenId openId) {
+        var key = "User:" + userId;
+        var list = Json.toList(HashOps.get(key, "openIds"), OpenId.class);
+        if (list == null) {
+            list = new ArrayList<>();
+            list.add(openId);
+        } else {
+            var data = list.stream().filter(i -> i.matches(openId)).findFirst().orElse(null);
+            if (data == null) {
+                list.add(openId);
+            } else {
+                data.setOpenId(openId.getOpenId());
+            }
+        }
 
-        ids.put(openId, appId);
-        mapper.updateOpenId(userId, ids);
+        HashOps.put(key, "openIds", list);
+        mapper.updateOpenId(userId, list);
     }
 
     /**

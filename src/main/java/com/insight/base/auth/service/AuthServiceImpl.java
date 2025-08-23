@@ -8,6 +8,7 @@ import com.insight.utils.DateTime;
 import com.insight.utils.ReplyHelper;
 import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.LoginInfo;
+import com.insight.utils.pojo.auth.OpenId;
 import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
@@ -218,7 +219,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var user = core.getUser(userId);
-        core.bindOpenId(userId, weChatUser.getOpenid(), weChatAppId);
+        var openId = new OpenId(weChatAppId, weChatUser.getOpenid());
+        core.bindOpenId(userId, openId);
 
         var key = "User:" + userId;
         HashOps.put(key, "nickname", weChatUser.getNickname());
@@ -320,7 +322,8 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("用户不存在,请联系管理员创建用户");
         }
 
-        core.bindOpenId(userId, weChatUser.getOpenid(), login.getWeChatAppId());
+        var openId = new OpenId(login.getWeChatAppId(), weChatUser.getOpenid());
+        core.bindOpenId(userId, openId);
 
         key = "User:" + userId;
         HashOps.put(key, "nickname", weChatUser.getNickname());
