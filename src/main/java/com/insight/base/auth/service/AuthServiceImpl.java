@@ -4,6 +4,7 @@ import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.base.auth.common.mapper.AuthMapper;
+import com.insight.base.auth.common.xkw.AuthUtil;
 import com.insight.utils.DateTime;
 import com.insight.utils.ReplyHelper;
 import com.insight.utils.Util;
@@ -433,5 +434,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public List<FuncDto> getModuleFunctions(Long tenantId, Long userId, Long moduleId) {
         return mapper.getModuleFunctions(moduleId, tenantId, userId);
+    }
+
+    /**
+     * 学科网开放平台Auth回调
+     *
+     * @param dto 回调数据
+     */
+    @Override
+    public void xkwAuthCallback(CallbackDto dto) {
+        var openId = AuthUtil.getOpenId(dto.getId(), dto.getCode());
+        core.bindOpenId(dto.getId(), new OpenId("xkw", openId, dto.getState()));
     }
 }

@@ -1,9 +1,6 @@
 package com.insight.base.auth.service;
 
-import com.insight.base.auth.common.dto.CodeDto;
-import com.insight.base.auth.common.dto.FuncDto;
-import com.insight.base.auth.common.dto.LoginDto;
-import com.insight.base.auth.common.dto.NavDto;
+import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.utils.Json;
 import com.insight.utils.Util;
@@ -184,5 +181,21 @@ public class AuthController {
     public List<FuncDto> getModuleFunctions(@RequestHeader("loginInfo") String loginInfo, @PathVariable("id") Long moduleId) {
         var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
         return service.getModuleFunctions(info.getTenantId(), info.getId(), moduleId);
+    }
+
+    /**
+     * 获取用户XKW授权回调
+     *
+     * @param id  用户ID
+     * @param dto 回调数据
+     */
+    @GetMapping("/v1.0/users/{id}/callback")
+    public void xkwAuthCallback(@PathVariable Long id, @RequestParam CallbackDto dto) {
+        if (Util.isEmpty(dto.getCode())) {
+            throw new BusinessException("无效的回调: " + dto.getState());
+        }
+
+        dto.setId(id);
+        service.xkwAuthCallback(dto);
     }
 }

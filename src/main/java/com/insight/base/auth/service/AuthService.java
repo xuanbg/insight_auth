@@ -1,9 +1,6 @@
 package com.insight.base.auth.service;
 
-import com.insight.base.auth.common.dto.CodeDto;
-import com.insight.base.auth.common.dto.FuncDto;
-import com.insight.base.auth.common.dto.LoginDto;
-import com.insight.base.auth.common.dto.NavDto;
+import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.auth.TokenKey;
@@ -102,7 +99,7 @@ public interface AuthService {
      * 获取指定应用的Token
      *
      * @param login 用户登录数据
-     * @param key         令牌
+     * @param key   令牌
      * @return Reply
      */
     Reply getToken(LoginDto login, TokenKey key);
@@ -139,4 +136,11 @@ public interface AuthService {
      * @return 功能及权限数据集合
      */
     List<FuncDto> getModuleFunctions(Long tenantId, Long userId, Long moduleId);
+
+    /**
+     * 学科网开放平台Auth回调
+     *
+     * @param dto 回调数据
+     */
+    void xkwAuthCallback(CallbackDto dto);
 }
