@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Objects;
 
 
@@ -362,12 +363,12 @@ public class Core {
      */
     public Integer checkFailureCount(Long userId) {
         var key = "User:" + userId;
-        var failureCount = Integer.parseInt(HashOps.get(key, "FailureCount"));
+        var failureCount = Integer.parseInt(HashOps.getString(key, "FailureCount"));
         if (failureCount < 5) {
             return failureCount;
         }
 
-        var lastFailureTime = LocalDateTime.parse(HashOps.get(key, "LastFailureTime"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        var lastFailureTime = LocalDateTime.parse(HashOps.getString(key, "LastFailureTime"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         var resetTime = lastFailureTime.plusMinutes(10);
         if (LocalDateTime.now().isBefore(resetTime)) {
             var time = DateTime.getRemainSeconds(resetTime) / 60 + 1;
@@ -387,7 +388,7 @@ public class Core {
      */
     public WechatUser getWeChatInfo(String code, String weChatAppId) {
         var key = "WeChatApp:" + weChatAppId;
-        var secret = HashOps.get(key, "secret");
+        var secret = HashOps.getString(key, "secret");
 
         return WechatHelper.getUserInfo(code, weChatAppId, secret);
     }
@@ -399,23 +400,22 @@ public class Core {
      * @param openId OpenID
      */
     public void bindOpenId(Long userId, OpenId openId) {
-        return;
-//        var key = "User:" + userId;
-//        var list = Json.toList(HashOps.get(key, "openIds"), OpenId.class);
-//        if (list == null) {
-//            list = new ArrayList<>();
-//            list.add(openId);
-//        } else {
-//            var data = list.stream().filter(i -> i.matches(openId)).findFirst().orElse(null);
-//            if (data == null) {
-//                list.add(openId);
-//            } else {
-//                data.setOpenId(openId.getOpenId());
-//            }
-//        }
-//
-//        HashOps.put(key, "openIds", list);
-//        mapper.updateOpenId(userId, list);
+        var key = "User:" + userId;
+        var list = Json.toList(HashOps.get(key, "openIds"), OpenId.class);
+        if (list == null) {
+            list = new ArrayList<>();
+            list.add(openId);
+        } else {
+            var data = list.stream().filter(i -> i.matches(openId)).findFirst().orElse(null);
+            if (data == null) {
+                list.add(openId);
+            } else {
+                data.setOpenId(openId.getOpenId());
+            }
+        }
+
+        HashOps.put(key, "openIds", list);
+        mapper.updateOpenId(userId, list);
     }
 
     /**
