@@ -9,7 +9,6 @@ import com.insight.utils.pojo.app.FuncInfo;
 import com.insight.utils.pojo.app.ModuleInfo;
 import com.insight.utils.pojo.auth.OpenId;
 import com.insight.utils.pojo.auth.TokenKey;
-import com.insight.utils.pojo.base.ArrayTypeHandler;
 import com.insight.utils.pojo.base.DataBase;
 import com.insight.utils.pojo.base.JsonTypeHandler;
 import com.insight.utils.pojo.user.User;
@@ -31,9 +30,8 @@ public interface AuthMapper {
      * @param key 关键词(ID/账号/手机号/E-mail/微信unionId)
      * @return 用户实体
      */
-    @Results({@Result(property = "openIds", column = "open_id", javaType = OpenId.class, typeHandler = ArrayTypeHandler.class)})
     @Select("""
-            select id, type, code, name, account, mobile, email, nickname, union_id, open_id, password, pay_password, head_img, builtin, invalid
+            select id, type, code, name, account, mobile, email, nickname, union_id, password, pay_password, head_img, builtin, invalid
             from ibu_user
             where account = #{key} or mobile = #{key} or email = #{key} or union_id = #{key}
             limit 1;
