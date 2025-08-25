@@ -55,7 +55,7 @@ public interface AuthMapper {
               join ibt_tenant_user r on r.tenant_id = t.id
                 and r.user_id = #{userId};
             """)
-    List<TenantApp> getTenantIds(Long appId, Long userId);
+    List<TenantApp> getTenantApps(Long appId, Long userId);
 
     /**
      * 获取指定ID的租户

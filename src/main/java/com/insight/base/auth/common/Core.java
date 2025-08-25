@@ -195,7 +195,7 @@ public class Core {
         if (app.getPlatform()) {
             key.setTenantId(null);
         } else {
-            var tenants = mapper.getTenantIds(key.getAppId(), key.getUserId());
+            var tenants = mapper.getTenantApps(key.getAppId(), key.getUserId());
             if (Util.isEmpty(tenants)) {
                 throw new BusinessException("应用未授权, 请先为租户授权此应用");
             }
@@ -400,6 +400,7 @@ public class Core {
      * @param openId OpenID
      */
     public void bindOpenId(Long userId, OpenId openId) {
+        return;
         var key = "User:" + userId;
         var list = Json.toList(HashOps.get(key, "openIds"), OpenId.class);
         if (list == null) {
