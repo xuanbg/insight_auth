@@ -44,7 +44,7 @@ public class Core {
     /**
      * Code生命周期(30秒)
      */
-    private static final int GENERAL_CODE_LEFT = 30;
+    private static final int GENERAL_CODE_LEFT = 300;
     /**
      * 登录短信验证码长度(6位)
      */
@@ -363,7 +363,12 @@ public class Core {
      */
     public Integer checkFailureCount(Long userId) {
         var key = "User:" + userId;
-        var failureCount = Integer.parseInt(HashOps.get(key, "FailureCount"));
+        var failureCount = 0;
+        var count = HashOps.get(key, "FailureCount");
+        if (count != null) {
+            failureCount = Integer.parseInt(count);
+        }
+
         if (failureCount < 5) {
             return failureCount;
         }
@@ -488,7 +493,12 @@ public class Core {
             throw new BusinessException("用户不存在");
         }
 
-        var user = HashOps.entries(key, User.class);
+        var map = HashOps.entries(key);
+        var openIds = map.get("openIds");
+        if (openIds != null) {
+            map.put("openIds", Json.toList(openIds, OpenId.class));
+        }
+        var user = Json.toBean(map, User.class);
         if (user.getInvalid()) {
             throw new BusinessException("用户被禁止使用");
         }
