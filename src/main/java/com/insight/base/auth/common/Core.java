@@ -363,12 +363,12 @@ public class Core {
      */
     public Integer checkFailureCount(Long userId) {
         var key = "User:" + userId;
-        var failureCount = Integer.parseInt(HashOps.getString(key, "FailureCount"));
+        var failureCount = Integer.parseInt(HashOps.get(key, "FailureCount"));
         if (failureCount < 5) {
             return failureCount;
         }
 
-        var lastFailureTime = LocalDateTime.parse(HashOps.getString(key, "LastFailureTime"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        var lastFailureTime = LocalDateTime.parse(HashOps.get(key, "LastFailureTime"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         var resetTime = lastFailureTime.plusMinutes(10);
         if (LocalDateTime.now().isBefore(resetTime)) {
             var time = DateTime.getRemainSeconds(resetTime) / 60 + 1;
@@ -388,7 +388,7 @@ public class Core {
      */
     public WechatUser getWeChatInfo(String code, String weChatAppId) {
         var key = "WeChatApp:" + weChatAppId;
-        var secret = HashOps.getString(key, "secret");
+        var secret = HashOps.get(key, "secret");
 
         return WechatHelper.getUserInfo(code, weChatAppId, secret);
     }
