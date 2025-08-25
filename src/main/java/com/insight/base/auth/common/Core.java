@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Objects;
 
 
@@ -401,22 +400,22 @@ public class Core {
      */
     public void bindOpenId(Long userId, OpenId openId) {
         return;
-        var key = "User:" + userId;
-        var list = Json.toList(HashOps.get(key, "openIds"), OpenId.class);
-        if (list == null) {
-            list = new ArrayList<>();
-            list.add(openId);
-        } else {
-            var data = list.stream().filter(i -> i.matches(openId)).findFirst().orElse(null);
-            if (data == null) {
-                list.add(openId);
-            } else {
-                data.setOpenId(openId.getOpenId());
-            }
-        }
-
-        HashOps.put(key, "openIds", list);
-        mapper.updateOpenId(userId, list);
+//        var key = "User:" + userId;
+//        var list = Json.toList(HashOps.get(key, "openIds"), OpenId.class);
+//        if (list == null) {
+//            list = new ArrayList<>();
+//            list.add(openId);
+//        } else {
+//            var data = list.stream().filter(i -> i.matches(openId)).findFirst().orElse(null);
+//            if (data == null) {
+//                list.add(openId);
+//            } else {
+//                data.setOpenId(openId.getOpenId());
+//            }
+//        }
+//
+//        HashOps.put(key, "openIds", list);
+//        mapper.updateOpenId(userId, list);
     }
 
     /**
