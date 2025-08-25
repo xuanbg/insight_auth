@@ -195,7 +195,7 @@ public class Core {
         if (app.getPlatform()) {
             key.setTenantId(null);
         } else {
-            var tenants = mapper.getTenants(key.getAppId(), key.getUserId());
+            var tenants = mapper.getTenantIds(key.getAppId(), key.getUserId());
             if (Util.isEmpty(tenants)) {
                 throw new BusinessException("应用未授权, 请先为租户授权此应用");
             }

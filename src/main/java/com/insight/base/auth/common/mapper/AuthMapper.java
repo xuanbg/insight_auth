@@ -43,11 +43,19 @@ public interface AuthMapper {
     /**
      * 获取用户的租户ID集合
      *
+     * @param appId  应用ID
      * @param userId 用户ID
      * @return 租户ID集合
      */
-    @Select("select distinct t.* from ibt_tenant t join ibt_tenant_user r on r.tenant_id = t.id where r.user_id = #{userId};")
-    List<DataBase> getTenantIds(Long userId);
+    @Select("""
+            select distinct t.id, t.name, a.expire_date
+            from ibt_tenant t
+              join ibt_tenant_app a on a.tenant_id = t.id
+                and a.app_id = #{appId}
+              join ibt_tenant_user r on r.tenant_id = t.id
+                and r.user_id = #{userId};
+            """)
+    List<TenantApp> getTenantIds(Long appId, Long userId);
 
     /**
      * 获取指定ID的租户
@@ -222,16 +230,18 @@ public interface AuthMapper {
      * @return 用户绑定租户集合
      */
     @Select("""
-            select distinct t.id, t.`name`, a.expire_date
+            select distinct t.id, t.`name`
             from ibt_tenant t
-              join ibt_tenant_app a on a.tenant_id = t.id and a.app_id = #{appId}
-              join ibt_tenant_user u on u.tenant_id = t.id and u.user_id = #{userId}
-              left join xjy_hxb3.nsb_school s on s.id = t.id
+              join ibt_tenant_app a on a.tenant_id = t.id
+                and a.app_id = #{appId}
+              join ibt_tenant_user u on u.tenant_id = t.id
+                and u.user_id = #{userId}
+              join xjy_hxb3.nsb_school s on s.id = t.id
             where t.invalid = 0
               and t.status = 1
             order by s.`index`;
             """)
-    List<TenantApp> getTenants(Long appId, Long userId);
+    List<DataBase> getTenants(Long appId, Long userId);
 
     /**
      * 获取用户登录的机构

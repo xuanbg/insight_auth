@@ -1,9 +1,9 @@
 package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.dto.*;
-import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.utils.pojo.auth.LoginInfo;
 import com.insight.utils.pojo.auth.TokenKey;
+import com.insight.utils.pojo.base.DataBase;
 import com.insight.utils.pojo.base.Reply;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public interface AuthService {
      * @param account 登录账号
      * @return Reply
      */
-    List<TenantApp> getTenants(Long appId, String account);
+    List<DataBase> getTenants(Long appId, String account);
 
     /**
      * 生成加密Code

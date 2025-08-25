@@ -2,7 +2,6 @@ package com.insight.base.auth.service;
 
 import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.dto.*;
-import com.insight.base.auth.common.entity.TenantApp;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.base.auth.common.xkw.AuthUtil;
 import com.insight.utils.DateTime;
@@ -13,6 +12,7 @@ import com.insight.utils.pojo.auth.OpenId;
 import com.insight.utils.pojo.auth.TokenData;
 import com.insight.utils.pojo.auth.TokenKey;
 import com.insight.utils.pojo.base.BusinessException;
+import com.insight.utils.pojo.base.DataBase;
 import com.insight.utils.pojo.base.Reply;
 import com.insight.utils.pojo.user.User;
 import com.insight.utils.pojo.wechat.WechatUser;
@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
      * @return Reply
      */
     @Override
-    public List<TenantApp> getTenants(Long appId, String account) {
+    public List<DataBase> getTenants(Long appId, String account) {
         var userId = core.getUserId(account);
         return mapper.getTenants(appId, userId);
     }
@@ -230,7 +230,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (login.getTenantId() == null) {
-            var tenants = mapper.getTenantIds(userId);
+            var tenants = mapper.getTenants(login.getAppId(), userId);
             if (tenants.size() == 1) {
                 login.setTenantId(tenants.get(0).getId());
             } else if (tenants.size() > 1) {
