@@ -196,8 +196,12 @@ public class AuthController {
         dto.setId(info.getId());
         dto.setAccount(info.getMobile());
 
-        info.getOpenIds().stream().filter(i -> i.matches("xkw")).findFirst()
-                .ifPresent(openId -> dto.setOpenId(openId.getOpenId()));
+        if (Util.isNotEmpty(dto.getOpenId())) {
+            info.getOpenIds().stream()
+                    .filter(i -> i.matches("xkw")).findFirst()
+                    .ifPresent(openId -> dto.setOpenId(openId.getOpenId()));
+        }
+
         return service.getXkwOpenId(dto);
     }
 }
