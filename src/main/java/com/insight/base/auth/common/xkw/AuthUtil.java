@@ -31,17 +31,16 @@ public class AuthUtil {
     }
 
     public static String getAuthUrl(String account) {
-        SortedMap<String, String> params = new TreeMap<>();
+        var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
-        params.put("open_id", null);
-        params.put("service", service);
-        params.put("redirect_uri", redirectUri);
-        params.put("timespan", getTimespan());
         params.put("extra", account);
+        params.put("open_id", "");
+        params.put("redirect_uri", redirectUri);
+        params.put("service", service);
+        params.put("timespan", getTimespan());
 
-        var signature = generateSignature(params, appSecret);
+        var signature = generateSignature(params);
         params.put("signature", signature);
-
         return HttpClient.buildUrl(authUrl + "/oauth2/authorize", params);
     }
 
@@ -65,12 +64,12 @@ public class AuthUtil {
      * @return AccessToken
      */
     private static String getAccessToken(Long id, String code) {
-        SortedMap<String, String> params = new TreeMap<>();
+        var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
         params.put("code", code);
         params.put("redirect_uri", redirectUri);
 
-        var signature = generateSignature(params, appSecret);
+        var signature = generateSignature(params);
         params.put("signature", signature);
 
         var url = HttpClient.buildUrl(authUrl + "/oauth2/accessToken", params);
@@ -109,17 +108,16 @@ public class AuthUtil {
     /**
      * 根据SortMap类型参数和secret获取签名
      *
-     * @param param  SortMap类型参数
-     * @param secret 密钥
+     * @param param SortMap类型参数
      * @return 签名
      */
-    public static String generateSignature(SortedMap<String, String> param, String secret) {
+    private static String generateSignature(SortedMap<String, Object> param) {
         var sb = new StringBuilder();
-        for (var key : param.keySet()) {
-            sb.append(param.get(key));
+        for (var entry : param.entrySet()) {
+            sb.append(entry.getValue());
         }
 
-        sb.append(secret);
+        sb.append(appSecret);
         return Util.md5(sb.toString());
     }
 
