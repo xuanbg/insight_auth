@@ -93,7 +93,7 @@ public class AuthUtil {
      * @return OpenId
      */
     private static String getProfile(String token) {
-        var url = authUrl + "oauth2/profile?access_token=" + token;
+        var url = authUrl + "/oauth2/profile?access_token=" + token;
         var data = HttpClient.get(url);
 
         var profile = Json.toBean(data, Profile.class);
