@@ -191,7 +191,7 @@ public class AuthController {
      * @return 获取学科网OpenID
      */
     @GetMapping("/v1.0/xkw/openid")
-    public String getXkwOpenId(@RequestHeader("loginInfo") String loginInfo, @RequestParam CallbackDto dto) {
+    public String getXkwOpenId(@RequestHeader("loginInfo") String loginInfo, CallbackDto dto) {
         var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
         dto.setId(info.getId());
         dto.setAccount(info.getMobile());
