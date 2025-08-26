@@ -35,7 +35,7 @@ public class AuthUtil {
         var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
         params.put("extra", extra);
-        params.put("open_id", openId);
+        params.put("open_id", AesUtil.aesEncrypt(openId, appSecret));
         params.put("redirect_uri", redirectUri);
         params.put("service", service);
         params.put("timespan", getTimespan());

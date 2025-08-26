@@ -196,7 +196,7 @@ public class AuthController {
         dto.setId(info.getId());
         dto.setAccount(info.getMobile());
 
-        if (Util.isNotEmpty(dto.getOpenId())) {
+        if (Util.isNotEmpty(info.getOpenIds())) {
             info.getOpenIds().stream()
                     .filter(i -> i.matches("xkw")).findFirst()
                     .ifPresent(openId -> dto.setOpenId(openId.getOpenId()));
