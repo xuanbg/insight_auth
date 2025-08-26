@@ -33,6 +33,7 @@ public class AuthUtil {
     public static String getAuthUrl(String account) {
         SortedMap<String, String> params = new TreeMap<>();
         params.put("client_id", appKey);
+        params.put("open_id", null);
         params.put("service", service);
         params.put("redirect_uri", redirectUri);
         params.put("timespan", getTimespan());
@@ -41,7 +42,7 @@ public class AuthUtil {
         var signature = generateSignature(params, appSecret);
         params.put("signature", signature);
 
-        return HttpClient.buildUrl(authUrl + "/oauth2/authorize?", params);
+        return HttpClient.buildUrl(authUrl + "/oauth2/authorize", params);
     }
 
     /**
