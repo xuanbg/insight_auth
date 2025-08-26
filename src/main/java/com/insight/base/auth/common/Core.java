@@ -411,7 +411,7 @@ public class Core {
             list = new ArrayList<>();
             list.add(openId);
         } else {
-            var data = list.stream().filter(i -> i.matches(openId)).findFirst().orElse(null);
+            var data = list.stream().filter(i -> i.matches(openId.getAppId())).findFirst().orElse(null);
             if (data == null) {
                 list.add(openId);
             } else {
