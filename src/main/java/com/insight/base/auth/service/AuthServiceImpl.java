@@ -450,6 +450,6 @@ public class AuthServiceImpl implements AuthService {
 
         var openId = AuthUtil.getOpenId(dto.getId(), dto.getCode());
         core.bindOpenId(dto.getId(), new OpenId("xkw", openId));
-        return openId;
+        return AuthUtil.getAuthUrl(openId, dto.getAccount());
     }
 }
