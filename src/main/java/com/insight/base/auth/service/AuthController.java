@@ -184,18 +184,17 @@ public class AuthController {
     }
 
     /**
-     * 获取用户XKW授权回调
+     * 获取学科网OpenID
      *
-     * @param id  用户ID
-     * @param dto 回调数据
+     * @param loginInfo 用户信息
+     * @param dto       回调数据
+     * @return 获取学科网OpenID
      */
-    @GetMapping("/v1.0/users/{id}/callback")
-    public void xkwAuthCallback(@PathVariable Long id, @RequestParam CallbackDto dto) {
-        if (Util.isEmpty(dto.getCode())) {
-            throw new BusinessException("无效的回调: " + dto.getState());
-        }
-
-        dto.setId(id);
-        service.xkwAuthCallback(dto);
+    @GetMapping("/v1.0/xkw/openid")
+    public String getXkwOpenId(@RequestHeader("loginInfo") String loginInfo, @RequestParam CallbackDto dto) {
+        var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
+        dto.setId(info.getId());
+        dto.setAccount(info.getMobile());
+        return service.getXkwOpenId(dto);
     }
 }

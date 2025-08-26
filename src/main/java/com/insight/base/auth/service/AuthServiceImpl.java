@@ -437,13 +437,19 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 学科网开放平台Auth回调
+     * 获取学科网OpenID
      *
      * @param dto 回调数据
+     * @return 学科网OpenID
      */
     @Override
-    public void xkwAuthCallback(CallbackDto dto) {
+    public String getXkwOpenId(CallbackDto dto) {
+        if (Util.isEmpty(dto.getCode())) {
+            return AuthUtil.getAuthUrl(dto.getAccount());
+        }
+
         var openId = AuthUtil.getOpenId(dto.getId(), dto.getCode());
         core.bindOpenId(dto.getId(), new OpenId("xkw", openId, dto.getState()));
+        return openId;
     }
 }

@@ -3,6 +3,7 @@ package com.insight.base.auth.common.xkw;
 import com.insight.utils.EnvUtil;
 import com.insight.utils.Json;
 import com.insight.utils.Util;
+import com.insight.utils.encrypt.AesEncryptor;
 import com.insight.utils.http.HttpClient;
 import com.insight.utils.pojo.base.BusinessException;
 
@@ -18,13 +19,29 @@ public class AuthUtil {
     private static final String appKey;
     private static final String appSecret;
     private static final String authUrl;
+    private static final String service;
     private static final String redirectUri;
 
     static {
         appKey = EnvUtil.getValue("xkw.appKey");
         appSecret = EnvUtil.getValue("xkw.appSecret");
         authUrl = EnvUtil.getValue("xkw.authUrl");
+        service = EnvUtil.getValue("xkw.service");
         redirectUri = EnvUtil.getValue("xkw.redirectUri");
+    }
+
+    public static String getAuthUrl(String account) {
+        SortedMap<String, String> params = new TreeMap<>();
+        params.put("client_id", appKey);
+        params.put("service", service);
+        params.put("redirect_uri", redirectUri);
+        params.put("timespan", getTimespan());
+        params.put("extra", account);
+
+        var signature = generateSignature(params, appSecret);
+        params.put("signature", signature);
+
+        return HttpClient.buildUrl(authUrl + "/oauth2/authorize?", params);
     }
 
     /**
@@ -50,12 +67,12 @@ public class AuthUtil {
         SortedMap<String, String> params = new TreeMap<>();
         params.put("client_id", appKey);
         params.put("code", code);
-        params.put("redirect_uri", redirectUri.replace("{id}", id.toString()));
+        params.put("redirect_uri", redirectUri);
 
         var signature = generateSignature(params, appSecret);
         params.put("signature", signature);
 
-        var url = HttpClient.buildUrl(authUrl + "oauth2/accessToken", params);
+        var url = HttpClient.buildUrl(authUrl + "/oauth2/accessToken", params);
         var data = HttpClient.get(url);
 
         var token = Json.toBean(data, AccessToken.class);
@@ -103,5 +120,16 @@ public class AuthUtil {
 
         sb.append(secret);
         return Util.md5(sb.toString());
+    }
+
+    /**
+     * 获取时间戳
+     *
+     * @return 时间戳
+     */
+    private static String getTimespan() {
+        var encryptor = new AesEncryptor(appSecret);
+        var timespan = String.valueOf(System.currentTimeMillis());
+        return encryptor.encrypt(timespan);
     }
 }

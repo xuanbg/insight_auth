@@ -15,6 +15,11 @@ public class CallbackDto extends BaseXo {
     private Long id;
 
     /**
+     * 账号
+     */
+    private String account;
+
+    /**
      * 授权码
      */
     private String code;
@@ -30,6 +35,14 @@ public class CallbackDto extends BaseXo {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
     }
 
     public String getCode() {
