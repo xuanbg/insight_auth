@@ -3,7 +3,7 @@ package com.insight.base.auth.common.xkw;
 import com.insight.utils.EnvUtil;
 import com.insight.utils.Json;
 import com.insight.utils.Util;
-import com.insight.utils.encrypt.AesEncryptor;
+import com.insight.utils.encrypt.AesUtil;
 import com.insight.utils.http.HttpClient;
 import com.insight.utils.pojo.base.BusinessException;
 
@@ -31,7 +31,7 @@ public class AuthUtil {
     }
 
     public static String getAuthUrl(String openId, String account) {
-        var extra = account == null ? "" : new AesEncryptor(appSecret).encrypt(account);
+        var extra = account == null ? "" : AesUtil.aesEncrypt(account, appSecret);
         var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
         params.put("extra", extra);
@@ -128,8 +128,7 @@ public class AuthUtil {
      * @return 时间戳
      */
     private static String getTimespan() {
-        var encryptor = new AesEncryptor(appSecret);
         var timespan = String.valueOf(System.currentTimeMillis());
-        return encryptor.encrypt(timespan);
+        return AesUtil.aesEncrypt(timespan, appSecret);
     }
 }
