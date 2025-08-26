@@ -30,11 +30,11 @@ public class AuthUtil {
         redirectUri = EnvUtil.getValue("xkw.redirectUri");
     }
 
-    public static String getAuthUrl(String account) {
+    public static String getAuthUrl(String openId, String account) {
         var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
         params.put("extra", account);
-        params.put("open_id", "");
+        params.put("open_id", openId);
         params.put("redirect_uri", redirectUri);
         params.put("service", service);
         params.put("timespan", getTimespan());

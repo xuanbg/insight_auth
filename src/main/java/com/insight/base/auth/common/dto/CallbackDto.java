@@ -20,6 +20,11 @@ public class CallbackDto extends BaseXo {
     private String account;
 
     /**
+     * 微信OpenId
+     */
+    private String openId;
+
+    /**
      * 授权码
      */
     private String code;
@@ -43,6 +48,14 @@ public class CallbackDto extends BaseXo {
 
     public void setAccount(String account) {
         this.account = account;
+    }
+
+    public String getOpenId() {
+        return openId == null ? "" : openId;
+    }
+
+    public void setOpenId(String openId) {
+        this.openId = openId;
     }
 
     public String getCode() {

@@ -195,6 +195,9 @@ public class AuthController {
         var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
         dto.setId(info.getId());
         dto.setAccount(info.getMobile());
+
+        info.getOpenIds().stream().filter(i -> i.matches("xkw")).findFirst()
+                .ifPresent(openId -> dto.setOpenId(openId.getOpenId()));
         return service.getXkwOpenId(dto);
     }
 }
