@@ -31,9 +31,10 @@ public class AuthUtil {
     }
 
     public static String getAuthUrl(String openId, String account) {
+        var extra = account == null ? "" : new AesEncryptor(appSecret).encrypt(account);
         var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
-        params.put("extra", account);
+        params.put("extra", extra);
         params.put("open_id", openId);
         params.put("redirect_uri", redirectUri);
         params.put("service", service);
