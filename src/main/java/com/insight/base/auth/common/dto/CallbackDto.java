@@ -1,5 +1,7 @@
 package com.insight.base.auth.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.insight.utils.encrypt.AesUtil;
 import com.insight.utils.pojo.base.BaseXo;
 
 /**
@@ -32,7 +34,12 @@ public class CallbackDto extends BaseXo {
     /**
      * 状态
      */
-    private String state;
+    private String service;
+
+    /**
+     * 应用密钥
+     */
+    private String appSecret;
 
     public Long getId() {
         return id;
@@ -51,7 +58,7 @@ public class CallbackDto extends BaseXo {
     }
 
     public String getOpenId() {
-        return openId == null ? "" : openId;
+        return openId == null ? "" : AesUtil.aesEncrypt(openId, appSecret);
     }
 
     public void setOpenId(String openId) {
@@ -66,11 +73,26 @@ public class CallbackDto extends BaseXo {
         this.code = code;
     }
 
-    public String getState() {
-        return state;
+    public String getService() {
+        return service;
     }
 
-    public void setState(String state) {
-        this.state = state;
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    public void setAppSecret(String appSecret) {
+        this.appSecret = appSecret;
+    }
+
+    @JsonIgnore
+    public String getExtra() {
+        return account == null ? "" : AesUtil.aesEncrypt(account, appSecret);
+    }
+
+    @JsonIgnore
+    public String getTimespan() {
+        var timespan = String.valueOf(System.currentTimeMillis());
+        return AesUtil.aesEncrypt(timespan, appSecret);
     }
 }

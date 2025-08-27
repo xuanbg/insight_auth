@@ -138,10 +138,10 @@ public interface AuthService {
     List<FuncDto> getModuleFunctions(Long tenantId, Long userId, Long moduleId);
 
     /**
-     * 获取学科网OpenID
+     * 获取学科网授权
      *
      * @param dto 回调数据
      * @return 学科网OpenID
      */
-    String getXkwOpenId(CallbackDto dto);
+    String xkwAuth(CallbackDto dto);
 }

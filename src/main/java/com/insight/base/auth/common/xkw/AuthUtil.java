@@ -1,9 +1,9 @@
 package com.insight.base.auth.common.xkw;
 
+import com.insight.base.auth.common.dto.CallbackDto;
 import com.insight.utils.EnvUtil;
 import com.insight.utils.Json;
 import com.insight.utils.Util;
-import com.insight.utils.encrypt.AesUtil;
 import com.insight.utils.http.HttpClient;
 import com.insight.utils.pojo.base.BusinessException;
 
@@ -19,26 +19,25 @@ public class AuthUtil {
     private static final String appKey;
     private static final String appSecret;
     private static final String authUrl;
-    private static final String service;
     private static final String redirectUri;
 
     static {
         appKey = EnvUtil.getValue("xkw.appKey");
         appSecret = EnvUtil.getValue("xkw.appSecret");
         authUrl = EnvUtil.getValue("xkw.authUrl");
-        service = EnvUtil.getValue("xkw.service");
         redirectUri = EnvUtil.getValue("xkw.redirectUri");
     }
 
-    public static String getAuthUrl(String openId, String account) {
-        var extra = account == null ? "" : AesUtil.aesEncrypt(account, appSecret);
+    public static String getAuthUrl(CallbackDto dto) {
+        dto.setAppSecret(appSecret);
+
         var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
-        params.put("extra", extra);
-        params.put("open_id", AesUtil.aesEncrypt(openId, appSecret));
+        params.put("extra", dto.getExtra());
+        params.put("open_id", dto.getOpenId());
         params.put("redirect_uri", redirectUri);
-        params.put("service", service);
-        params.put("timespan", getTimespan());
+        params.put("service", dto.getService());
+        params.put("timespan", dto.getTimespan());
 
         var signature = generateSignature(params);
         params.put("signature", signature);
@@ -48,23 +47,21 @@ public class AuthUtil {
     /**
      * 获取学科网OpenId
      *
-     * @param id   用户ID
      * @param code 授权码
      * @return OpenId
      */
-    public static String getOpenId(Long id, String code) {
-        var token = getAccessToken(id, code);
+    public static String getOpenId(String code) {
+        var token = getAccessToken(code);
         return getProfile(token);
     }
 
     /**
      * 获取学科网AccessToken
      *
-     * @param id   用户ID
      * @param code 授权码
      * @return AccessToken
      */
-    private static String getAccessToken(Long id, String code) {
+    private static String getAccessToken(String code) {
         var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
         params.put("code", code);
@@ -120,15 +117,5 @@ public class AuthUtil {
 
         sb.append(appSecret);
         return Util.md5(sb.toString());
-    }
-
-    /**
-     * 获取时间戳
-     *
-     * @return 时间戳
-     */
-    private static String getTimespan() {
-        var timespan = String.valueOf(System.currentTimeMillis());
-        return AesUtil.aesEncrypt(timespan, appSecret);
     }
 }

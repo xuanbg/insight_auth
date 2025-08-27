@@ -498,6 +498,7 @@ public class Core {
         if (openIds != null) {
             map.put("openIds", Json.toList(openIds, OpenId.class));
         }
+
         var user = Json.toBean(map, User.class);
         if (user.getInvalid()) {
             throw new BusinessException("用户被禁止使用");

@@ -184,14 +184,14 @@ public class AuthController {
     }
 
     /**
-     * 获取学科网OpenID
+     * 获取学科网授权
      *
      * @param loginInfo 用户信息
      * @param dto       回调数据
      * @return 获取学科网OpenID
      */
-    @GetMapping("/v1.0/xkw/openid")
-    public String getXkwOpenId(@RequestHeader("loginInfo") String loginInfo, CallbackDto dto) {
+    @GetMapping("/v1.0/xkw/auth")
+    public String xkwAuth(@RequestHeader("loginInfo") String loginInfo, CallbackDto dto) {
         var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
         dto.setId(info.getId());
         dto.setAccount(info.getMobile());
@@ -202,6 +202,6 @@ public class AuthController {
                     .ifPresent(openId -> dto.setOpenId(openId.getOpenId()));
         }
 
-        return service.getXkwOpenId(dto);
+        return service.xkwAuth(dto);
     }
 }
