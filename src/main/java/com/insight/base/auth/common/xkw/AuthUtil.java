@@ -35,7 +35,7 @@ public class AuthUtil {
         params.put("client_id", appKey);
         params.put("extra", dto.getExtra());
         params.put("open_id", dto.getOpenId());
-        params.put("redirect_uri", redirectUri);
+        params.put("redirect_uri", redirectUri + "?service=" + dto.getService());
         params.put("service", dto.getService());
         params.put("timespan", dto.getTimespan());
 
