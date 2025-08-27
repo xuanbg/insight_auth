@@ -30,12 +30,13 @@ public class AuthUtil {
 
     public static String getAuthUrl(CallbackDto dto) {
         dto.setAppSecret(appSecret);
+        var url = Util.isEmpty(dto.getCode()) ? redirectUri + "?service=" + dto.getService() : redirectUri;
 
         var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
         params.put("extra", dto.getExtra());
         params.put("open_id", dto.getOpenId());
-        params.put("redirect_uri", redirectUri + "?service=" + dto.getService());
+        params.put("redirect_uri", url);
         params.put("service", dto.getService());
         params.put("timespan", dto.getTimespan());
 
