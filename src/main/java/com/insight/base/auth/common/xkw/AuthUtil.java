@@ -52,8 +52,7 @@ public class AuthUtil {
      * @return 学科网URL
      */
     public static String getXkwUrl(CallbackDto dto) {
-        var params = new TreeMap<String, Object>();
-        return null;
+        return getAuthUrl(dto);
     }
 
     /**
