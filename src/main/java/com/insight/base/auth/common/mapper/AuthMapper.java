@@ -57,7 +57,8 @@ public interface AuthMapper {
               join ibt_tenant_app a on a.tenant_id = t.id
                 and a.app_id = #{appId}
               join ibt_tenant_user r on r.tenant_id = t.id
-                and r.user_id = #{userId};
+                and r.user_id = #{userId}
+                and r.invalid = 0;
             """)
     List<TenantApp> getTenantApps(Long appId, Long userId);
 
@@ -115,7 +116,8 @@ public interface AuthMapper {
               join ibu_user_device d on d.user_id = u.id
                 and d.device_id = #{deviceId}
               join ibt_tenant_user r on r.user_id = u.id
-                and r.tenant_id = #{tenantId};
+                and r.tenant_id = #{tenantId}
+                and r.invalid = 0;
             """)
     List<UserTenant> getUsers(Long tenantId, String deviceId);
 
@@ -240,6 +242,7 @@ public interface AuthMapper {
                 and a.app_id = #{appId}
               join ibt_tenant_user u on u.tenant_id = t.id
                 and u.user_id = #{userId}
+                and r.invalid = 0
               join xjy_hxb3.nsb_school s on s.id = t.id
             where t.invalid = 0
               and t.status = 1

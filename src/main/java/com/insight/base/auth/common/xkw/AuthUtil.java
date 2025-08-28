@@ -28,15 +28,46 @@ public class AuthUtil {
         redirectUri = EnvUtil.getValue("xkw.redirectUri");
     }
 
+    /**
+     * 获取组卷网URL
+     *
+     * @param dto 回调参数
+     * @return 组卷网URL
+     */
+    public static String getZjseUrl(CallbackDto dto) {
+        var params = new TreeMap<String, Object>();
+        params.put("_m", redirectUri);
+        params.put("_n", dto.getRedirect());
+        params.put("_openid", dto.getAuthId());
+
+        return HttpClient.buildUrl(dto.getService(), params);
+    }
+
+    /**
+     * 获取学科网URL
+     *
+     * @param dto 回调参数
+     * @return 学科网URL
+     */
+    public static String getXkwUrl(CallbackDto dto) {
+        var params = new TreeMap<String, Object>();
+        return null;
+    }
+
+    /**
+     * 获取学科网授权URL
+     *
+     * @param dto 回调参数
+     * @return 授权URL
+     */
     public static String getAuthUrl(CallbackDto dto) {
         dto.setAppSecret(appSecret);
-        var url = Util.isEmpty(dto.getCode()) ? redirectUri + "?service=" + dto.getService() : redirectUri;
 
         var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
         params.put("extra", dto.getExtra());
         params.put("open_id", dto.getOpenId());
-        params.put("redirect_uri", url);
+        params.put("redirect_uri", redirectUri);
         params.put("service", dto.getService());
         params.put("timespan", dto.getTimespan());
 

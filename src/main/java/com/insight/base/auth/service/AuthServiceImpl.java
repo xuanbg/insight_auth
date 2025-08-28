@@ -444,14 +444,21 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String xkwAuth(CallbackDto dto) {
-        if (Util.isEmpty(dto.getCode())) {
-            return AuthUtil.getAuthUrl(dto);
+        var openId = dto.getOpenId();
+        if (Util.isEmpty(openId)) {
+            if (Util.isEmpty(dto.getCode())) {
+                return AuthUtil.getAuthUrl(dto);
+            }
+
+            openId = AuthUtil.getOpenId(dto.getCode());
+            dto.setOpenId(openId);
+            core.bindOpenId(dto.getId(), new OpenId("xkw", openId));
         }
 
-        var openId = AuthUtil.getOpenId(dto.getCode());
-        core.bindOpenId(dto.getId(), new OpenId("xkw", openId));
-
-        dto.setOpenId(openId);
-        return AuthUtil.getAuthUrl(dto);
+        return switch (dto.getService()) {
+            case "https://zjse.xkw.com/" -> AuthUtil.getZjseUrl(dto);
+            case "https://www.zxxk.com/" -> AuthUtil.getXkwUrl(dto);
+            default -> throw new BusinessException("未注册的service");
+        };
     }
 }

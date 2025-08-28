@@ -37,6 +37,11 @@ public class CallbackDto extends BaseXo {
     private String service;
 
     /**
+     * 重定向地址
+     */
+    private String redirect;
+
+    /**
      * 应用密钥
      */
     private String appSecret;
@@ -77,12 +82,25 @@ public class CallbackDto extends BaseXo {
         return service;
     }
 
+    public String getRedirect() {
+        return redirect;
+    }
+
+    public void setRedirect(String redirect) {
+        this.redirect = redirect;
+    }
+
     public void setService(String service) {
         this.service = service;
     }
 
     public void setAppSecret(String appSecret) {
         this.appSecret = appSecret;
+    }
+
+    @JsonIgnore
+    public String getAuthId() {
+        return openId;
     }
 
     @JsonIgnore
