@@ -242,7 +242,7 @@ public interface AuthMapper {
                 and a.app_id = #{appId}
               join ibt_tenant_user u on u.tenant_id = t.id
                 and u.user_id = #{userId}
-                and r.invalid = 0
+                and u.invalid = 0
               join xjy_hxb3.nsb_school s on s.id = t.id
             where t.invalid = 0
               and t.status = 1
