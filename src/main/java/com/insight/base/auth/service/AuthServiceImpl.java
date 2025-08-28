@@ -444,7 +444,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String xkwAuth(CallbackDto dto) {
-        var openId = dto.getOpenId();
+        var openId = dto.getAuthId();
         if (Util.isEmpty(openId)) {
             if (Util.isEmpty(dto.getCode())) {
                 return AuthUtil.getAuthUrl(dto);
