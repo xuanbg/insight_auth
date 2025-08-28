@@ -24,6 +24,7 @@ public class CallbackDto extends BaseXo {
     /**
      * 微信OpenId
      */
+    @JsonIgnore
     private String openId;
 
     /**
