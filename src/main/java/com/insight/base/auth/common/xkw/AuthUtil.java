@@ -36,9 +36,10 @@ public class AuthUtil {
      */
     public static String getZjseUrl(CallbackDto dto) {
         var params = new TreeMap<String, Object>();
-        params.put("_m", redirectUri);
+        params.put("_m", "bk.huixue-bao.com");
         params.put("_n", dto.getRedirect() == null ? redirectUri : dto.getRedirect());
         params.put("_callbackmode", 1);
+        params.put("_pmm", 1);
         params.put("_openid", dto.getAuthId());
 
         return HttpClient.buildUrl(dto.getService(), params);
