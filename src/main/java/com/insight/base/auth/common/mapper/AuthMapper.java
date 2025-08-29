@@ -215,16 +215,19 @@ public interface AuthMapper {
      * @return 授权信息集合
      */
     @Select("""
-            <script>select substring_index(substring_index(f.auth_codes, ',', h.help_topic_id + 1), ',', - 1) as auth_code
+            <script>
+            select substring_index(substring_index(f.auth_codes, ',', h.help_topic_id + 1), ',', - 1) as auth_code
             from ibs_function f
               join ibs_navigator n on n.id = f.nav_id and n.app_id = #{appId}
               join ibr_role_permit p on p.function_id = f.id
-              join ibv_user_roles r on r.role_id = p.role_id and r.user_id = #{userId}
-              <if test = 'tenantId != null'>and r.tenant_id = #{tenantId}</if>
-              <if test = 'tenantId == null'>and r.tenant_id is null</if>
+              join ibv_user_roles r on r.role_id = p.role_id
+                and r.user_id = #{userId}
+                <if test = 'tenantId != null'>and r.tenant_id = #{tenantId}</if>
+                <if test = 'tenantId == null'>and r.tenant_id is null</if>
               join mysql.help_topic h on h.help_topic_id &lt; (length(f.auth_codes) - length(replace(f.auth_codes, ',', '')) + 1)
             group by n.app_id, f.nav_id, auth_code
-            having min(p.permit) > 0;</script>
+            having min(p.permit) > 0;
+            </script>
             """)
     List<String> getAuthInfos(TokenKey key);
 
