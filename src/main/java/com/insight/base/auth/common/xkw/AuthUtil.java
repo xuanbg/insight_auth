@@ -48,7 +48,7 @@ public class AuthUtil {
             var subjectId = dto.getSubjectId();
             if (subjectId != null) {
                 var path = HashOps.get("xkw:path", subjectId);
-                if (Util.isNotEmpty(path)){
+                if (Util.isNotEmpty(path)) {
                     url = url + path + "/zj0";
                 }
             }
@@ -82,11 +82,14 @@ public class AuthUtil {
         params.put("open_id", dto.getOpenId());
         params.put("redirect_uri", redirectUri);
         params.put("service", dto.getService());
+        params.put("subject_id", dto.getSubjectId());
         params.put("timespan", dto.getTimespan());
 
         var signature = generateSignature(params);
         params.put("signature", signature);
-        return HttpClient.buildUrl(authUrl + "/oauth2/authorize", params);
+
+        var url = authUrl + "/oauth2/authorize";
+        return HttpClient.buildUrl(url, params);
     }
 
     /**
