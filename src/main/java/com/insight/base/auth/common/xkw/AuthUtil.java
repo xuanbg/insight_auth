@@ -6,6 +6,7 @@ import com.insight.utils.Json;
 import com.insight.utils.Util;
 import com.insight.utils.http.HttpClient;
 import com.insight.utils.pojo.base.BusinessException;
+import com.insight.utils.redis.HashOps;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -42,7 +43,18 @@ public class AuthUtil {
         params.put("_pmm", 1);
         params.put("_openid", dto.getAuthId());
 
-        return HttpClient.buildUrl(dto.getService(), params);
+        var url = dto.getService();
+        if ("https://zjse.xkw.com/".equals(url)) {
+            var subjectId = dto.getSubjectId();
+            if (subjectId != null) {
+                var path = HashOps.get("xkw:path", subjectId);
+                if (Util.isNotEmpty(path)){
+                    url = url + path + "/zj0";
+                }
+            }
+        }
+
+        return HttpClient.buildUrl(url, params);
     }
 
     /**

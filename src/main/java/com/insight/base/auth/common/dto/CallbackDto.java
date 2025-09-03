@@ -37,6 +37,11 @@ public class CallbackDto extends BaseXo {
     private String service;
 
     /**
+     * 学科ID
+     */
+    private Long subjectId;
+
+    /**
      * 重定向地址
      */
     private String redirect;
@@ -80,6 +85,14 @@ public class CallbackDto extends BaseXo {
 
     public String getService() {
         return service;
+    }
+
+    public Long getSubjectId() {
+        return subjectId;
+    }
+
+    public void setSubjectId(Long subjectId) {
+        this.subjectId = subjectId;
     }
 
     public String getRedirect() {
