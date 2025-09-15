@@ -456,8 +456,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return switch (dto.getService()) {
-            case "https://zjse.xkw.com/" -> AuthUtil.getZjseUrl(dto);
-            case "https://www.zxxk.com/" -> AuthUtil.getXkwUrl(dto);
+            case "https://zjse.xkw.com" -> AuthUtil.getZjseUrl(dto);
+            case "https://www.zxxk.com" -> AuthUtil.getAuthUrl(dto);
             default -> throw new BusinessException("未注册的service");
         };
     }

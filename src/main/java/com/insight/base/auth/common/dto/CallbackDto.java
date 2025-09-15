@@ -84,7 +84,7 @@ public class CallbackDto extends BaseXo {
     }
 
     public String getService() {
-        return service;
+        return service.substring(0, service.length() - 1);
     }
 
     public Long getSubjectId() {

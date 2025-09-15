@@ -58,16 +58,6 @@ public class AuthUtil {
     }
 
     /**
-     * 获取学科网URL
-     *
-     * @param dto 回调参数
-     * @return 学科网URL
-     */
-    public static String getXkwUrl(CallbackDto dto) {
-        return getAuthUrl(dto);
-    }
-
-    /**
      * 获取学科网授权URL
      *
      * @param dto 回调参数
