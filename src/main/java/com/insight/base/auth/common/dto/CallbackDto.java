@@ -84,7 +84,7 @@ public class CallbackDto extends BaseXo {
     }
 
     public String getService() {
-        return service == null ? null : service.replace(".com/", ".com");
+        return service == null ? "https://www.zxxk.com" : service.replace(".com/", ".com");
     }
 
     public Long getSubjectId() {
