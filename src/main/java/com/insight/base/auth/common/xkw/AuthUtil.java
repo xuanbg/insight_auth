@@ -38,7 +38,7 @@ public class AuthUtil {
     public static String getZjseUrl(CallbackDto dto) {
         var params = new TreeMap<String, Object>();
         params.put("_m", "https://bk.huixue-bao.com");
-        params.put("_n", dto.getRedirect() == null ? redirectUri : dto.getRedirect());
+        params.put("_n", redirectUri);
         params.put("_callbackmode", 1);
         params.put("_pmm", 1);
         params.put("_openid", dto.getAuthId());
@@ -74,15 +74,16 @@ public class AuthUtil {
      * @return 授权URL
      */
     public static String getAuthUrl(CallbackDto dto) {
+        var subjectId = dto.getSubjectId();
+        var redirectUrl = subjectId == null ? redirectUri : redirectUri + "?subject_id=" + subjectId;
         dto.setAppSecret(appSecret);
 
         var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
         params.put("extra", dto.getExtra());
         params.put("open_id", dto.getOpenId());
-        params.put("redirect_uri", redirectUri);
+        params.put("redirect_uri", redirectUrl);
         params.put("service", dto.getService());
-        params.put("subject_id", dto.getSubjectId());
         params.put("timespan", dto.getTimespan());
 
         var signature = generateSignature(params);
