@@ -49,7 +49,7 @@ public class AuthUtil {
             if (subjectId != null) {
                 var path = HashOps.get("xkw:path", subjectId);
                 if (Util.isNotEmpty(path)) {
-                    url = url + path + "/zj0";
+                    url = url + "/" + path + "/zj0";
                 }
             }
         }
