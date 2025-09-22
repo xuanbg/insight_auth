@@ -44,7 +44,7 @@ public class AuthUtil {
         params.put("_openid", dto.getAuthId());
 
         var url = dto.getService();
-        if ("https://zjse.xkw.com/".equals(url)) {
+        if ("https://zjse.xkw.com".equals(url)) {
             var subjectId = dto.getSubjectId();
             if (subjectId != null) {
                 var path = HashOps.get("xkw:path", subjectId);
