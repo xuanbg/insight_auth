@@ -407,15 +407,19 @@ public class Core {
     public void bindOpenId(Long userId, OpenId openId) {
         var key = "User:" + userId;
         var list = Json.toList(HashOps.get(key, "openIds"), OpenId.class);
-        if (list == null) {
-            list = new ArrayList<>();
-            list.add(openId);
+        if (openId == null) {
+            list.removeIf(i -> i.matches("xkw"));
         } else {
-            var data = list.stream().filter(i -> i.matches(openId.getAppId())).findFirst().orElse(null);
-            if (data == null) {
+            if (list == null) {
+                list = new ArrayList<>();
                 list.add(openId);
             } else {
-                data.setOpenId(openId.getOpenId());
+                var data = list.stream().filter(i -> i.matches(openId.getAppId())).findFirst().orElse(null);
+                if (data == null) {
+                    list.add(openId);
+                } else {
+                    data.setOpenId(openId.getOpenId());
+                }
             }
         }
 

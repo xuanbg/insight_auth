@@ -204,4 +204,15 @@ public class AuthController {
 
         return service.xkwAuth(dto);
     }
+
+    /**
+     * 删除学科网授权
+     *
+     * @param loginInfo 用户信息
+     */
+    @DeleteMapping("/v1.0/xkw/auth")
+    public void deleteXkwAuth(@RequestHeader("loginInfo") String loginInfo) {
+        var info = Json.toBeanFromBase64(loginInfo, LoginInfo.class);
+        service.deleteXkwAuth(info.getId());
+    }
 }

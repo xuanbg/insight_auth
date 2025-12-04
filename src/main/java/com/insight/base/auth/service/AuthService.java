@@ -144,4 +144,11 @@ public interface AuthService {
      * @return 学科网OpenID
      */
     String xkwAuth(CallbackDto dto);
+
+    /**
+     * 删除学科网授权
+     *
+     * @param id 用户ID
+     */
+    void deleteXkwAuth(Long id);
 }

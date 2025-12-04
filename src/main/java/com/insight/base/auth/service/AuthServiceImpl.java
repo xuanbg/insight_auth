@@ -461,4 +461,14 @@ public class AuthServiceImpl implements AuthService {
             default -> throw new BusinessException("未注册的service");
         };
     }
+
+    /**
+     * 删除学科网授权
+     *
+     * @param id 用户ID
+     */
+    @Override
+    public void deleteXkwAuth(Long id) {
+        core.bindOpenId(id, null);
+    }
 }
