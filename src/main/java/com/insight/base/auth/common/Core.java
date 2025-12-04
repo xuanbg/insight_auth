@@ -408,7 +408,9 @@ public class Core {
         var key = "User:" + userId;
         var list = Json.toList(HashOps.get(key, "openIds"), OpenId.class);
         if (openId == null) {
-            list.removeIf(i -> i.matches("xkw"));
+            if (Util.isNotEmpty(list)) {
+                list.removeIf(i -> i.matches("xkw"));
+            }
         } else {
             if (list == null) {
                 list = new ArrayList<>();
