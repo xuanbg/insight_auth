@@ -64,9 +64,12 @@ public class AuthUtil {
      * @return 授权URL
      */
     public static String getAuthUrl(CallbackDto dto) {
-        var subjectId = dto.getSubjectId();
-        var redirectUrl = subjectId == null ? redirectUri : redirectUri + "?subject_id=" + subjectId;
         dto.setAppSecret(appSecret);
+        var redirectUrl = redirectUri + "?service=" + dto.getService();
+        var subjectId = dto.getSubjectId();
+        if (subjectId != null){
+            redirectUrl += "&subject_id=" + subjectId;
+        }
 
         var params = new TreeMap<String, Object>();
         params.put("client_id", appKey);
