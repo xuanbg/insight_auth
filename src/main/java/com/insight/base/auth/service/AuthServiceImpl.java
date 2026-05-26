@@ -173,7 +173,7 @@ public class AuthServiceImpl implements AuthService {
         var account = login.getAccount();
         var userId = core.getUserId(account);
         var key = "User:" + userId;
-        var failureCount = core.checkFailureCount(userId);
+        // var failureCount = core.checkFailureCount(userId);
 
         var code = core.getCode(login.getSignature());
         if (code == null) {
@@ -182,10 +182,10 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("账号或密码错误! 如遗忘密码，请重置密码");
         }
 
-        if (failureCount > 0) {
+       /* if (failureCount > 0) {
             HashOps.put(key, "FailureCount", 0);
             HashOps.delete(key, "LastFailureTime");
-        }
+        }*/
 
         var token = core.creatorToken(login, code);
         return ReplyHelper.created(token);
