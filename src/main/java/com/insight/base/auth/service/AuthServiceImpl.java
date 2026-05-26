@@ -4,6 +4,7 @@ import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.base.auth.common.xkw.AuthUtil;
+import com.insight.utils.DateTime;
 import com.insight.utils.ReplyHelper;
 import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.LoginInfo;
@@ -173,19 +174,19 @@ public class AuthServiceImpl implements AuthService {
         var account = login.getAccount();
         var userId = core.getUserId(account);
         var key = "User:" + userId;
-        // var failureCount = core.checkFailureCount(userId);
+        var failureCount = core.checkFailureCount(userId);
 
         var code = core.getCode(login.getSignature());
         if (code == null) {
-            // HashOps.put(key, "FailureCount", failureCount + 1);
-            // HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
+            HashOps.put(key, "FailureCount", failureCount + 1);
+            HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
             throw new BusinessException("账号或密码错误! 如遗忘密码，请重置密码");
         }
 
-       /* if (failureCount > 0) {
+        if (failureCount > 0) {
             HashOps.put(key, "FailureCount", 0);
             HashOps.delete(key, "LastFailureTime");
-        }*/
+        }
 
         var token = core.creatorToken(login, code);
         return ReplyHelper.created(token);
