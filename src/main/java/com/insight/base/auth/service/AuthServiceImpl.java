@@ -4,7 +4,6 @@ import com.insight.base.auth.common.Core;
 import com.insight.base.auth.common.dto.*;
 import com.insight.base.auth.common.mapper.AuthMapper;
 import com.insight.base.auth.common.xkw.AuthUtil;
-import com.insight.utils.DateTime;
 import com.insight.utils.ReplyHelper;
 import com.insight.utils.Util;
 import com.insight.utils.pojo.auth.LoginInfo;
@@ -178,8 +177,8 @@ public class AuthServiceImpl implements AuthService {
 
         var code = core.getCode(login.getSignature());
         if (code == null) {
-            HashOps.put(key, "FailureCount", failureCount + 1);
-            HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
+            // HashOps.put(key, "FailureCount", failureCount + 1);
+            // HashOps.put(key, "LastFailureTime", DateTime.formatCurrentTime());
             throw new BusinessException("账号或密码错误! 如遗忘密码，请重置密码");
         }
 
